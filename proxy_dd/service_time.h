@@ -30,16 +30,26 @@ void load_service_times(struct config *configuration);
 float interpolation( float x, float x0, float x1, float y0, float y1) ;
 
 float compressStage (long unsigned filesize) ;
+float decompressStage (long unsigned filesize) ;
+float compressStageAlgo (long unsigned filesize, const char *algo) ;
+float decompressStageAlgo (long unsigned filesize, const char *algo) ;
 
 double compressStageSize ( double filesize ) ;
+double compressStageSizeAlgo ( double filesize, const char *algo ) ;
 
 float hashingStage (double filesize) ;
 double hashingStageSize (double filesize) ;
+float hashingStageAlgo (double filesize, const char *algo) ;
+double hashingStageSizeAlgo (double filesize, const char *algo) ;
 
 float indexingStage (long numFiles) ;
 
 float IDAStage (double filesize) ;
+float IDADecodeStage (double filesize) ;
+float IDAStageAlgo (double filesize, const char *algo) ;
+float IDADecodeStageAlgo (double filesize, const char *algo) ;
 double IDAStageSize (double filesize) ;
+double IDAStageSizeAlgo (double filesize, const char *algo) ;
 
 void print_interpolation_points();
 

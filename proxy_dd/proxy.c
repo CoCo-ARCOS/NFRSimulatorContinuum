@@ -1,9 +1,9 @@
 #include "proxy.h"
 #include <unistd.h>
 
-/* NFR manager instances (one input + one output manager per stage index 1..10 mapped to 0..9) */
-static struct nfr_manager nfr_managers_in[10];
-static struct nfr_manager nfr_managers_out[10];
+/* NFR manager instances: one manager/worker pool per configured task in each stage pipeline. */
+static struct nfr_manager nfr_managers_in[10][INPUT_TASKS];
+static struct nfr_manager nfr_managers_out[10][OUTPUT_TASKS];
 static int nfr_initialized = 0;
 /* link stats lock */
 static pthread_mutex_t link_stats_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -28,6 +28,204 @@ static void dec_outstanding()
     if (outstanding_jobs == 0)
         pthread_cond_broadcast(&outstanding_cond);
     pthread_mutex_unlock(&outstanding_lock);
+}
+
+static const char *default_algorithm_for_type(const struct config *configuration, int type)
+{
+    if (!configuration)
+        return "";
+
+    switch (type)
+    {
+    case NFR_COMPRESS:
+        return configuration->compression_algo;
+    case NFR_HASH:
+        return configuration->hashing_algo;
+    case NFR_ENCRYPT:
+        return configuration->ida_algo;
+    default:
+        return "";
+    }
+}
+
+static const char *output_task_name_for_type(int type)
+{
+    switch (type)
+    {
+    case NFR_COMPRESS:
+        return "compress";
+    case NFR_ENCRYPT:
+        return "encrypt";
+    case NFR_HASH:
+        return "hash_calculate";
+    default:
+        return "task";
+    }
+}
+
+static const char *input_task_name_for_type(int type)
+{
+    switch (type)
+    {
+    case NFR_COMPRESS:
+        return "uncompress";
+    case NFR_ENCRYPT:
+        return "unencrypt";
+    case NFR_HASH:
+        return "hash_verify";
+    default:
+        return "task";
+    }
+}
+
+static int parse_requirement_type(const char *value)
+{
+    if (!value)
+        return NFR_NONE;
+
+    if (strcmp(value, "compress") == 0 || strcmp(value, "compression") == 0)
+        return NFR_COMPRESS;
+    if (strcmp(value, "encrypt") == 0 || strcmp(value, "cipher") == 0 || strcmp(value, "cipherer") == 0)
+        return NFR_ENCRYPT;
+    if (strcmp(value, "hash") == 0 || strcmp(value, "hashing") == 0 || strcmp(value, "integrity") == 0)
+        return NFR_HASH;
+
+    return NFR_NONE;
+}
+
+static void fill_requirement(struct nfr_requirement *req, int type, const char *algorithm, int is_input)
+{
+    if (!req)
+        return;
+
+    memset(req, 0, sizeof(*req));
+    req->type = type;
+    strncpy(req->task_name, is_input ? input_task_name_for_type(type) : output_task_name_for_type(type), sizeof(req->task_name) - 1);
+    req->task_name[sizeof(req->task_name) - 1] = '\0';
+    if (algorithm)
+    {
+        strncpy(req->algorithm, algorithm, sizeof(req->algorithm) - 1);
+        req->algorithm[sizeof(req->algorithm) - 1] = '\0';
+    }
+}
+
+static struct stage_definition *stage_definition_by_stage(struct config *configuration, int stage)
+{
+    if (!configuration)
+        return NULL;
+
+    for (int si = 0; si < configuration->stages_number; ++si)
+    {
+        if (configuration->stage_definitions[si].stage == stage)
+            return &configuration->stage_definitions[si];
+    }
+
+    return NULL;
+}
+
+static struct stage_definition *global_stage_definition(int stage)
+{
+    return stage_definition_by_stage(global_config, stage);
+}
+
+static double stage_filesystem_bandwidth(int stage)
+{
+    struct stage_definition *stage_def = global_stage_definition(stage);
+    if (stage_def)
+        return stage_def->b_fs;
+    return global_config ? global_config->b_fs : 0.0;
+}
+
+static double worker_recorded_time(struct worker *w)
+{
+    double total = 0.0;
+    if (!w)
+        return 0.0;
+
+    for (int j = 0; j < w->sizeWorker; ++j)
+    {
+        total += w->trace[j].service_time_c;
+        total += w->trace[j].service_time_h;
+        total += w->trace[j].service_time_idx;
+        total += w->trace[j].service_time_ida;
+        total += w->trace[j].service_time_io;
+    }
+
+    return total;
+}
+
+static void add_worker_stage_processing_time(struct worker *w, int stage, int is_input, double seconds)
+{
+    int idx = stage - 1;
+    if (!w || idx < 0 || idx >= MAX_STAGES || seconds <= 0.0)
+        return;
+
+    if (is_input)
+        w->stage_input_time[idx] += seconds;
+    else
+        w->stage_output_time[idx] += seconds;
+}
+
+static void add_worker_stage_nfr_time(struct worker *w, int stage, int task_type, int is_input, double seconds)
+{
+    int idx = stage - 1;
+    if (!w || idx < 0 || idx >= MAX_STAGES || task_type <= NFR_NONE || task_type >= NFR_COUNT || seconds <= 0.0)
+        return;
+
+    if (is_input)
+        w->stage_nfr_input_time[idx][task_type] += seconds;
+    else
+        w->stage_nfr_output_time[idx][task_type] += seconds;
+}
+
+static void add_worker_stage_requirement_metrics(struct worker *w, int stage, int task_id, int is_input, double seconds, long input_size, long output_size)
+{
+    int idx = stage - 1;
+    if (!w || idx < 0 || idx >= MAX_STAGES || task_id < 0 || task_id >= MAX_PIPELINE_TASKS)
+        return;
+
+    if (is_input)
+    {
+        if (seconds > 0.0)
+            w->stage_input_requirement_time[idx][task_id] += seconds;
+        w->stage_input_requirement_input_size[idx][task_id] = input_size;
+        w->stage_input_requirement_output_size[idx][task_id] = output_size;
+    }
+    else
+    {
+        if (seconds > 0.0)
+            w->stage_output_requirement_time[idx][task_id] += seconds;
+        w->stage_output_requirement_input_size[idx][task_id] = input_size;
+        w->stage_output_requirement_output_size[idx][task_id] = output_size;
+    }
+}
+
+static void add_worker_stage_transfer_time(struct worker *w, int stage, double seconds)
+{
+    int idx = stage - 1;
+    if (!w || idx < 0 || idx >= MAX_STAGES || seconds <= 0.0)
+        return;
+
+    w->stage_transfer_time[idx] += seconds;
+}
+
+static void record_worker_stage_input_size(struct worker *w, int stage)
+{
+    int idx = stage - 1;
+    if (!w || idx < 0 || idx >= MAX_STAGES)
+        return;
+
+    w->stage_input_size[idx] = w->sizeStorage;
+}
+
+static void record_worker_stage_output_size(struct worker *w, int stage)
+{
+    int idx = stage - 1;
+    if (!w || idx < 0 || idx >= MAX_STAGES)
+        return;
+
+    w->stage_output_size[idx] = w->sizeStorage;
+    w->output_workload_size = w->sizeStorage;
 }
 
 /* Compute network transfer time (seconds) for transferring worker's data from machine `from_mid` to `to_mid`.
@@ -87,152 +285,447 @@ static double compute_network_transfer_time(struct worker *w, int from_mid, int 
     return t_transfer + t_latency;
 }
 
-static void *nfr_worker_thread(void *arg)
+static int parse_stage_identifier(const char *value)
 {
-        struct nfr_manager *m = (struct nfr_manager *)arg;
+    if (!value || value[0] == '\0')
+        return 0;
 
-        while (1)
+    if (strncmp(value, "stage", 5) == 0)
+        return atoi(value + 5);
+
+    char *endptr = NULL;
+    long numeric_id = strtol(value, &endptr, 10);
+    if (endptr != value && *endptr == '\0' && numeric_id > 0 && numeric_id <= 10)
+        return (int)numeric_id;
+
+    /* Backward compatibility with older configs where operation names were used as stage names. */
+    if (strcmp(value, "compress") == 0)
+        return 1;
+    if (strcmp(value, "hashing") == 0)
+        return 2;
+    if (strcmp(value, "indexing") == 0)
+        return 3;
+    if (strcmp(value, "dispersal") == 0)
+        return 4;
+    if (strcmp(value, "upload") == 0)
+        return 5;
+
+    return 0;
+}
+
+static void init_stage_definition(struct config *configuration, int index, int stage, const char *name)
+{
+    struct stage_definition *stage_def = &configuration->stage_definitions[index];
+    memset(stage_def, 0, sizeof(*stage_def));
+    stage_def->stage = stage;
+    stage_def->b_fs = configuration ? configuration->b_fs : 0.0;
+    if (name && name[0] != '\0')
+    {
+        strncpy(stage_def->name, name, sizeof(stage_def->name) - 1);
+        stage_def->name[sizeof(stage_def->name) - 1] = '\0';
+    }
+    else
+    {
+        snprintf(stage_def->name, sizeof(stage_def->name), "stage%d", stage);
+    }
+}
+
+static void parse_stage_filesystem_bandwidth(cJSON *stage, struct stage_definition *stage_def)
+{
+    if (!stage || !stage_def)
+        return;
+
+    cJSON *bfs = cJSON_GetObjectItemCaseSensitive(stage, "b_fs");
+    if (cJSON_IsNumber(bfs))
+    {
+        /* Stage-level b_fs follows the global config convention: MB/s. */
+        stage_def->b_fs = bfs->valuedouble * 1048576.0;
+        return;
+    }
+
+    cJSON *bfs_bytes = cJSON_GetObjectItemCaseSensitive(stage, "b_fs_bytes");
+    if (!cJSON_IsNumber(bfs_bytes))
+        bfs_bytes = cJSON_GetObjectItemCaseSensitive(stage, "b_fs_bytes_per_sec");
+    if (cJSON_IsNumber(bfs_bytes))
+        stage_def->b_fs = bfs_bytes->valuedouble;
+}
+
+static int add_requirement_to_pipeline(struct config *configuration, struct nfr_requirement *pipeline, int *count, int type, const char *algorithm, int is_input)
+{
+    if (!pipeline || !count || *count >= MAX_PIPELINE_TASKS || type == NFR_NONE)
+        return -1;
+
+    const char *selected_algorithm = (algorithm && algorithm[0]) ? algorithm : default_algorithm_for_type(configuration, type);
+    fill_requirement(&pipeline[*count], type, selected_algorithm, is_input);
+    (*count)++;
+    return 0;
+}
+
+static void add_default_output_requirements(struct config *configuration, struct stage_definition *stage_def)
+{
+    if (!configuration || !stage_def || stage_def->output_count > 0)
+        return;
+
+    add_requirement_to_pipeline(configuration, stage_def->output_requirements, &stage_def->output_count, NFR_COMPRESS, NULL, 0);
+    add_requirement_to_pipeline(configuration, stage_def->output_requirements, &stage_def->output_count, NFR_ENCRYPT, NULL, 0);
+    add_requirement_to_pipeline(configuration, stage_def->output_requirements, &stage_def->output_count, NFR_HASH, NULL, 0);
+}
+
+static void parse_requirement_item(struct config *configuration, cJSON *item, struct stage_definition *stage_def, int is_input)
+{
+    int type = NFR_NONE;
+    const char *algorithm = NULL;
+
+    if (!item || !stage_def)
+        return;
+
+    if (cJSON_IsString(item) && item->valuestring)
+    {
+        type = parse_requirement_type(item->valuestring);
+    }
+    else if (cJSON_IsObject(item))
+    {
+        cJSON *type_item = cJSON_GetObjectItemCaseSensitive(item, "type");
+        if (!cJSON_IsString(type_item))
+            type_item = cJSON_GetObjectItemCaseSensitive(item, "name");
+        if (!cJSON_IsString(type_item))
+            type_item = cJSON_GetObjectItemCaseSensitive(item, "requirement");
+
+        cJSON *algo_item = cJSON_GetObjectItemCaseSensitive(item, "algorithm");
+        if (!cJSON_IsString(algo_item))
+            algo_item = cJSON_GetObjectItemCaseSensitive(item, "algo");
+        if (!cJSON_IsString(algo_item))
+            algo_item = cJSON_GetObjectItemCaseSensitive(item, "cipherer");
+
+        if (cJSON_IsString(type_item) && type_item->valuestring)
+            type = parse_requirement_type(type_item->valuestring);
+        else if (cJSON_IsString(algo_item) && algo_item->valuestring)
+            type = NFR_ENCRYPT;
+
+        if (cJSON_IsString(algo_item) && algo_item->valuestring)
+            algorithm = algo_item->valuestring;
+    }
+
+    if (is_input)
+        add_requirement_to_pipeline(configuration, stage_def->input_requirements, &stage_def->input_count, type, algorithm, 1);
+    else
+        add_requirement_to_pipeline(configuration, stage_def->output_requirements, &stage_def->output_count, type, algorithm, 0);
+}
+
+static int parse_requirements_array(struct config *configuration, cJSON *array, struct stage_definition *stage_def, int is_input)
+{
+    if (!cJSON_IsArray(array) || !stage_def)
+        return 0;
+
+    if (is_input)
+    {
+        stage_def->input_count = 0;
+        stage_def->input_explicit = 1;
+    }
+    else
+    {
+        stage_def->output_count = 0;
+    }
+
+    cJSON *item;
+    cJSON_ArrayForEach(item, array)
+    {
+        parse_requirement_item(configuration, item, stage_def, is_input);
+    }
+
+    return 1;
+}
+
+static void mirror_output_to_input(struct config *configuration, struct stage_definition *source, struct stage_definition *target)
+{
+    if (!configuration || !source || !target)
+        return;
+
+    target->input_count = 0;
+    for (int out = source->output_count - 1; out >= 0; --out)
+    {
+        struct nfr_requirement *req = &source->output_requirements[out];
+        add_requirement_to_pipeline(configuration, target->input_requirements, &target->input_count, req->type, req->algorithm, 1);
+    }
+}
+
+static void finalize_stage_pipelines(struct config *configuration)
+{
+    if (!configuration)
+        return;
+
+    for (int si = 0; si < configuration->stages_number; ++si)
+    {
+        struct stage_definition *stage_def = &configuration->stage_definitions[si];
+        if (si == 0)
         {
-            pthread_mutex_lock(&m->lock);
-            while (m->q_count == 0 && !m->stop)
-                pthread_cond_wait(&m->cond_nonempty, &m->lock);
+            if (!stage_def->input_explicit)
+                mirror_output_to_input(configuration, stage_def, stage_def);
+        }
+        else
+        {
+            mirror_output_to_input(configuration, &configuration->stage_definitions[si - 1], stage_def);
+        }
+    }
+}
 
-            if (m->stop && m->q_count == 0)
+static int configured_stage_position(int stage)
+{
+    if (!global_config)
+        return -1;
+
+    for (int si = 0; si < global_config->stages_number; ++si)
+    {
+        if (global_config->stages[si] == stage)
+            return si;
+    }
+
+    return -1;
+}
+
+static int stage_machine_id(int stage)
+{
+    if (!global_config)
+        return -1;
+
+    for (int mid = 0; mid < global_config->machines_number; ++mid)
+    {
+        for (int s = 0; s < global_config->machines[mid].stages_number; ++s)
+        {
+            if (global_config->machines[mid].stages[s] == stage)
+                return mid;
+        }
+    }
+
+    return -1;
+}
+
+static void set_worker_task_context(struct worker *w, const struct nfr_manager *m)
+{
+    if (!w || !m)
+        return;
+
+    w->stage = m->stage;
+    w->stage_owner = m->stage;
+    w->pipeline_is_input = m->is_input ? 1 : 0;
+    w->task_id = m->task_id;
+    w->task_type = m->task_type;
+    strncpy(w->task_name, m->task_name, sizeof(w->task_name) - 1);
+    w->task_name[sizeof(w->task_name) - 1] = '\0';
+    strncpy(w->task_algorithm, m->task_algorithm, sizeof(w->task_algorithm) - 1);
+    w->task_algorithm[sizeof(w->task_algorithm) - 1] = '\0';
+    strncpy(w->agent_type, m->is_input ? "input" : "output", sizeof(w->agent_type) - 1);
+    w->agent_type[sizeof(w->agent_type) - 1] = '\0';
+    w->b_fs = stage_filesystem_bandwidth(m->stage);
+
+    int mid = stage_machine_id(m->stage);
+    if (mid >= 0)
+        w->machine_id = mid;
+}
+
+static int enqueue_pipeline_task(int stage, int is_input, int task_id, struct worker *w)
+{
+    int idx = stage - 1;
+    struct stage_definition *stage_def = global_stage_definition(stage);
+    if (idx < 0 || idx >= 10 || !w)
+        return -1;
+
+    if (is_input)
+    {
+        if (!stage_def || task_id < 0 || task_id >= stage_def->input_count || nfr_managers_in[idx][task_id].threads == NULL)
+            return -1;
+        return nfr_manager_enqueue(&nfr_managers_in[idx][task_id], w);
+    }
+
+    if (!stage_def || task_id < 0 || task_id >= stage_def->output_count || nfr_managers_out[idx][task_id].threads == NULL)
+        return -1;
+    return nfr_manager_enqueue(&nfr_managers_out[idx][task_id], w);
+}
+
+static int enqueue_stage_start(int stage, struct worker *w);
+
+static void advance_to_next_stage_or_finish(int current_stage, struct worker *w)
+{
+    if (!global_config || !w)
+    {
+        dec_outstanding();
+        return;
+    }
+
+    record_worker_stage_output_size(w, current_stage);
+
+    int found = configured_stage_position(current_stage);
+    if (found < 0 || found + 1 >= global_config->stages_number)
+    {
+        dec_outstanding();
+        return;
+    }
+
+    int next_stage = global_config->stages[found + 1];
+    int from_mid = w->machine_id;
+    int to_mid = stage_machine_id(next_stage);
+
+    double net_t = compute_network_transfer_time(w, from_mid, to_mid);
+    if (net_t > 0.0)
+    {
+        add_worker_stage_transfer_time(w, current_stage, net_t);
+        double total = (double)w->sizeStorage;
+        if (total > 0.0)
+        {
+            for (int tj = 0; tj < w->sizeWorker; ++tj)
             {
-                pthread_mutex_unlock(&m->lock);
-                break;
-            }
-
-            /* dequeue */
-            struct nfr_job job = m->queue[m->q_head];
-            m->q_head = (m->q_head + 1) % m->q_size;
-            m->q_count--;
-            pthread_cond_signal(&m->cond_nonfull);
-            pthread_mutex_unlock(&m->lock);
-
-            if (job.w)
-            {
-                /* set worker stage and process */
-                job.w->stage = m->stage;
-                struct timespec t0, t1;
-                clock_gettime(CLOCK_MONOTONIC, &t0);
-
-                serviceTime(job.w);
-
-                clock_gettime(CLOCK_MONOTONIC, &t1);
-                double elapsed = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1e9;
-
-                /* update manager metrics */
-                pthread_mutex_lock(&m->lock);
-                m->jobs_processed += 1;
-                m->total_processing_time += elapsed;
-                pthread_mutex_unlock(&m->lock);
-
-                /* If this was the input pipeline, forward job to output pipeline of same stage */
-                if (m->is_input)
-                {
-                    int idx = m->stage - 1;
-                    if (idx >= 0 && idx < 10)
-                    {
-                        /* best-effort enqueue to output manager */
-                        nfr_manager_enqueue(&nfr_managers_out[idx], job.w);
-                    }
-                }
-                else
-                {
-                    /* Output pipeline finished: chain to next configured stage (if any) */
-                    if (global_config != NULL)
-                    {
-                        /* find current stage index in configuration->stages */
-                        int found = -1;
-                        for (int si = 0; si < global_config->stages_number; ++si)
-                        {
-                            if (global_config->stages[si] == m->stage)
-                            {
-                                found = si;
-                                break;
-                            }
-                        }
-                        if (found >= 0 && found + 1 < global_config->stages_number)
-                        {
-                            int nextStage = global_config->stages[found + 1];
-                            int nidx = nextStage - 1;
-                            if (nidx >= 0 && nidx < 10 && nfr_managers_in[nidx].threads != NULL)
-                            {
-                                /* compute network transfer time if machines differ */
-                                int from_mid = job.w->machine_id;
-                                int to_mid = -1;
-                                /* find machine hosting nextStage */
-                                for (int mm = 0; mm < global_config->machines_number; ++mm)
-                                {
-                                    for (int s = 0; s < global_config->machines[mm].stages_number; ++s)
-                                    {
-                                        if (global_config->machines[mm].stages[s] == nextStage)
-                                        {
-                                            to_mid = mm;
-                                            break;
-                                        }
-                                    }
-                                    if (to_mid >= 0) break;
-                                }
-
-                                double net_t = compute_network_transfer_time(job.w, from_mid, to_mid);
-                                if (net_t > 0.0)
-                                {
-                                    /* distribute network time across traces proportionally */
-                                    double total = (double)job.w->sizeStorage;
-                                    if (total > 0.0)
-                                    {
-                                        for (int tj = 0; tj < job.w->sizeWorker; ++tj)
-                                        {
-                                            double frac = (double)job.w->trace[tj].size / total;
-                                            job.w->trace[tj].service_time_io += (float)(net_t * frac);
-                                        }
-                                    }
-
-                                    /* update link metrics if a matching link exists (only if from/to machine indices valid) */
-                                    if (from_mid >= 0 && to_mid >= 0 && from_mid < global_config->machines_number && to_mid < global_config->machines_number)
-                                    {
-                                        const char *from_name = global_config->machines[from_mid].name;
-                                        const char *to_name = global_config->machines[to_mid].name;
-                                        pthread_mutex_lock(&link_stats_lock);
-                                        for (int li = 0; li < global_config->links_number; ++li)
-                                        {
-                                            if ((strcmp(global_config->links[li].from, from_name) == 0 && strcmp(global_config->links[li].to, to_name) == 0) ||
-                                                (strcmp(global_config->links[li].from, to_name) == 0 && strcmp(global_config->links[li].to, from_name) == 0))
-                                            {
-                                                global_config->links[li].bytes_transferred += (double)job.w->sizeStorage;
-                                                global_config->links[li].transfers_count += 1;
-                                                global_config->links[li].total_transfer_time += net_t;
-                                                break;
-                                            }
-                                        }
-                                        pthread_mutex_unlock(&link_stats_lock);
-                                    }
-
-                                    /* simulate transfer delay */
-                                    usleep((useconds_t)(net_t * 1e6));
-                                }
-
-                                nfr_manager_enqueue(&nfr_managers_in[nidx], job.w);
-                            }
-                        }
-                        else
-                        {
-                            /* no next stage: this is final output, decrement outstanding jobs */
-                            dec_outstanding();
-                        }
-                    }
-                }
+                double frac = (double)w->trace[tj].size / total;
+                w->trace[tj].service_time_io += (float)(net_t * frac);
             }
         }
 
-        return NULL;
+        if (from_mid >= 0 && to_mid >= 0 && from_mid < global_config->machines_number && to_mid < global_config->machines_number)
+        {
+            const char *from_name = global_config->machines[from_mid].name;
+            const char *to_name = global_config->machines[to_mid].name;
+            pthread_mutex_lock(&link_stats_lock);
+            for (int li = 0; li < global_config->links_number; ++li)
+            {
+                if ((strcmp(global_config->links[li].from, from_name) == 0 && strcmp(global_config->links[li].to, to_name) == 0) ||
+                    (strcmp(global_config->links[li].from, to_name) == 0 && strcmp(global_config->links[li].to, from_name) == 0))
+                {
+                    global_config->links[li].bytes_transferred += (double)w->sizeStorage;
+                    global_config->links[li].transfers_count += 1;
+                    global_config->links[li].total_transfer_time += net_t;
+                    break;
+                }
+            }
+            pthread_mutex_unlock(&link_stats_lock);
+        }
+
+        //usleep((useconds_t)(net_t * 1e6));
     }
 
-int nfr_manager_init(struct nfr_manager *m, int stage, int num_threads, int q_size, int is_input)
+    if (to_mid >= 0)
+        w->machine_id = to_mid;
+    w->stage_owner = next_stage;
+
+    if (enqueue_stage_start(next_stage, w) != 0)
+        dec_outstanding();
+}
+
+static int enqueue_stage_start(int stage, struct worker *w)
+{
+    struct stage_definition *stage_def = global_stage_definition(stage);
+    if (!stage_def || !w)
+        return -1;
+
+    w->b_fs = stage_def->b_fs;
+    record_worker_stage_input_size(w, stage);
+
+    if (stage_def->input_count > 0)
+        return enqueue_pipeline_task(stage, 1, 0, w);
+
+    if (stage_def->output_count > 0)
+        return enqueue_pipeline_task(stage, 0, 0, w);
+
+    advance_to_next_stage_or_finish(stage, w);
+    return 0;
+}
+
+static void *nfr_worker_thread(void *arg)
+{
+    struct nfr_manager *m = (struct nfr_manager *)arg;
+
+    while (1)
+    {
+        pthread_mutex_lock(&m->lock);
+        while (m->q_count == 0 && !m->stop)
+            pthread_cond_wait(&m->cond_nonempty, &m->lock);
+
+        if (m->stop && m->q_count == 0)
+        {
+            pthread_mutex_unlock(&m->lock);
+            break;
+        }
+
+        struct nfr_job job = m->queue[m->q_head];
+        m->q_head = (m->q_head + 1) % m->q_size;
+        m->q_count--;
+        pthread_cond_signal(&m->cond_nonfull);
+        pthread_mutex_unlock(&m->lock);
+
+        if (!job.w)
+            continue;
+
+        set_worker_task_context(job.w, m);
+
+        struct timespec t0, t1;
+        long requirement_input_size = job.w->sizeStorage;
+        double recorded_before = worker_recorded_time(job.w);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+
+        serviceTime(job.w);
+
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        long requirement_output_size = job.w->sizeStorage;
+        double recorded_after = worker_recorded_time(job.w);
+        double simulated_delta = recorded_after - recorded_before;
+        add_worker_stage_processing_time(job.w, m->stage, m->is_input, simulated_delta);
+        add_worker_stage_nfr_time(job.w, m->stage, m->task_type, m->is_input, simulated_delta);
+        add_worker_stage_requirement_metrics(job.w, m->stage, m->task_id, m->is_input, simulated_delta, requirement_input_size, requirement_output_size);
+        double elapsed = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1e9;
+
+        pthread_mutex_lock(&m->lock);
+        m->jobs_processed += 1;
+        m->total_processing_time += elapsed;
+        pthread_mutex_unlock(&m->lock);
+
+        if (m->is_input)
+        {
+            struct stage_definition *stage_def = global_stage_definition(m->stage);
+            int input_count = stage_def ? stage_def->input_count : 0;
+            int output_count = stage_def ? stage_def->output_count : 0;
+
+            if (m->task_id + 1 < input_count)
+            {
+                if (enqueue_pipeline_task(m->stage, 1, m->task_id + 1, job.w) != 0)
+                    dec_outstanding();
+            }
+            else if (output_count > 0)
+            {
+                if (enqueue_pipeline_task(m->stage, 0, 0, job.w) != 0)
+                    dec_outstanding();
+            }
+            else
+            {
+                advance_to_next_stage_or_finish(m->stage, job.w);
+            }
+        }
+        else
+        {
+            struct stage_definition *stage_def = global_stage_definition(m->stage);
+            int output_count = stage_def ? stage_def->output_count : 0;
+
+            if (m->task_id + 1 < output_count)
+            {
+                if (enqueue_pipeline_task(m->stage, 0, m->task_id + 1, job.w) != 0)
+                    dec_outstanding();
+            }
+            else
+            {
+                advance_to_next_stage_or_finish(m->stage, job.w);
+            }
+        }
+    }
+
+    return NULL;
+}
+
+int nfr_manager_init(struct nfr_manager *m, int stage, int task_id, int task_type, const char *task_name, const char *task_algorithm, int num_threads, int q_size, int is_input)
 {
     m->stage = stage;
+    m->task_id = task_id;
+    m->task_type = task_type;
+    strncpy(m->task_name, task_name ? task_name : "task", sizeof(m->task_name) - 1);
+    m->task_name[sizeof(m->task_name) - 1] = '\0';
+    strncpy(m->task_algorithm, task_algorithm ? task_algorithm : "", sizeof(m->task_algorithm) - 1);
+    m->task_algorithm[sizeof(m->task_algorithm) - 1] = '\0';
     m->num_threads = num_threads > 0 ? num_threads : 1;
     m->q_size = q_size > 0 ? q_size : 1024;
     m->queue = malloc(sizeof(struct nfr_job) * m->q_size);
@@ -257,7 +750,13 @@ int nfr_manager_init(struct nfr_manager *m, int stage, int num_threads, int q_si
 int nfr_manager_enqueue(struct nfr_manager *m, struct worker *w)
 {
     if (!m || !w) return -1;
-    printf("[ENQUEUE] Stage %d %s worker %d\n", m->stage, m->is_input ? "IN" : "OUT", w->id);
+    printf("[ENQUEUE] Stage %d %s task %d (%s:%s) worker %d\n",
+           m->stage,
+           m->is_input ? "IN" : "OUT",
+           m->task_id,
+           m->task_name,
+           m->task_algorithm,
+           w->id);
     pthread_mutex_lock(&m->lock);
     while (m->q_count == m->q_size && !m->stop)
         pthread_cond_wait(&m->cond_nonfull, &m->lock);
@@ -287,9 +786,22 @@ void nfr_manager_shutdown(struct nfr_manager *m)
 
     free(m->threads);
     free(m->queue);
+    m->threads = NULL;
+    m->queue = NULL;
     pthread_mutex_destroy(&m->lock);
     pthread_cond_destroy(&m->cond_nonempty);
     pthread_cond_destroy(&m->cond_nonfull);
+}
+
+static FILE *open_report_csv(const char *file_name)
+{
+    char path[256];
+    mkdir("results", 0777);
+    snprintf(path, sizeof(path), "results/%s", file_name);
+    FILE *fp = fopen(path, "w");
+    if (!fp)
+        printf("Warning: could not open %s for writing\n", path);
+    return fp;
 }
 
 void shutdown_and_report_metrics(struct config *configuration)
@@ -301,23 +813,30 @@ void shutdown_and_report_metrics(struct config *configuration)
     for (int si = 0; si < configuration->stages_number; ++si)
     {
         int sn = configuration->stages[si] - 1;
+        struct stage_definition *stage_def = &configuration->stage_definitions[si];
         if (sn >= 0 && sn < 10)
         {
-            if (nfr_managers_in[sn].threads)
+            for (int task = 0; task < stage_def->input_count; ++task)
             {
-                pthread_mutex_lock(&nfr_managers_in[sn].lock);
-                nfr_managers_in[sn].stop = 1;
-                pthread_cond_broadcast(&nfr_managers_in[sn].cond_nonempty);
-                pthread_cond_broadcast(&nfr_managers_in[sn].cond_nonfull);
-                pthread_mutex_unlock(&nfr_managers_in[sn].lock);
+                if (nfr_managers_in[sn][task].threads)
+                {
+                    pthread_mutex_lock(&nfr_managers_in[sn][task].lock);
+                    nfr_managers_in[sn][task].stop = 1;
+                    pthread_cond_broadcast(&nfr_managers_in[sn][task].cond_nonempty);
+                    pthread_cond_broadcast(&nfr_managers_in[sn][task].cond_nonfull);
+                    pthread_mutex_unlock(&nfr_managers_in[sn][task].lock);
+                }
             }
-            if (nfr_managers_out[sn].threads)
+            for (int task = 0; task < stage_def->output_count; ++task)
             {
-                pthread_mutex_lock(&nfr_managers_out[sn].lock);
-                nfr_managers_out[sn].stop = 1;
-                pthread_cond_broadcast(&nfr_managers_out[sn].cond_nonempty);
-                pthread_cond_broadcast(&nfr_managers_out[sn].cond_nonfull);
-                pthread_mutex_unlock(&nfr_managers_out[sn].lock);
+                if (nfr_managers_out[sn][task].threads)
+                {
+                    pthread_mutex_lock(&nfr_managers_out[sn][task].lock);
+                    nfr_managers_out[sn][task].stop = 1;
+                    pthread_cond_broadcast(&nfr_managers_out[sn][task].cond_nonempty);
+                    pthread_cond_broadcast(&nfr_managers_out[sn][task].cond_nonfull);
+                    pthread_mutex_unlock(&nfr_managers_out[sn][task].lock);
+                }
             }
         }
     }
@@ -326,65 +845,152 @@ void shutdown_and_report_metrics(struct config *configuration)
     for (int si = 0; si < configuration->stages_number; ++si)
     {
         int sn = configuration->stages[si] - 1;
+        struct stage_definition *stage_def = &configuration->stage_definitions[si];
         if (sn >= 0 && sn < 10)
         {
-            if (nfr_managers_in[sn].threads) nfr_manager_shutdown(&nfr_managers_in[sn]);
-            if (nfr_managers_out[sn].threads) nfr_manager_shutdown(&nfr_managers_out[sn]);
+            for (int task = 0; task < stage_def->input_count; ++task)
+            {
+                if (nfr_managers_in[sn][task].threads)
+                    nfr_manager_shutdown(&nfr_managers_in[sn][task]);
+            }
+            for (int task = 0; task < stage_def->output_count; ++task)
+            {
+                if (nfr_managers_out[sn][task].threads)
+                    nfr_manager_shutdown(&nfr_managers_out[sn][task]);
+            }
         }
     }
 
     printf("\n=== Manager Metrics ===\n");
+    FILE *manager_csv = open_report_csv("manager_metrics.csv");
+    if (manager_csv)
+        fprintf(manager_csv, "stage,stage_name,pipeline,task_index,task_name,algorithm,jobs,total_seconds,avg_job_seconds\n");
     for (int si = 0; si < configuration->stages_number; ++si)
     {
         int sn = configuration->stages[si] - 1;
+        struct stage_definition *stage_def = &configuration->stage_definitions[si];
         if (sn >= 0 && sn < 10)
         {
-            long in_jobs = nfr_managers_in[sn].jobs_processed;
-            double in_time = nfr_managers_in[sn].total_processing_time;
-            double in_avg = (in_jobs > 0) ? (in_time / (double)in_jobs) : 0.0;
+            long combined_jobs = 0;
+            double combined_time = 0.0;
 
-            long out_jobs = nfr_managers_out[sn].jobs_processed;
-            double out_time = nfr_managers_out[sn].total_processing_time;
-            double out_avg = (out_jobs > 0) ? (out_time / (double)out_jobs) : 0.0;
+            for (int task = 0; task < stage_def->input_count; ++task)
+            {
+                long jobs = nfr_managers_in[sn][task].jobs_processed;
+                double time = nfr_managers_in[sn][task].total_processing_time;
+                double avg = (jobs > 0) ? (time / (double)jobs) : 0.0;
+                combined_jobs += jobs;
+                combined_time += time;
+                printf("Stage %d IN task %d (%s:%s): jobs=%ld total_time=%f s avg_per_job=%f s\n",
+                       configuration->stages[si],
+                       task,
+                       nfr_managers_in[sn][task].task_name,
+                       nfr_managers_in[sn][task].task_algorithm,
+                       jobs,
+                       time,
+                       avg);
+                if (manager_csv)
+                    fprintf(manager_csv, "%d,%s,input,%d,%s,%s,%ld,%f,%f\n",
+                            configuration->stages[si],
+                            stage_def->name,
+                            task,
+                            nfr_managers_in[sn][task].task_name,
+                            nfr_managers_in[sn][task].task_algorithm,
+                            jobs,
+                            time,
+                            avg);
+            }
 
-            double combined_time = in_time + out_time;
-            long combined_jobs = in_jobs + out_jobs;
+            for (int task = 0; task < stage_def->output_count; ++task)
+            {
+                long jobs = nfr_managers_out[sn][task].jobs_processed;
+                double time = nfr_managers_out[sn][task].total_processing_time;
+                double avg = (jobs > 0) ? (time / (double)jobs) : 0.0;
+                combined_jobs += jobs;
+                combined_time += time;
+                printf("Stage %d OUT task %d (%s:%s): jobs=%ld total_time=%f s avg_per_job=%f s\n",
+                       configuration->stages[si],
+                       task,
+                       nfr_managers_out[sn][task].task_name,
+                       nfr_managers_out[sn][task].task_algorithm,
+                       jobs,
+                       time,
+                       avg);
+                if (manager_csv)
+                    fprintf(manager_csv, "%d,%s,output,%d,%s,%s,%ld,%f,%f\n",
+                            configuration->stages[si],
+                            stage_def->name,
+                            task,
+                            nfr_managers_out[sn][task].task_name,
+                            nfr_managers_out[sn][task].task_algorithm,
+                            jobs,
+                            time,
+                            avg);
+            }
+
             double combined_avg = (combined_jobs > 0) ? (combined_time / (double)combined_jobs) : 0.0;
 
-            printf("Stage %d IN: jobs=%ld total_time=%f s avg_per_job=%f s\n", configuration->stages[si], in_jobs, in_time, in_avg);
-            printf("Stage %d OUT: jobs=%ld total_time=%f s avg_per_job=%f s\n", configuration->stages[si], out_jobs, out_time, out_avg);
             printf("Stage %d COMBINED: jobs=%ld total_time=%f s avg_per_job=%f s\n", configuration->stages[si], combined_jobs, combined_time, combined_avg);
+            if (manager_csv)
+                fprintf(manager_csv, "%d,%s,combined,-1,combined,,%ld,%f,%f\n",
+                        configuration->stages[si],
+                        stage_def->name,
+                        combined_jobs,
+                        combined_time,
+                        combined_avg);
         }
     }
+    if (manager_csv)
+        fclose(manager_csv);
 
     printf("\n=== Link Metrics ===\n");
+    FILE *link_csv = open_report_csv("link_metrics.csv");
+    if (link_csv)
+        fprintf(link_csv, "from,to,transfers,bytes,total_seconds\n");
     for (int li = 0; li < configuration->links_number; ++li)
     {
         printf("Link %s->%s transfers=%d bytes=%f total_time=%f s\n", configuration->links[li].from, configuration->links[li].to, configuration->links[li].transfers_count, configuration->links[li].bytes_transferred, configuration->links[li].total_transfer_time);
+        if (link_csv)
+            fprintf(link_csv, "%s,%s,%d,%f,%f\n",
+                    configuration->links[li].from,
+                    configuration->links[li].to,
+                    configuration->links[li].transfers_count,
+                    configuration->links[li].bytes_transferred,
+                    configuration->links[li].total_transfer_time);
     }
+    if (link_csv)
+        fclose(link_csv);
 }
 
 /* Wait until all NFR manager queues are drained or timeout (seconds). */
 int wait_for_managers_empty(struct config *configuration, int timeout_seconds)
 {
     if (!configuration) return -1;
-    int waited = 0;
+    int waited_ms = 0;
+    int timeout_ms = timeout_seconds * 1000;
     int stable_count = 0;
     long last_total = -1;
-    while (waited < timeout_seconds)
+    while (waited_ms < timeout_ms)
     {
         long total_q = 0;
         for (int si = 0; si < configuration->stages_number; ++si)
         {
             int sn = configuration->stages[si] - 1;
+            struct stage_definition *stage_def = &configuration->stage_definitions[si];
             if (sn >= 0 && sn < 10)
             {
-                pthread_mutex_lock(&nfr_managers_in[sn].lock);
-                total_q += nfr_managers_in[sn].q_count;
-                pthread_mutex_unlock(&nfr_managers_in[sn].lock);
-                pthread_mutex_lock(&nfr_managers_out[sn].lock);
-                total_q += nfr_managers_out[sn].q_count;
-                pthread_mutex_unlock(&nfr_managers_out[sn].lock);
+                for (int task = 0; task < stage_def->input_count; ++task)
+                {
+                    pthread_mutex_lock(&nfr_managers_in[sn][task].lock);
+                    total_q += nfr_managers_in[sn][task].q_count;
+                    pthread_mutex_unlock(&nfr_managers_in[sn][task].lock);
+                }
+                for (int task = 0; task < stage_def->output_count; ++task)
+                {
+                    pthread_mutex_lock(&nfr_managers_out[sn][task].lock);
+                    total_q += nfr_managers_out[sn][task].q_count;
+                    pthread_mutex_unlock(&nfr_managers_out[sn][task].lock);
+                }
             }
         }
         if (total_q == 0)
@@ -407,7 +1013,7 @@ int wait_for_managers_empty(struct config *configuration, int timeout_seconds)
             stable_count = 0;
         }
         usleep(100 * 1000); /* 100 ms */
-        waited += 0.1;
+        waited_ms += 100;
     }
     return -1; /* timeout */
 }
@@ -448,7 +1054,7 @@ void error(const char *s)
  */
 char agent_container_prefix[32] = "output_agent";
 
-struct config *read_config(char *file_name)
+struct config *read_config(const char *file_name)
 {
     FILE *file;
     struct config *configuration;
@@ -457,8 +1063,13 @@ struct config *read_config(char *file_name)
     cJSON *json, *workers, *traces_number, *traces_fileName, *agent_type, *stages, *stage;
 
     configuration = malloc(sizeof(struct config));
+    if (!configuration)
+        error("Memory allocation failed for configuration");
+    memset(configuration, 0, sizeof(struct config));
     configuration->stages_number = 0;
     configuration->traces_fileName = malloc((255) * sizeof(char));
+    if (!configuration->traces_fileName)
+        error("Memory allocation failed for traces file name");
     strcpy(configuration->agent_type, "output");
 
     file = fopen(file_name, "rb"); //< Read file
@@ -564,43 +1175,78 @@ struct config *read_config(char *file_name)
     } else {
         configuration->b_fs = 100.0 * 1048576.0; // Default 100 MB/s
     }
-    {
-        configuration->b_fs = 104857600.0; // Default 100 MB/s
-    }
 
     stages = cJSON_GetObjectItemCaseSensitive(json, "stages");
     if (cJSON_IsArray(stages))
     {
         cJSON_ArrayForEach(stage, stages)
         {
-            if (cJSON_IsString(stage) && configuration->stages_number < 10)
+            if (configuration->stages_number >= MAX_STAGES)
+                break;
+
+            if (cJSON_IsString(stage) && stage->valuestring)
             {
-                if (strcmp(stage->valuestring, "compress") == 0)
+                int parsed_stage = parse_stage_identifier(stage->valuestring);
+                if (parsed_stage > 0 && parsed_stage <= 10)
                 {
-                    configuration->stages[configuration->stages_number++] = 1;
+                    int si = configuration->stages_number;
+                    configuration->stages[configuration->stages_number++] = parsed_stage;
+                    init_stage_definition(configuration, si, parsed_stage, stage->valuestring);
+                    add_default_output_requirements(configuration, &configuration->stage_definitions[si]);
                 }
-                else if (strcmp(stage->valuestring, "hashing") == 0)
+            }
+            else if (cJSON_IsObject(stage))
+            {
+                cJSON *name = cJSON_GetObjectItemCaseSensitive(stage, "name");
+                cJSON *id = cJSON_GetObjectItemCaseSensitive(stage, "id");
+                const char *stage_name = NULL;
+                int parsed_stage = 0;
+
+                if (cJSON_IsString(name) && name->valuestring)
                 {
-                    configuration->stages[configuration->stages_number++] = 2;
+                    stage_name = name->valuestring;
+                    parsed_stage = parse_stage_identifier(stage_name);
                 }
-                else if (strcmp(stage->valuestring, "indexing") == 0)
+                if (parsed_stage <= 0 && cJSON_IsString(id) && id->valuestring)
                 {
-                    configuration->stages[configuration->stages_number++] = 3;
+                    stage_name = id->valuestring;
+                    parsed_stage = parse_stage_identifier(id->valuestring);
                 }
-                else if (strcmp(stage->valuestring, "dispersal") == 0)
+                if (parsed_stage <= 0 && cJSON_IsNumber(id))
                 {
-                    configuration->stages[configuration->stages_number++] = 4;
+                    parsed_stage = id->valueint;
                 }
-                else if (strcmp(stage->valuestring, "upload") == 0)
+
+                if (parsed_stage > 0 && parsed_stage <= 10)
                 {
-                    configuration->stages[configuration->stages_number++] = 5;
+                    int si = configuration->stages_number;
+                    configuration->stages[configuration->stages_number++] = parsed_stage;
+                    init_stage_definition(configuration, si, parsed_stage, stage_name);
+                    parse_stage_filesystem_bandwidth(stage, &configuration->stage_definitions[si]);
+
+                    cJSON *output_reqs = cJSON_GetObjectItemCaseSensitive(stage, "output_requirements");
+                    if (!cJSON_IsArray(output_reqs))
+                        output_reqs = cJSON_GetObjectItemCaseSensitive(stage, "output_nfrs");
+                    if (!cJSON_IsArray(output_reqs))
+                        output_reqs = cJSON_GetObjectItemCaseSensitive(stage, "requirements");
+
+                    if (!parse_requirements_array(configuration, output_reqs, &configuration->stage_definitions[si], 0))
+                        add_default_output_requirements(configuration, &configuration->stage_definitions[si]);
+
+                    cJSON *input_reqs = cJSON_GetObjectItemCaseSensitive(stage, "input_requirements");
+                    if (!cJSON_IsArray(input_reqs))
+                        input_reqs = cJSON_GetObjectItemCaseSensitive(stage, "input_nfrs");
+                    parse_requirements_array(configuration, input_reqs, &configuration->stage_definitions[si], 1);
                 }
             }
         }
     }
 
+    finalize_stage_pipelines(configuration);
+
         /* Optional distributed machines specification
-           Format: "machines": [ {"name":"m0","stages":["compress","hashing"]}, ... ]
+           Format: "machines": [ {"name":"m0","stages":["stage1"]}, ... ]
+           Older operation names are still accepted as stage identifiers.
         */
         configuration->machines_number = 0;
         cJSON *machines = cJSON_GetObjectItemCaseSensitive(json, "machines");
@@ -622,12 +1268,9 @@ struct config *read_config(char *file_name)
                     cJSON *ms;
                     cJSON_ArrayForEach(ms, mstages) {
                         if (cJSON_IsString(ms) && configuration->machines[m_idx].stages_number < 10) {
-                            const char *sv = ms->valuestring;
-                            if (strcmp(sv, "compress") == 0) configuration->machines[m_idx].stages[configuration->machines[m_idx].stages_number++] = 1;
-                            else if (strcmp(sv, "hashing") == 0) configuration->machines[m_idx].stages[configuration->machines[m_idx].stages_number++] = 2;
-                            else if (strcmp(sv, "indexing") == 0) configuration->machines[m_idx].stages[configuration->machines[m_idx].stages_number++] = 3;
-                            else if (strcmp(sv, "dispersal") == 0) configuration->machines[m_idx].stages[configuration->machines[m_idx].stages_number++] = 4;
-                            else if (strcmp(sv, "upload") == 0) configuration->machines[m_idx].stages[configuration->machines[m_idx].stages_number++] = 5;
+                            int parsed_stage = parse_stage_identifier(ms->valuestring);
+                            if (parsed_stage > 0 && parsed_stage <= 10)
+                                configuration->machines[m_idx].stages[configuration->machines[m_idx].stages_number++] = parsed_stage;
                         }
                     }
                 }
@@ -810,7 +1453,8 @@ void makeAgents(int workers, const char *agent_type)
 void makeContainers(struct config *configuration)
 {
     makeTraceGenerator();
-    makeAgents(configuration->workers, configuration->agent_type);
+    makeAgents(configuration->workers, "input");
+    makeAgents(configuration->workers, "output");
 }
 
 void traceGenerator(struct traceConfig *traceData, int numberTraces)
@@ -895,6 +1539,8 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
     char line[256];
     long long unsigned interarrival, size;
 
+    global_config = configuration;
+
     arrayWorkers = (struct worker *)malloc(configuration->workers * sizeof(struct worker));
     contar = malloc(configuration->workers * sizeof(int));
 
@@ -904,16 +1550,48 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
         arrayWorkers[i].id = i;
         arrayWorkers[i].sizeWorker = 0;
         arrayWorkers[i].sizeStorage = 0;
+        arrayWorkers[i].input_workload_size = 0;
+        arrayWorkers[i].output_workload_size = 0;
         arrayWorkers[i].interarrive = 0;
-        strncpy(arrayWorkers[i].agent_type, configuration->agent_type, sizeof(arrayWorkers[i].agent_type) - 1);
+        strncpy(arrayWorkers[i].agent_type, "input", sizeof(arrayWorkers[i].agent_type) - 1);
         arrayWorkers[i].agent_type[sizeof(arrayWorkers[i].agent_type) - 1] = '\0';
+        arrayWorkers[i].pipeline_is_input = 1;
+        arrayWorkers[i].task_id = 0;
+        arrayWorkers[i].task_type = NFR_NONE;
+        arrayWorkers[i].task_name[0] = '\0';
+        arrayWorkers[i].task_algorithm[0] = '\0';
         arrayWorkers[i].b_fs = configuration->b_fs;
+        for (int si = 0; si < MAX_STAGES; ++si)
+        {
+            arrayWorkers[i].stage_input_time[si] = 0.0;
+            arrayWorkers[i].stage_output_time[si] = 0.0;
+            arrayWorkers[i].stage_transfer_time[si] = 0.0;
+            arrayWorkers[i].stage_input_size[si] = 0;
+            arrayWorkers[i].stage_output_size[si] = 0;
+            for (int nf = 0; nf < NFR_COUNT; ++nf)
+            {
+                arrayWorkers[i].stage_nfr_input_time[si][nf] = 0.0;
+                arrayWorkers[i].stage_nfr_output_time[si][nf] = 0.0;
+            }
+            for (int task = 0; task < MAX_PIPELINE_TASKS; ++task)
+            {
+                arrayWorkers[i].stage_input_requirement_time[si][task] = 0.0;
+                arrayWorkers[i].stage_output_requirement_time[si][task] = 0.0;
+                arrayWorkers[i].stage_input_requirement_input_size[si][task] = 0;
+                arrayWorkers[i].stage_input_requirement_output_size[si][task] = 0;
+                arrayWorkers[i].stage_output_requirement_input_size[si][task] = 0;
+                arrayWorkers[i].stage_output_requirement_output_size[si][task] = 0;
+            }
+        }
         arrayWorkers[i].trace = malloc(sizeof(struct traces) * traceData[0].MUESTRAS);
         /* initialize trace entries to safe defaults to avoid garbage values */
         if (arrayWorkers[i].trace) {
             for (int ti = 0; ti < traceData[0].MUESTRAS; ++ti) {
                 arrayWorkers[i].trace[ti].traceName = NULL;
                 arrayWorkers[i].trace[ti].size = 0;
+                arrayWorkers[i].trace[ti].size_restore_top = 0;
+                for (int rs = 0; rs < MAX_SIZE_RESTORE_STACK; ++rs)
+                    arrayWorkers[i].trace[ti].size_restore_stack[rs] = 0.0;
                 arrayWorkers[i].trace[ti].mean_interarrival = 0.0f;
                 arrayWorkers[i].trace[ti].service_time_c = 0.0f;
                 arrayWorkers[i].trace[ti].service_time_h = 0.0f;
@@ -925,34 +1603,17 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
         }
         arrayWorkers[i].service_time = 0.0f;
 
-        /* Assign a permanent stage owner to the worker (round-robin across configured stages).
-           This groups workers by stage; each stage is expected to be deployed on a single machine. */
+        /* All object batches enter the first configured stage; the manager chain moves them
+           through subsequent stages and updates the active machine. */
         if (configuration->stages_number > 0)
-            arrayWorkers[i].stage_owner = configuration->stages[i % configuration->stages_number];
+            arrayWorkers[i].stage_owner = configuration->stages[0];
         else
             arrayWorkers[i].stage_owner = 1;
 
-        /* Determine the machine hosting the worker's stage (if machines are configured). */
-        arrayWorkers[i].machine_id = -1;
-        if (configuration->machines_number > 0)
-        {
-            for (int mid = 0; mid < configuration->machines_number; ++mid)
-            {
-                for (int s = 0; s < configuration->machines[mid].stages_number; ++s)
-                {
-                    if (configuration->machines[mid].stages[s] == arrayWorkers[i].stage_owner)
-                    {
-                        arrayWorkers[i].machine_id = mid;
-                        break;
-                    }
-                }
-                if (arrayWorkers[i].machine_id >= 0)
-                    break;
-            }
-        }
+        arrayWorkers[i].machine_id = stage_machine_id(arrayWorkers[i].stage_owner);
     }
 
-    /* Initialize NFR managers for each configured stage (one manager per stage index).
+    /* Initialize NFR managers for every task in each configured stage.
        Number of NFR worker threads per manager is proportional to workers/stages. */
     if (!nfr_initialized)
     {
@@ -962,14 +1623,22 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
         {
             int stageNum = configuration->stages[si];
             int idx = stageNum - 1;
-            nfr_manager_init(&nfr_managers_in[idx], stageNum, per_stage_threads, 1024, 1);
-            nfr_manager_init(&nfr_managers_out[idx], stageNum, per_stage_threads, 1024, 0);
+            struct stage_definition *stage_def = &configuration->stage_definitions[si];
+            if (idx < 0 || idx >= 10)
+                continue;
+            for (int task = 0; task < stage_def->input_count; ++task)
+            {
+                struct nfr_requirement *req = &stage_def->input_requirements[task];
+                nfr_manager_init(&nfr_managers_in[idx][task], stageNum, task, req->type, req->task_name, req->algorithm, per_stage_threads, 1024, 1);
+            }
+            for (int task = 0; task < stage_def->output_count; ++task)
+            {
+                struct nfr_requirement *req = &stage_def->output_requirements[task];
+                nfr_manager_init(&nfr_managers_out[idx][task], stageNum, task, req->type, req->task_name, req->algorithm, per_stage_threads, 1024, 0);
+            }
         }
         nfr_initialized = 1;
     }
-
-    /* expose configuration globally for chaining */
-    global_config = configuration;
 
     srand(time(NULL));
 
@@ -995,7 +1664,15 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
         {
             traces[i].traceName = "object";
             traces[i].size = size;
+            traces[i].size_restore_top = 0;
+            for (int rs = 0; rs < MAX_SIZE_RESTORE_STACK; ++rs)
+                traces[i].size_restore_stack[rs] = 0.0;
             traces[i].mean_interarrival = traceData[0].inter_arrival; // use configured mean
+            traces[i].service_time_c = 0.0f;
+            traces[i].service_time_h = 0.0f;
+            traces[i].service_time_idx = 0.0f;
+            traces[i].service_time_ida = 0.0f;
+            traces[i].service_time_io = 0.0f;
             traces[i].MUESTRAS = 1;
 
             position1 = rand() % configuration->workers;
@@ -1015,6 +1692,8 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
             }
 
             arrayWorkers[position].sizeStorage += traces[i].size;
+            arrayWorkers[position].input_workload_size += (long)traces[i].size;
+            arrayWorkers[position].output_workload_size += (long)traces[i].size;
             arrayWorkers[position].sizeWorker++;
             arrayWorkers[position].trace[contar[position]] = traces[i];
             contar[position]++;
@@ -1036,59 +1715,44 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
 void deployThread_stages(struct config *configuration, struct worker *arrayWorkers, int stageNumber)
 {
     int rc, i;
-    char *command;
-    FILE *fp;
     pthread_t threads[configuration->workers]; //< thread handles
     int created_indices[configuration->workers];
     int created_count = 0;
 
-    /* Determine which workers should run this stage.
-       Only workers whose `stage_owner` matches `stageNumber` will run it.
-       If machines are configured, the worker's machine must host the stage as well. */
+    /* Every object batch enters the first task of the first stage. Each manager
+       forwards to the next task and then to the next stage. */
     for (i = 0; i < configuration->workers; i++)
     {
-        int should_run = 0;
-        if (arrayWorkers[i].stage_owner != stageNumber)
+        if (arrayWorkers[i].sizeWorker > 0)
         {
-            should_run = 0;
-        }
-        else if (configuration->machines_number > 0)
-        {
-            int mid = arrayWorkers[i].machine_id;
-            if (mid >= 0)
-            {
-                for (int s = 0; s < configuration->machines[mid].stages_number; ++s)
-                {
-                    if (configuration->machines[mid].stages[s] == stageNumber)
-                    {
-                        should_run = 1;
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            /* No machines configured: local single-node behavior */
-            should_run = 1;
-        }
+            arrayWorkers[i].stage_owner = stageNumber;
+            arrayWorkers[i].machine_id = stage_machine_id(stageNumber);
 
-        if (should_run)
-        {
-            /* enqueue work to NFR manager for this stage */
-            int idx = stageNumber - 1;
-            if (nfr_initialized && nfr_managers_in[idx].threads != NULL)
+            if (nfr_initialized)
             {
-                nfr_manager_enqueue(&nfr_managers_in[idx], &arrayWorkers[i]);
-                /* if this is the first configured stage, count as outstanding job */
                 if (configuration && configuration->stages_number > 0 && stageNumber == configuration->stages[0])
                     inc_outstanding();
-                /* manager will process job; no direct thread created so do not add to join list */
+
+                if (enqueue_stage_start(stageNumber, &arrayWorkers[i]) != 0)
+                {
+                    dec_outstanding();
+                    printf("Unable to enqueue worker %d into stage %d pipeline\n", arrayWorkers[i].id, stageNumber);
+                }
             }
             else
             {
+                struct stage_definition *stage_def = global_stage_definition(stageNumber);
+                struct nfr_requirement *req = (stage_def && stage_def->input_count > 0) ? &stage_def->input_requirements[0] : NULL;
                 /* fallback to direct thread if manager not available */
                 arrayWorkers[i].stage = stageNumber;
+                arrayWorkers[i].b_fs = stage_filesystem_bandwidth(stageNumber);
+                arrayWorkers[i].pipeline_is_input = 1;
+                arrayWorkers[i].task_id = 0;
+                arrayWorkers[i].task_type = req ? req->type : NFR_NONE;
+                strncpy(arrayWorkers[i].task_name, req ? req->task_name : "task", sizeof(arrayWorkers[i].task_name) - 1);
+                arrayWorkers[i].task_name[sizeof(arrayWorkers[i].task_name) - 1] = '\0';
+                strncpy(arrayWorkers[i].task_algorithm, req ? req->algorithm : "", sizeof(arrayWorkers[i].task_algorithm) - 1);
+                arrayWorkers[i].task_algorithm[sizeof(arrayWorkers[i].task_algorithm) - 1] = '\0';
                 rc = pthread_create(&threads[i], NULL, sendWorkstage, (void *)&arrayWorkers[i]);
                 if (rc)
                 {
@@ -1130,44 +1794,129 @@ void *sendWorkstage(void *threadarg)
 
 void serviceTime(struct worker *my_data)
 {
-    int is_input = (strcmp(my_data->agent_type, "input") == 0);
-    printf("Worker %d (machine %d) processing stage %d (%s)\n", my_data->id, my_data->machine_id, my_data->stage, is_input ? "input" : "output");
-    switch (my_data->stage)
+    int is_input = my_data->pipeline_is_input ? 1 : 0;
+    printf("Worker %d (machine %d) processing stage %d %s task %d (%s:%s)\n",
+           my_data->id,
+           my_data->machine_id,
+           my_data->stage,
+           is_input ? "input" : "output",
+           my_data->task_id,
+           my_data->task_name,
+           my_data->task_algorithm);
+
+    switch (my_data->task_type)
     {
-    case 1: /* compress (output) / decompress (input) */
+    case NFR_COMPRESS:
         if (is_input)
             decompress_time(my_data);
         else
             compress_time(my_data);
         break;
-    case 2: /* hashing — same direction for both */
-        hashing_time(my_data);
-        break;
-    case 3: /* indexing — same direction for both */
-        indexing_time(my_data);
-        break;
-    case 4: /* dispersal (output) / reconstruct (input) */
+    case NFR_ENCRYPT:
         if (is_input)
-            IDA_reconstruct_time(my_data);
+            decrypt_time(my_data);
         else
-            IDA_time(my_data);
+            encrypt_time(my_data);
         break;
-    case 5:
-        upload_time(my_data);
+    case NFR_HASH:
+        if (is_input)
+            hash_verify_time(my_data);
+        else
+            hash_calculate_time(my_data);
+        break;
+    default:
         break;
     }
-    printf("Worker %d (machine %d) completed stage %d (%s)\n", my_data->id, my_data->machine_id, my_data->stage, is_input ? "input" : "output");
+
+    printf("Worker %d (machine %d) completed stage %d %s task %d (%s:%s)\n",
+           my_data->id,
+           my_data->machine_id,
+           my_data->stage,
+           is_input ? "input" : "output",
+           my_data->task_id,
+           my_data->task_name,
+           my_data->task_algorithm);
+}
+
+static const char *agent_prefix_for_worker(const struct worker *my_data)
+{
+    return my_data && my_data->pipeline_is_input ? "input_agent" : "output_agent";
+}
+
+static void refresh_worker_storage(struct worker *my_data)
+{
+    long total = 0;
+    if (!my_data)
+        return;
+
+    for (int j = 0; j < my_data->sizeWorker; ++j)
+        total += (long)my_data->trace[j].size;
+
+    my_data->sizeStorage = total;
+}
+
+static void trace_push_restore_size(struct traces *trace, double original_size)
+{
+    if (!trace)
+        return;
+
+    if (trace->size_restore_top >= MAX_SIZE_RESTORE_STACK)
+    {
+        printf("Warning: compression restore stack full for object; decompression may need ratio fallback\n");
+        return;
+    }
+
+    trace->size_restore_stack[trace->size_restore_top++] = original_size;
+}
+
+static int trace_pop_restore_size(struct traces *trace, double *original_size)
+{
+    if (!trace || !original_size || trace->size_restore_top <= 0)
+        return 0;
+
+    trace->size_restore_top--;
+    *original_size = trace->size_restore_stack[trace->size_restore_top];
+    trace->size_restore_stack[trace->size_restore_top] = 0.0;
+    return 1;
+}
+
+static void record_queue_result(struct worker *my_data, int result_stage, float st_avg)
+{
+    if (!my_data || my_data->sizeWorker <= 0)
+        return;
+
+    char *path = getenv("PWD");
+    if (!path)
+        return;
+
+    const char *prefix = agent_prefix_for_worker(my_data);
+    char *command = malloc(strlen(path) + strlen(prefix) + 256);
+    if (!command)
+        return;
+
+    sprintf(
+        command,
+        "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage%d.txt'",
+        prefix,
+        my_data->id,
+        my_data->trace[0].mean_interarrival,
+        st_avg,
+        my_data->sizeWorker,
+        path,
+        my_data->id,
+        result_stage);
+
+    execute_command(command);
+    free(command);
 }
 
 void compress_time(struct worker *my_data)
 {
     int j;
-    char *command, *path;
     float st_sum, st_avg;
 
     st_sum = 0;
     st_avg = 0;
-    path = getenv("PWD");
 
     if (my_data->sizeWorker > 0)
     {
@@ -1178,46 +1927,40 @@ void compress_time(struct worker *my_data)
             if (my_data->b_fs > 0.0)
                 t_read = (double)size_before / my_data->b_fs;
 
-            float comp_time = compressStage((double)size_before);
-            long unsigned new_size = (long unsigned)compressStageSize((double)size_before);
+            float comp_time = compressStageAlgo((double)size_before, my_data->task_algorithm);
+            if (comp_time <= 0.0f)
+                comp_time = compressStage((double)size_before);
+            long unsigned new_size = (long unsigned)compressStageSizeAlgo((double)size_before, my_data->task_algorithm);
             if (my_data->b_fs > 0.0)
                 t_write = (double)new_size / my_data->b_fs;
 
-            my_data->trace[j].service_time_c = comp_time + (float)(t_read + t_write);
+            my_data->trace[j].service_time_c += comp_time + (float)(t_read + t_write);
+            trace_push_restore_size(&my_data->trace[j], (double)size_before);
             my_data->trace[j].size = new_size;
-            st_sum += my_data->trace[j].service_time_c;
+            st_sum += comp_time + (float)(t_read + t_write);
+            printf("****Worker %d (machine %d) compressed object %d from %.2f MB to %f MB in %.2f seconds (I/O time: %.2f seconds)\n",
+                   my_data->id, my_data->machine_id, j, (double)size_before / 1048576.0, (double)new_size / 1048576.0, comp_time, (float)(t_read + t_write));
         }
         st_avg = st_sum / my_data->sizeWorker;
-
-        command = malloc(sizeof(char) * strlen(path) + 200);
-        sprintf(
-            command,
-            "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage1.txt'",
-            agent_container_prefix,
-            my_data->id,
-            my_data->trace[0].mean_interarrival,
-            st_avg,
-            my_data->sizeWorker,
-            path,
-            my_data->id);
-
-        execute_command(command);
-        free(command);
+    
+        printf("------Worker %d (machine %d) completed compression stage with average time %.2f seconds\n", my_data->id, my_data->machine_id, st_avg);
+        refresh_worker_storage(my_data);
+        record_queue_result(my_data, 1, st_avg);
     }
 }
 
 void hashing_time(struct worker *my_data)
 {
+    hash_calculate_time(my_data);
+}
+
+static void hash_task_time(struct worker *my_data, int result_stage)
+{
     int j;
-    char *command, *path;
-    long unsigned newSize;
     float st_sum, st_avg;
 
     st_sum = 0;
     st_avg = 0;
-    newSize = 0;
-
-    path = getenv("PWD");
 
     if (my_data->sizeWorker > 0)
     {
@@ -1228,32 +1971,73 @@ void hashing_time(struct worker *my_data)
             if (my_data->b_fs > 0.0)
                 t_read = (double)size_before / my_data->b_fs;
 
-            float hash_time = hashingStage((double)size_before);
-            long unsigned new_size = (long unsigned)hashingStageSize((double)size_before);
+            float hash_time = hashingStageAlgo((double)size_before, my_data->task_algorithm);
+            if (hash_time <= 0.0f)
+                hash_time = hashingStage((double)size_before);
             if (my_data->b_fs > 0.0)
-                t_write = (double)new_size / my_data->b_fs;
+                t_write = (double)size_before / my_data->b_fs;
 
-            my_data->trace[j].service_time_h = hash_time + (float)(t_read + t_write);
-            my_data->trace[j].size = new_size;
-            st_sum += my_data->trace[j].service_time_h;
+            my_data->trace[j].service_time_h += hash_time + (float)(t_read + t_write);
+            st_sum += hash_time + (float)(t_read + t_write);
         }
         st_avg = st_sum / my_data->sizeWorker;
-
-        command = malloc(sizeof(char) * strlen(path) + 200);
-        sprintf(
-            command,
-            "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage2.txt'",
-            agent_container_prefix,
-            my_data->id,
-            my_data->trace[0].mean_interarrival,
-            st_avg,
-            my_data->sizeWorker,
-            path,
-            my_data->id);
-
-        execute_command(command);
-        free(command);
+        record_queue_result(my_data, result_stage, st_avg);
     }
+}
+
+void hash_calculate_time(struct worker *my_data)
+{
+    hash_task_time(my_data, 2);
+}
+
+void hash_verify_time(struct worker *my_data)
+{
+    hash_task_time(my_data, 2);
+}
+
+static void crypto_task_time(struct worker *my_data, int is_decrypt)
+{
+    int j;
+    float st_sum, st_avg;
+
+    st_sum = 0;
+    st_avg = 0;
+
+    if (my_data->sizeWorker > 0)
+    {
+        for (j = 0; j < my_data->sizeWorker; ++j)
+        {
+            double t_read = 0.0, t_write = 0.0;
+            long unsigned size_before = my_data->trace[j].size;
+            if (my_data->b_fs > 0.0)
+            {
+                t_read = (double)size_before / my_data->b_fs;
+                t_write = (double)size_before / my_data->b_fs;
+            }
+
+            float crypto_time = is_decrypt ? IDADecodeStageAlgo((double)size_before, my_data->task_algorithm) : IDAStageAlgo((double)size_before, my_data->task_algorithm);
+            if (crypto_time <= 0.0f)
+                crypto_time = is_decrypt ? IDADecodeStage((double)size_before) : IDAStage((double)size_before);
+            if (crypto_time <= 0.0f)
+                crypto_time = hashingStage((double)size_before);
+
+            my_data->trace[j].service_time_ida += crypto_time + (float)(t_read + t_write);
+            st_sum += crypto_time + (float)(t_read + t_write);
+        }
+
+        st_avg = st_sum / my_data->sizeWorker;
+        record_queue_result(my_data, 4, st_avg);
+    }
+}
+
+void encrypt_time(struct worker *my_data)
+{
+    crypto_task_time(my_data, 0);
+}
+
+void decrypt_time(struct worker *my_data)
+{
+    crypto_task_time(my_data, 1);
 }
 
 void indexing_time(struct worker *my_data)
@@ -1416,17 +2200,15 @@ void IDA_reconstruct_time(struct worker *my_data)
 }
 
 /**
- * @brief Input agent: decompress — restores the original size using inverse ratio.
+ * @brief Input agent: decompress — restores the size recorded by the matching compression task.
  */
 void decompress_time(struct worker *my_data)
 {
     int j;
-    char *command, *path;
     float st_sum, st_avg;
 
     st_sum = 0;
     st_avg = 0;
-    path = getenv("PWD");
 
     if (my_data->sizeWorker > 0)
     {
@@ -1437,38 +2219,38 @@ void decompress_time(struct worker *my_data)
             if (my_data->b_fs > 0.0)
                 t_read = (double)size_before / my_data->b_fs;
 
-            float dec_time = compressStage((double)size_before);
-            /* Restore size: invert compression ratio using existing logic */
-            long compressed = compressStageSize(my_data->trace[j].size);
+            float dec_time = decompressStageAlgo((double)size_before, my_data->task_algorithm);
+            if (dec_time <= 0.0f)
+                dec_time = compressStage((double)size_before);
+            printf("****Worker %d (machine %d) decompressing object %d of size %.2f MB with algorithm %s\n",
+                   my_data->id, my_data->machine_id, j, (double)size_before / 1048576.0, my_data->task_algorithm);
             long unsigned new_size = size_before;
-            if (compressed > 0)
-                new_size = (long unsigned)((double)my_data->trace[j].size * my_data->trace[j].size / (double)compressed);
+            double restored_size = 0.0;
+            if (trace_pop_restore_size(&my_data->trace[j], &restored_size))
+            {
+                new_size = (long unsigned)(restored_size + 0.5);
+            }
+            else
+            {
+                long compressed = compressStageSizeAlgo(my_data->trace[j].size, my_data->task_algorithm);
+                if (compressed > 0)
+                    new_size = (long unsigned)((double)my_data->trace[j].size * my_data->trace[j].size / (double)compressed);
+                printf("Warning: decompressing object %d without a recorded compression size; using ratio fallback\n", j);
+            }
 
             if (my_data->b_fs > 0.0)
                 t_write = (double)new_size / my_data->b_fs;
 
-            my_data->trace[j].service_time_c = dec_time + (float)(t_read + t_write);
+            my_data->trace[j].service_time_c += dec_time + (float)(t_read + t_write);
             my_data->trace[j].size = new_size;
-            st_sum += my_data->trace[j].service_time_c;
+            st_sum += dec_time + (float)(t_read + t_write);
         }
         st_avg = st_sum / my_data->sizeWorker;
+        refresh_worker_storage(my_data);
 
         printf("Worker %d - Decompress stage: avg service time = %f seconds\n", my_data->id, st_avg);
 
-        command = malloc(sizeof(char) * strlen(path) + 200);
-        sprintf(
-            command,
-            "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage1.txt'",
-            agent_container_prefix,
-            my_data->id,
-            my_data->trace[0].mean_interarrival,
-            st_avg,
-            my_data->sizeWorker,
-            path,
-            my_data->id);
-
-        execute_command(command);
-        free(command);
+        record_queue_result(my_data, 1, st_avg);
     }
 }
 

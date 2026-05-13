@@ -4,10 +4,32 @@
   "traces_fileName": "traces.cfg",
   "agent_type": "input",
   "stages": [
-    "dispersal",
-    "hashing",
-    "indexing",
-    "compress"
+    {
+      "name": "stage1",
+      "output_requirements": [
+        { "type": "compress", "algorithm": "ZLIB" },
+        { "type": "cipher", "algorithm": "RS" },
+        { "type": "hash", "algorithm": "SHA256" }
+      ]
+    },
+    {
+      "name": "stage2",
+      "output_requirements": [
+        { "type": "hash", "algorithm": "BLAKE3" }
+      ]
+    },
+    {
+      "name": "stage3",
+      "output_requirements": [
+        { "type": "cipher", "algorithm": "RS" }
+      ]
+    },
+    {
+      "name": "stage4",
+      "output_requirements": [
+        { "type": "compress", "algorithm": "LZ4" }
+      ]
+    }
   ],
   "compression_algo": "ZLIB",
   "hashing_algo": "SHA256",
