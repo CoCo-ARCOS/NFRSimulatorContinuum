@@ -4,9 +4,25 @@
   "traces_fileName": "traces.cfg",
   "agent_type": "output",
   "stages": [
-    "hashing",
-    "indexing",
-    "dispersal"
+    {
+      "name": "stage1",
+      "output_requirements": [
+        { "type": "cipher", "algorithm": "RS" },
+        { "type": "hash", "algorithm": "SHA256" }
+      ]
+    },
+    {
+      "name": "stage2",
+      "output_requirements": [
+        { "type": "hash", "algorithm": "BLAKE3" }
+      ]
+    },
+    {
+      "name": "stage3",
+      "output_requirements": [
+        { "type": "cipher", "algorithm": "RS" }
+      ]
+    }
   ],
   "hashing_algo": "SHA256",
   "ida_algo": "RS",
