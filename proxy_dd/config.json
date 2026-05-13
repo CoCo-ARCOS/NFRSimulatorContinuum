@@ -1,0 +1,18 @@
+{
+  "workers": 3,
+  "traces_number": 2,
+  "traces_fileName": "traces.cfg",
+  "agent_type": "output",
+  "stages": [
+    "compress",
+    "hashing",
+    "indexing",
+    "dispersal"
+  ],
+  "compression_algo": "ZLIB",
+  "hashing_algo": "SHA256",
+  "ida_algo": "RS",
+  "ida_k": 8,
+  "ida_m": 4,
+  "b_fs": 100
+}

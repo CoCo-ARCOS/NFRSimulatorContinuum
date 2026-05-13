@@ -24,8 +24,8 @@ int main(int argc, char **argv)
 /* Main function. */
 {
 	//par`ametros de entrada
-	mean_interarrival=atoi(argv[1]);
-	mean_service=atoi(argv[2]);
+	mean_interarrival=atof(argv[1]);
+	mean_service=atof(argv[2]);
 	num_delays_required=atol(argv[3]);
 
 

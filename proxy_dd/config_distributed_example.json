@@ -1,0 +1,27 @@
+{
+  "workers": 3,
+  "traces_number": 2,
+  "traces_fileName": "traces.cfg",
+  "agent_type": "output",
+  "stages": [
+    "compress",
+    "hashing",
+    "indexing",
+    "dispersal"
+  ],
+  "compression_algo": "ZLIB",
+  "hashing_algo": "SHA256",
+  "ida_algo": "RS",
+  "ida_k": 8,
+  "ida_m": 4,
+  "b_fs": 100,
+  "machines": [
+    { "name": "m0", "stages": ["compress", "hashing"] },
+    { "name": "m1", "stages": ["indexing"] },
+    { "name": "m2", "stages": ["dispersal"] }
+  ],
+  "links": [
+    { "from": "m0", "to": "m1", "b_net": 100, "latency_ms": 10 },
+    { "from": "m1", "to": "m2", "b_net": 50, "latency_ms": 20 }
+  ]
+}

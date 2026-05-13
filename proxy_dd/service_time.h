@@ -24,16 +24,23 @@
 #include <libgen.h>
 #include "string.h"
 
+struct config;
+void load_service_times(struct config *configuration);
+
 float interpolation( float x, float x0, float x1, float y0, float y1) ;
 
 float compressStage (long unsigned filesize) ;
 
-long unsigned compressStageSize ( long unsigned filesize ) ;
+double compressStageSize ( double filesize ) ;
 
-float hashingStage (long unsigned filesize) ;
+float hashingStage (double filesize) ;
+double hashingStageSize (double filesize) ;
 
 float indexingStage (long numFiles) ;
 
-float IDAStage (long unsigned filesize) ;
+float IDAStage (double filesize) ;
+double IDAStageSize (double filesize) ;
+
+void print_interpolation_points();
 
 //float uploadStage (long long unsigned filesize) ;
