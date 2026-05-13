@@ -1,0 +1,16 @@
+{
+  "workers": 3,
+  "traces_number": 1,
+  "traces_fileName": "traces.cfg",
+  "agent_type": "output",
+  "stages": [
+    "hashing",
+    "indexing",
+    "dispersal"
+  ],
+  "hashing_algo": "SHA256",
+  "ida_algo": "RS",
+  "ida_k": 8,
+  "ida_m": 4,
+  "b_fs": 104857600
+}

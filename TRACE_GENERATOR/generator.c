@@ -19,10 +19,7 @@ void assignation ( char **argv ) {
 		stddev = 0;
 		mean = 0;
 
-		stddevT = 0;
-		stddevP = 0;
-		stddevH = 0;
-		stddevR = 0;
+		stddevS = 0;
 		
 
 		MUESTRAS = atol(argv[1]);
@@ -31,20 +28,11 @@ void assignation ( char **argv ) {
 		mean = atof(argv[4]);
 		stddev = atof(argv[5]);
 
-		TEMPERATURE = atoi(argv[6]);
-		stddevT = atof(argv[7]);
-
-		PRESION = atoi(argv[8]);
-		stddevP = atof(argv[9]);
-
-		HUMEDITY = atoi(argv[10]);
-		stddevH = atof(argv[11]);
-
-		RADSOLAR = atoi(argv[12]);
-		stddevR = atof(argv[13]);
+		SIZE = atoi(argv[6]);
+		stddevS = atof(argv[7]);
 		
 		
-		Concurrency = atoi(argv[14]);
+		Concurrency = atoi(argv[8]);
 		BUFFER = 50*Concurrency;
 }
 
@@ -53,10 +41,7 @@ void inicialization ( struct traza *print_traza , struct traza *traza_con , long
 	for ( i=0 ; i < Concurrency ; i++ ) {
 		//current_t[i]=0;
 		print_traza[i].interarrival = 0;
-   		print_traza[i].temperature = 0; 
-   		print_traza[i].presion = 0; 
-   		print_traza[i].humedity = 0; 
-		print_traza[i].radsolar = 0; 
+   		print_traza[i].size = 0; 
 
 		traza_con[i].interarrival = 0;
 		current_time_c[i] = 0;
@@ -218,31 +203,22 @@ void dataConcurrent ( int i , long long unsigned * current_time_c) {
 
 }
 
-void sensorsData ( int distribution, double * tmp, double * psr, double * hmd , double * rds ) {
+void sensorsData ( int distribution, double * sz ) {
 	switch(DISTRIBUTION) {
 		//UNIFORME DISTRIBUTION SOURCE CODE
 		case 1:
 			//UNIFORME DISTRIBUTION LINES TO DETERMINATE A REQUEST SIZE
- 			*tmp = atmosParamU ( TEMPERATURE );
- 			*psr = atmosParamU ( PRESION );
- 			*hmd = atmosParamU ( HUMEDITY );
- 			*rds = atmosParamU ( RADSOLAR );
+ 			*sz = atmosParamU ( SIZE );
 			break;
 		//POISSON DISTRIBUTION SOURCE CODE	
 		case 2:
 			//POISSON DISTRIBUTION LINES TO DETERMINATE A REQUEST SIZE
-			*tmp = atmosParamP ( b , TEMPERATURE , sum , ct );
-			*psr = atmosParamP ( b , PRESION , sum , ct );
-			*hmd = atmosParamP ( b , HUMEDITY , sum , ct );
-			*rds = atmosParamP ( b , RADSOLAR , sum , ct );
+			*sz = atmosParamP ( b , SIZE , sum , ct );
 			break;
 		//NORMAL DISTRIBUTION SOURCE CODE
 		case 3:
 			//NORMAL DISTRIBUTION LINES FOR DETERMINATE A REQUEST SIZE
-		 	*tmp = atmosParamN ( TEMPERATURE ,  stddevT ) ;
-		 	*psr = atmosParamN ( PRESION ,  stddevP ) ;
-		 	*hmd = atmosParamN ( HUMEDITY ,  stddevH ) ;
-		 	*rds = atmosParamN ( RADSOLAR ,  stddevR ) ;
+		 	*sz = atmosParamN ( SIZE ,  stddevS ) ;
 			break;
 	}//END SWITCH 2
 }
@@ -255,12 +231,9 @@ void makeTrace (  long long unsigned * bufferin, long long unsigned * current_ti
 			for ( i = 0 ; i < BUFFER ; i++)    
 			    for ( j = 0 ; j < BUFFER ; j++)
 				   if (bufferin[i]==traza_con[j].interarrival) {   
-			  	    	printf ("%llu %llu %llu %llu %llu\n",
+			  	    	printf ("%llu %llu\n",
 			  	    		   traza_con[j].interarrival,
-			  	    		   traza_con[j].temperature,
-			  	    		   traza_con[j].presion,
-			  	    		   traza_con[j].humedity,
-							   traza_con[j].radsolar);
+			  	    		   traza_con[j].size);
 				   }	    
 			j=0;	
 		}
@@ -273,7 +246,7 @@ void makeTrace (  long long unsigned * bufferin, long long unsigned * current_ti
 void makeSensorData (  long long unsigned * bufferin, long long unsigned * current_time_c , struct traza * traza_con) {
 	for ( i = 0 ; i < Concurrency ; i++ ) {
 		dataConcurrent ( i , current_time_c) ;
-	    sensorsData ( DISTRIBUTION , &tmp, &prs, &hmd , &rds );
+	    sensorsData ( DISTRIBUTION , &sz );
 
 		//ASSIGNMENT VALUES TO BUFFERINg AND TRAZA_CON
 		if ( Concurrency > 1 ) {    
@@ -284,10 +257,7 @@ void makeSensorData (  long long unsigned * bufferin, long long unsigned * curre
 		    traza_con[j].interarrival = current_time;
 		}
 		
-		traza_con[j].temperature = tmp;
-		traza_con[j].presion = prs;
-		traza_con[j].humedity = hmd;
-		traza_con[j].radsolar = rds;
+		traza_con[j].size = sz;
 
 		j++;
 		if (cnt < MUESTRAS) 
