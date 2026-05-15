@@ -24,7 +24,9 @@ clean:
 
 remove_containers:
 	-docker rm -f output_agent0 output_agent1 output_agent2 \
-	            input_agent0  input_agent1  input_agent2  trace_generator 2>/dev/null || true
+	            input_agent0  input_agent1  input_agent2 \
+	            application_agent0 application_agent1 application_agent2 \
+	            trace_generator 2>/dev/null || true
 
 delete_trace_results:
 	rm -f traces/* results/*

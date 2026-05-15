@@ -6,6 +6,7 @@
   "stages": [
     {
       "name": "stage1",
+      "application_mean_service_time": 0.5,
       "output_requirements": [
         { "type": "cipher", "algorithm": "RS" },
         { "type": "hash", "algorithm": "SHA256" }
@@ -13,12 +14,14 @@
     },
     {
       "name": "stage2",
+      "application_mean_service_time": 1.0,
       "output_requirements": [
         { "type": "hash", "algorithm": "BLAKE3" }
       ]
     },
     {
       "name": "stage3",
+      "application_mean_service_time": 1.5,
       "output_requirements": [
         { "type": "cipher", "algorithm": "RS" }
       ]

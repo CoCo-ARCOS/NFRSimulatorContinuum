@@ -1,8 +1,10 @@
 *.o
+__pycache__/
 *.zip
 proxy_dd/.vscode/settings.json
 proxy_dd/new_results/.txt
 TRACE_GENERATOR/main
+proxy_dd/main
 stages/single
 stages/generator
 TRACE_GENERATOR/generator

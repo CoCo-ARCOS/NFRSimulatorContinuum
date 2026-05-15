@@ -4,6 +4,7 @@
 /* NFR manager instances: one manager/worker pool per configured task in each stage pipeline. */
 static struct nfr_manager nfr_managers_in[10][INPUT_TASKS];
 static struct nfr_manager nfr_managers_out[10][OUTPUT_TASKS];
+static struct nfr_manager application_managers[10];
 static int nfr_initialized = 0;
 /* link stats lock */
 static pthread_mutex_t link_stats_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -149,6 +150,7 @@ static double worker_recorded_time(struct worker *w)
         total += w->trace[j].service_time_idx;
         total += w->trace[j].service_time_ida;
         total += w->trace[j].service_time_io;
+        total += w->trace[j].service_time_app;
     }
 
     return total;
@@ -166,6 +168,15 @@ static void add_worker_stage_processing_time(struct worker *w, int stage, int is
         w->stage_output_time[idx] += seconds;
 }
 
+static void add_worker_stage_application_time(struct worker *w, int stage, double seconds)
+{
+    int idx = stage - 1;
+    if (!w || idx < 0 || idx >= MAX_STAGES || seconds <= 0.0)
+        return;
+
+    w->stage_application_time[idx] += seconds;
+}
+
 static void add_worker_stage_nfr_time(struct worker *w, int stage, int task_type, int is_input, double seconds)
 {
     int idx = stage - 1;
@@ -173,9 +184,9 @@ static void add_worker_stage_nfr_time(struct worker *w, int stage, int task_type
         return;
 
     if (is_input)
-        w->stage_nfr_input_time[idx][task_type] += seconds;
+        w->stage_nfr_input_time[idx][task_type] = fmax(w->stage_nfr_input_time[idx][task_type], seconds);
     else
-        w->stage_nfr_output_time[idx][task_type] += seconds;
+        w->stage_nfr_output_time[idx][task_type] = fmax(w->stage_nfr_output_time[idx][task_type], seconds);
 }
 
 static void add_worker_stage_requirement_metrics(struct worker *w, int stage, int task_id, int is_input, double seconds, long input_size, long output_size)
@@ -187,14 +198,14 @@ static void add_worker_stage_requirement_metrics(struct worker *w, int stage, in
     if (is_input)
     {
         if (seconds > 0.0)
-            w->stage_input_requirement_time[idx][task_id] += seconds;
+            w->stage_input_requirement_time[idx][task_id] = fmax(w->stage_input_requirement_time[idx][task_id], seconds);
         w->stage_input_requirement_input_size[idx][task_id] = input_size;
         w->stage_input_requirement_output_size[idx][task_id] = output_size;
     }
     else
     {
         if (seconds > 0.0)
-            w->stage_output_requirement_time[idx][task_id] += seconds;
+            w->stage_output_requirement_time[idx][task_id] = fmax(w->stage_output_requirement_time[idx][task_id], seconds);
         w->stage_output_requirement_input_size[idx][task_id] = input_size;
         w->stage_output_requirement_output_size[idx][task_id] = output_size;
     }
@@ -319,6 +330,7 @@ static void init_stage_definition(struct config *configuration, int index, int s
     memset(stage_def, 0, sizeof(*stage_def));
     stage_def->stage = stage;
     stage_def->b_fs = configuration ? configuration->b_fs : 0.0;
+    stage_def->application_mean_service_time = configuration ? configuration->application_mean_service_time : 0.0;
     if (name && name[0] != '\0')
     {
         strncpy(stage_def->name, name, sizeof(stage_def->name) - 1);
@@ -328,6 +340,21 @@ static void init_stage_definition(struct config *configuration, int index, int s
     {
         snprintf(stage_def->name, sizeof(stage_def->name), "stage%d", stage);
     }
+}
+
+static cJSON *first_number_item(cJSON *object, const char **keys, int key_count)
+{
+    if (!object || !keys)
+        return NULL;
+
+    for (int i = 0; i < key_count; ++i)
+    {
+        cJSON *item = cJSON_GetObjectItemCaseSensitive(object, keys[i]);
+        if (cJSON_IsNumber(item))
+            return item;
+    }
+
+    return NULL;
 }
 
 static void parse_stage_filesystem_bandwidth(cJSON *stage, struct stage_definition *stage_def)
@@ -348,6 +375,25 @@ static void parse_stage_filesystem_bandwidth(cJSON *stage, struct stage_definiti
         bfs_bytes = cJSON_GetObjectItemCaseSensitive(stage, "b_fs_bytes_per_sec");
     if (cJSON_IsNumber(bfs_bytes))
         stage_def->b_fs = bfs_bytes->valuedouble;
+}
+
+static void parse_stage_application_time(cJSON *stage, struct stage_definition *stage_def)
+{
+    static const char *keys[] = {
+        "application_mean_service_time",
+        "application_mean_execution_time",
+        "application_avg_execution_time",
+        "application_execution_time"
+    };
+
+    cJSON *app_time = first_number_item(stage, keys, sizeof(keys) / sizeof(keys[0]));
+    if (app_time && stage_def)
+        stage_def->application_mean_service_time = app_time->valuedouble;
+}
+
+static int stage_has_application(const struct stage_definition *stage_def)
+{
+    return stage_def && stage_def->application_mean_service_time > 0.0;
 }
 
 static int add_requirement_to_pipeline(struct config *configuration, struct nfr_requirement *pipeline, int *count, int type, const char *algorithm, int is_input)
@@ -507,14 +553,14 @@ static void set_worker_task_context(struct worker *w, const struct nfr_manager *
 
     w->stage = m->stage;
     w->stage_owner = m->stage;
-    w->pipeline_is_input = m->is_input ? 1 : 0;
+    w->pipeline_is_input = (m->is_application || !m->is_input) ? 0 : 1;
     w->task_id = m->task_id;
     w->task_type = m->task_type;
     strncpy(w->task_name, m->task_name, sizeof(w->task_name) - 1);
     w->task_name[sizeof(w->task_name) - 1] = '\0';
     strncpy(w->task_algorithm, m->task_algorithm, sizeof(w->task_algorithm) - 1);
     w->task_algorithm[sizeof(w->task_algorithm) - 1] = '\0';
-    strncpy(w->agent_type, m->is_input ? "input" : "output", sizeof(w->agent_type) - 1);
+    strncpy(w->agent_type, m->is_application ? "application" : (m->is_input ? "input" : "output"), sizeof(w->agent_type) - 1);
     w->agent_type[sizeof(w->agent_type) - 1] = '\0';
     w->b_fs = stage_filesystem_bandwidth(m->stage);
 
@@ -522,6 +568,10 @@ static void set_worker_task_context(struct worker *w, const struct nfr_manager *
     if (mid >= 0)
         w->machine_id = mid;
 }
+
+static void advance_to_next_stage_or_finish(int current_stage, struct worker *w);
+static int enqueue_stage_start(int stage, struct worker *w);
+static double application_time(struct worker *my_data);
 
 static int enqueue_pipeline_task(int stage, int is_input, int task_id, struct worker *w)
 {
@@ -542,7 +592,31 @@ static int enqueue_pipeline_task(int stage, int is_input, int task_id, struct wo
     return nfr_manager_enqueue(&nfr_managers_out[idx][task_id], w);
 }
 
-static int enqueue_stage_start(int stage, struct worker *w);
+static int enqueue_application_task(int stage, struct worker *w)
+{
+    int idx = stage - 1;
+    struct stage_definition *stage_def = global_stage_definition(stage);
+    if (idx < 0 || idx >= 10 || !w || !stage_has_application(stage_def) || application_managers[idx].threads == NULL)
+        return -1;
+
+    return nfr_manager_enqueue(&application_managers[idx], w);
+}
+
+static int enqueue_application_or_output(int stage, struct worker *w)
+{
+    struct stage_definition *stage_def = global_stage_definition(stage);
+    if (!stage_def || !w)
+        return -1;
+
+    if (stage_has_application(stage_def))
+        return enqueue_application_task(stage, w);
+
+    if (stage_def->output_count > 0)
+        return enqueue_pipeline_task(stage, 0, 0, w);
+
+    advance_to_next_stage_or_finish(stage, w);
+    return 0;
+}
 
 static void advance_to_next_stage_or_finish(int current_stage, struct worker *w)
 {
@@ -621,11 +695,7 @@ static int enqueue_stage_start(int stage, struct worker *w)
     if (stage_def->input_count > 0)
         return enqueue_pipeline_task(stage, 1, 0, w);
 
-    if (stage_def->output_count > 0)
-        return enqueue_pipeline_task(stage, 0, 0, w);
-
-    advance_to_next_stage_or_finish(stage, w);
-    return 0;
+    return enqueue_application_or_output(stage, w);
 }
 
 static void *nfr_worker_thread(void *arg)
@@ -658,36 +728,46 @@ static void *nfr_worker_thread(void *arg)
         struct timespec t0, t1;
         long requirement_input_size = job.w->sizeStorage;
         double recorded_before = worker_recorded_time(job.w);
+        double simulated_delta = 0.0;
         clock_gettime(CLOCK_MONOTONIC, &t0);
 
-        serviceTime(job.w);
+        if (m->is_application)
+        {
+            simulated_delta = application_time(job.w);
+        }
+        else
+        {
+            serviceTime(job.w);
+        }
 
         clock_gettime(CLOCK_MONOTONIC, &t1);
         long requirement_output_size = job.w->sizeStorage;
-        double recorded_after = worker_recorded_time(job.w);
-        double simulated_delta = recorded_after - recorded_before;
-        add_worker_stage_processing_time(job.w, m->stage, m->is_input, simulated_delta);
-        add_worker_stage_nfr_time(job.w, m->stage, m->task_type, m->is_input, simulated_delta);
-        add_worker_stage_requirement_metrics(job.w, m->stage, m->task_id, m->is_input, simulated_delta, requirement_input_size, requirement_output_size);
+        if (!m->is_application)
+        {
+            double recorded_after = worker_recorded_time(job.w);
+            simulated_delta = recorded_after - recorded_before;
+            add_worker_stage_processing_time(job.w, m->stage, m->is_input, simulated_delta);
+            add_worker_stage_nfr_time(job.w, m->stage, m->task_type, m->is_input, simulated_delta);
+            add_worker_stage_requirement_metrics(job.w, m->stage, m->task_id, m->is_input, simulated_delta, requirement_input_size, requirement_output_size);
+        }
+        else
+        {
+            add_worker_stage_application_time(job.w, m->stage, simulated_delta);
+        }
         double elapsed = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1e9;
 
         pthread_mutex_lock(&m->lock);
         m->jobs_processed += 1;
         m->total_processing_time += elapsed;
+        m->total_simulated_time += simulated_delta;
         pthread_mutex_unlock(&m->lock);
 
-        if (m->is_input)
+        if (m->is_application)
         {
             struct stage_definition *stage_def = global_stage_definition(m->stage);
-            int input_count = stage_def ? stage_def->input_count : 0;
             int output_count = stage_def ? stage_def->output_count : 0;
 
-            if (m->task_id + 1 < input_count)
-            {
-                if (enqueue_pipeline_task(m->stage, 1, m->task_id + 1, job.w) != 0)
-                    dec_outstanding();
-            }
-            else if (output_count > 0)
+            if (output_count > 0)
             {
                 if (enqueue_pipeline_task(m->stage, 0, 0, job.w) != 0)
                     dec_outstanding();
@@ -695,6 +775,22 @@ static void *nfr_worker_thread(void *arg)
             else
             {
                 advance_to_next_stage_or_finish(m->stage, job.w);
+            }
+        }
+        else if (m->is_input)
+        {
+            struct stage_definition *stage_def = global_stage_definition(m->stage);
+            int input_count = stage_def ? stage_def->input_count : 0;
+
+            if (m->task_id + 1 < input_count)
+            {
+                if (enqueue_pipeline_task(m->stage, 1, m->task_id + 1, job.w) != 0)
+                    dec_outstanding();
+            }
+            else
+            {
+                if (enqueue_application_or_output(m->stage, job.w) != 0)
+                    dec_outstanding();
             }
         }
         else
@@ -717,7 +813,7 @@ static void *nfr_worker_thread(void *arg)
     return NULL;
 }
 
-int nfr_manager_init(struct nfr_manager *m, int stage, int task_id, int task_type, const char *task_name, const char *task_algorithm, int num_threads, int q_size, int is_input)
+int nfr_manager_init(struct nfr_manager *m, int stage, int task_id, int task_type, const char *task_name, const char *task_algorithm, int num_threads, int q_size, int is_input, int is_application)
 {
     m->stage = stage;
     m->task_id = task_id;
@@ -733,8 +829,10 @@ int nfr_manager_init(struct nfr_manager *m, int stage, int task_id, int task_typ
     m->q_head = m->q_tail = m->q_count = 0;
     m->stop = 0;
     m->is_input = is_input ? 1 : 0;
+    m->is_application = is_application ? 1 : 0;
     m->jobs_processed = 0;
     m->total_processing_time = 0.0;
+    m->total_simulated_time = 0.0;
     pthread_mutex_init(&m->lock, NULL);
     pthread_cond_init(&m->cond_nonempty, NULL);
     pthread_cond_init(&m->cond_nonfull, NULL);
@@ -752,7 +850,7 @@ int nfr_manager_enqueue(struct nfr_manager *m, struct worker *w)
     if (!m || !w) return -1;
     printf("[ENQUEUE] Stage %d %s task %d (%s:%s) worker %d\n",
            m->stage,
-           m->is_input ? "IN" : "OUT",
+           m->is_application ? "APP" : (m->is_input ? "IN" : "OUT"),
            m->task_id,
            m->task_name,
            m->task_algorithm,
@@ -827,6 +925,14 @@ void shutdown_and_report_metrics(struct config *configuration)
                     pthread_mutex_unlock(&nfr_managers_in[sn][task].lock);
                 }
             }
+            if (stage_has_application(stage_def))
+            {
+                pthread_mutex_lock(&application_managers[sn].lock);
+                application_managers[sn].stop = 1;
+                pthread_cond_broadcast(&application_managers[sn].cond_nonempty);
+                pthread_cond_broadcast(&application_managers[sn].cond_nonfull);
+                pthread_mutex_unlock(&application_managers[sn].lock);
+            }
             for (int task = 0; task < stage_def->output_count; ++task)
             {
                 if (nfr_managers_out[sn][task].threads)
@@ -853,6 +959,8 @@ void shutdown_and_report_metrics(struct config *configuration)
                 if (nfr_managers_in[sn][task].threads)
                     nfr_manager_shutdown(&nfr_managers_in[sn][task]);
             }
+            if (stage_has_application(stage_def))
+                nfr_manager_shutdown(&application_managers[sn]);
             for (int task = 0; task < stage_def->output_count; ++task)
             {
                 if (nfr_managers_out[sn][task].threads)
@@ -864,7 +972,7 @@ void shutdown_and_report_metrics(struct config *configuration)
     printf("\n=== Manager Metrics ===\n");
     FILE *manager_csv = open_report_csv("manager_metrics.csv");
     if (manager_csv)
-        fprintf(manager_csv, "stage,stage_name,pipeline,task_index,task_name,algorithm,jobs,total_seconds,avg_job_seconds\n");
+        fprintf(manager_csv, "stage,stage_name,pipeline,task_index,task_name,algorithm,jobs,wall_seconds,avg_wall_seconds,simulated_seconds,avg_simulated_seconds\n");
     for (int si = 0; si < configuration->stages_number; ++si)
     {
         int sn = configuration->stages[si] - 1;
@@ -873,24 +981,30 @@ void shutdown_and_report_metrics(struct config *configuration)
         {
             long combined_jobs = 0;
             double combined_time = 0.0;
+            double combined_simulated_time = 0.0;
 
             for (int task = 0; task < stage_def->input_count; ++task)
             {
                 long jobs = nfr_managers_in[sn][task].jobs_processed;
                 double time = nfr_managers_in[sn][task].total_processing_time;
+                double simulated_time = nfr_managers_in[sn][task].total_simulated_time;
                 double avg = (jobs > 0) ? (time / (double)jobs) : 0.0;
+                double avg_simulated = (jobs > 0) ? (simulated_time / (double)jobs) : 0.0;
                 combined_jobs += jobs;
                 combined_time += time;
-                printf("Stage %d IN task %d (%s:%s): jobs=%ld total_time=%f s avg_per_job=%f s\n",
+                combined_simulated_time += simulated_time;
+                printf("Stage %d IN task %d (%s:%s): jobs=%ld wall_time=%f s avg_wall=%f s simulated_time=%f s avg_simulated=%f s\n",
                        configuration->stages[si],
                        task,
                        nfr_managers_in[sn][task].task_name,
                        nfr_managers_in[sn][task].task_algorithm,
                        jobs,
                        time,
-                       avg);
+                       avg,
+                       simulated_time,
+                       avg_simulated);
                 if (manager_csv)
-                    fprintf(manager_csv, "%d,%s,input,%d,%s,%s,%ld,%f,%f\n",
+                    fprintf(manager_csv, "%d,%s,input,%d,%s,%s,%ld,%f,%f,%f,%f\n",
                             configuration->stages[si],
                             stage_def->name,
                             task,
@@ -898,26 +1012,61 @@ void shutdown_and_report_metrics(struct config *configuration)
                             nfr_managers_in[sn][task].task_algorithm,
                             jobs,
                             time,
-                            avg);
+                            avg,
+                            simulated_time,
+                            avg_simulated);
+            }
+
+            if (stage_has_application(stage_def))
+            {
+                long jobs = application_managers[sn].jobs_processed;
+                double time = application_managers[sn].total_processing_time;
+                double simulated_time = application_managers[sn].total_simulated_time;
+                double avg = (jobs > 0) ? (time / (double)jobs) : 0.0;
+                double avg_simulated = (jobs > 0) ? (simulated_time / (double)jobs) : 0.0;
+                combined_jobs += jobs;
+                combined_time += time;
+                combined_simulated_time += simulated_time;
+                printf("Stage %d APP task 0 (application): jobs=%ld wall_time=%f s avg_wall=%f s simulated_time=%f s avg_simulated=%f s\n",
+                       configuration->stages[si],
+                       jobs,
+                       time,
+                       avg,
+                       simulated_time,
+                       avg_simulated);
+                if (manager_csv)
+                    fprintf(manager_csv, "%d,%s,application,0,application,,%ld,%f,%f,%f,%f\n",
+                            configuration->stages[si],
+                            stage_def->name,
+                            jobs,
+                            time,
+                            avg,
+                            simulated_time,
+                            avg_simulated);
             }
 
             for (int task = 0; task < stage_def->output_count; ++task)
             {
                 long jobs = nfr_managers_out[sn][task].jobs_processed;
                 double time = nfr_managers_out[sn][task].total_processing_time;
+                double simulated_time = nfr_managers_out[sn][task].total_simulated_time;
                 double avg = (jobs > 0) ? (time / (double)jobs) : 0.0;
+                double avg_simulated = (jobs > 0) ? (simulated_time / (double)jobs) : 0.0;
                 combined_jobs += jobs;
                 combined_time += time;
-                printf("Stage %d OUT task %d (%s:%s): jobs=%ld total_time=%f s avg_per_job=%f s\n",
+                combined_simulated_time += simulated_time;
+                printf("Stage %d OUT task %d (%s:%s): jobs=%ld wall_time=%f s avg_wall=%f s simulated_time=%f s avg_simulated=%f s\n",
                        configuration->stages[si],
                        task,
                        nfr_managers_out[sn][task].task_name,
                        nfr_managers_out[sn][task].task_algorithm,
                        jobs,
                        time,
-                       avg);
+                       avg,
+                       simulated_time,
+                       avg_simulated);
                 if (manager_csv)
-                    fprintf(manager_csv, "%d,%s,output,%d,%s,%s,%ld,%f,%f\n",
+                    fprintf(manager_csv, "%d,%s,output,%d,%s,%s,%ld,%f,%f,%f,%f\n",
                             configuration->stages[si],
                             stage_def->name,
                             task,
@@ -925,19 +1074,24 @@ void shutdown_and_report_metrics(struct config *configuration)
                             nfr_managers_out[sn][task].task_algorithm,
                             jobs,
                             time,
-                            avg);
+                            avg,
+                            simulated_time,
+                            avg_simulated);
             }
 
             double combined_avg = (combined_jobs > 0) ? (combined_time / (double)combined_jobs) : 0.0;
+            double combined_simulated_avg = (combined_jobs > 0) ? (combined_simulated_time / (double)combined_jobs) : 0.0;
 
-            printf("Stage %d COMBINED: jobs=%ld total_time=%f s avg_per_job=%f s\n", configuration->stages[si], combined_jobs, combined_time, combined_avg);
+            printf("Stage %d COMBINED: jobs=%ld wall_time=%f s avg_wall=%f s simulated_time=%f s avg_simulated=%f s\n", configuration->stages[si], combined_jobs, combined_time, combined_avg, combined_simulated_time, combined_simulated_avg);
             if (manager_csv)
-                fprintf(manager_csv, "%d,%s,combined,-1,combined,,%ld,%f,%f\n",
+                fprintf(manager_csv, "%d,%s,combined,-1,combined,,%ld,%f,%f,%f,%f\n",
                         configuration->stages[si],
                         stage_def->name,
                         combined_jobs,
                         combined_time,
-                        combined_avg);
+                        combined_avg,
+                        combined_simulated_time,
+                        combined_simulated_avg);
         }
     }
     if (manager_csv)
@@ -984,6 +1138,12 @@ int wait_for_managers_empty(struct config *configuration, int timeout_seconds)
                     pthread_mutex_lock(&nfr_managers_in[sn][task].lock);
                     total_q += nfr_managers_in[sn][task].q_count;
                     pthread_mutex_unlock(&nfr_managers_in[sn][task].lock);
+                }
+                if (stage_has_application(stage_def) && application_managers[sn].threads)
+                {
+                    pthread_mutex_lock(&application_managers[sn].lock);
+                    total_q += application_managers[sn].q_count;
+                    pthread_mutex_unlock(&application_managers[sn].lock);
                 }
                 for (int task = 0; task < stage_def->output_count; ++task)
                 {
@@ -1176,6 +1336,15 @@ struct config *read_config(const char *file_name)
         configuration->b_fs = 100.0 * 1048576.0; // Default 100 MB/s
     }
 
+    static const char *application_time_keys[] = {
+        "application_mean_service_time",
+        "application_mean_execution_time",
+        "application_avg_execution_time",
+        "application_execution_time"
+    };
+    cJSON *app_time = first_number_item(json, application_time_keys, sizeof(application_time_keys) / sizeof(application_time_keys[0]));
+    configuration->application_mean_service_time = cJSON_IsNumber(app_time) ? app_time->valuedouble : 0.0;
+
     stages = cJSON_GetObjectItemCaseSensitive(json, "stages");
     if (cJSON_IsArray(stages))
     {
@@ -1223,6 +1392,7 @@ struct config *read_config(const char *file_name)
                     configuration->stages[configuration->stages_number++] = parsed_stage;
                     init_stage_definition(configuration, si, parsed_stage, stage_name);
                     parse_stage_filesystem_bandwidth(stage, &configuration->stage_definitions[si]);
+                    parse_stage_application_time(stage, &configuration->stage_definitions[si]);
 
                     cJSON *output_reqs = cJSON_GetObjectItemCaseSensitive(stage, "output_requirements");
                     if (!cJSON_IsArray(output_reqs))
@@ -1427,7 +1597,11 @@ void makeAgents(int workers, const char *agent_type)
 {
     char *command, *pwd;
     int i;
-    const char *container_prefix = strcmp(agent_type, "input") == 0 ? "input_agent" : "output_agent";
+    const char *container_prefix = "output_agent";
+    if (strcmp(agent_type, "input") == 0)
+        container_prefix = "input_agent";
+    else if (strcmp(agent_type, "application") == 0)
+        container_prefix = "application_agent";
 
     pwd = getenv("PWD");
 
@@ -1452,8 +1626,23 @@ void makeAgents(int workers, const char *agent_type)
 
 void makeContainers(struct config *configuration)
 {
+    int needs_application_agents = 0;
+    if (configuration)
+    {
+        for (int si = 0; si < configuration->stages_number; ++si)
+        {
+            if (stage_has_application(&configuration->stage_definitions[si]))
+            {
+                needs_application_agents = 1;
+                break;
+            }
+        }
+    }
+
     makeTraceGenerator();
     makeAgents(configuration->workers, "input");
+    if (needs_application_agents)
+        makeAgents(configuration->workers, "application");
     makeAgents(configuration->workers, "output");
 }
 
@@ -1565,6 +1754,7 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
         {
             arrayWorkers[i].stage_input_time[si] = 0.0;
             arrayWorkers[i].stage_output_time[si] = 0.0;
+            arrayWorkers[i].stage_application_time[si] = 0.0;
             arrayWorkers[i].stage_transfer_time[si] = 0.0;
             arrayWorkers[i].stage_input_size[si] = 0;
             arrayWorkers[i].stage_output_size[si] = 0;
@@ -1598,6 +1788,7 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
                 arrayWorkers[i].trace[ti].service_time_idx = 0.0f;
                 arrayWorkers[i].trace[ti].service_time_ida = 0.0f;
                 arrayWorkers[i].trace[ti].service_time_io = 0.0f;
+                arrayWorkers[i].trace[ti].service_time_app = 0.0f;
                 arrayWorkers[i].trace[ti].MUESTRAS = 0;
             }
         }
@@ -1629,12 +1820,14 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
             for (int task = 0; task < stage_def->input_count; ++task)
             {
                 struct nfr_requirement *req = &stage_def->input_requirements[task];
-                nfr_manager_init(&nfr_managers_in[idx][task], stageNum, task, req->type, req->task_name, req->algorithm, per_stage_threads, 1024, 1);
+                nfr_manager_init(&nfr_managers_in[idx][task], stageNum, task, req->type, req->task_name, req->algorithm, per_stage_threads, 1024, 1, 0);
             }
+            if (stage_has_application(stage_def))
+                nfr_manager_init(&application_managers[idx], stageNum, 0, NFR_NONE, "application", "", per_stage_threads, 1024, 0, 1);
             for (int task = 0; task < stage_def->output_count; ++task)
             {
                 struct nfr_requirement *req = &stage_def->output_requirements[task];
-                nfr_manager_init(&nfr_managers_out[idx][task], stageNum, task, req->type, req->task_name, req->algorithm, per_stage_threads, 1024, 0);
+                nfr_manager_init(&nfr_managers_out[idx][task], stageNum, task, req->type, req->task_name, req->algorithm, per_stage_threads, 1024, 0, 0);
             }
         }
         nfr_initialized = 1;
@@ -1673,6 +1866,7 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
             traces[i].service_time_idx = 0.0f;
             traces[i].service_time_ida = 0.0f;
             traces[i].service_time_io = 0.0f;
+            traces[i].service_time_app = 0.0f;
             traces[i].MUESTRAS = 1;
 
             position1 = rand() % configuration->workers;
@@ -1880,46 +2074,212 @@ static int trace_pop_restore_size(struct traces *trace, double *original_size)
     return 1;
 }
 
-static void record_queue_result(struct worker *my_data, int result_stage, float st_avg)
+static int run_queue_estimator(const char *container_prefix, int worker_id, double mean_interarrival, double mean_service, int samples, const char *result_file, double *total_time);
+
+static int record_queue_result(struct worker *my_data, int result_stage, double st_avg, double *total_time)
 {
     if (!my_data || my_data->sizeWorker <= 0)
+        return -1;
+
+    const char *prefix = agent_prefix_for_worker(my_data);
+    char result_file[128];
+    snprintf(result_file, sizeof(result_file), "w%d_stage%d.txt", my_data->id, result_stage);
+
+    if (run_queue_estimator(prefix,
+                            my_data->id,
+                            my_data->trace[0].mean_interarrival,
+                            st_avg,
+                            my_data->sizeWorker,
+                            result_file,
+                            total_time) != 0)
+    {
+        if (total_time)
+            *total_time = st_avg * (double)my_data->sizeWorker;
+        printf("Warning: queue estimator failed for worker %d stage %d task %s; using raw total %f seconds\n",
+               my_data->id,
+               my_data->stage,
+               my_data->task_name,
+               total_time ? *total_time : 0.0);
+        return -1;
+    }
+
+    return 0;
+}
+
+static void apply_queue_total_to_nfr_times(struct worker *my_data, int task_type, const double *raw_times, double raw_total, double queued_total)
+{
+    if (!my_data || my_data->sizeWorker <= 0 || raw_total <= 0.0 || queued_total < 0.0)
         return;
+
+    for (int j = 0; j < my_data->sizeWorker; ++j)
+    {
+        double raw_time = raw_times ? raw_times[j] : raw_total / (double)my_data->sizeWorker;
+        double queued_time = queued_total * (raw_time / raw_total);
+        double delta = queued_time - raw_time;
+
+        switch (task_type)
+        {
+        case NFR_COMPRESS:
+            my_data->trace[j].service_time_c += (float)delta;
+            break;
+        case NFR_HASH:
+            my_data->trace[j].service_time_h += (float)delta;
+            break;
+        case NFR_ENCRYPT:
+            my_data->trace[j].service_time_ida += (float)delta;
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+static int run_queue_estimator(const char *container_prefix, int worker_id, double mean_interarrival, double mean_service, int samples, const char *result_file, double *total_time)
+{
+    char line[256];
+    double avg_delay = 0.0;
+    double avg_queue = 0.0;
+    double utilization = 0.0;
+    double simulation_time = 0.0;
+    int parsed = 0;
+
+    if (!container_prefix || samples <= 0 || mean_service <= 0.0)
+        return -1;
 
     char *path = getenv("PWD");
     if (!path)
-        return;
+        return -1;
 
-    const char *prefix = agent_prefix_for_worker(my_data);
-    char *command = malloc(strlen(path) + strlen(prefix) + 256);
+    mkdir("results", 0777);
+
+    int command_size = snprintf(NULL, 0,
+                                "docker exec %s%d ./single %f %f %d",
+                                container_prefix,
+                                worker_id,
+                                mean_interarrival,
+                                mean_service,
+                                samples) + 1;
+    char *command = malloc(command_size);
     if (!command)
-        return;
+        return -1;
 
-    sprintf(
-        command,
-        "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage%d.txt'",
-        prefix,
-        my_data->id,
-        my_data->trace[0].mean_interarrival,
-        st_avg,
-        my_data->sizeWorker,
-        path,
-        my_data->id,
-        result_stage);
+    snprintf(command, command_size,
+             "docker exec %s%d ./single %f %f %d",
+             container_prefix,
+             worker_id,
+             mean_interarrival,
+             mean_service,
+             samples);
 
-    execute_command(command);
+    FILE *fp = popen(command, "r");
     free(command);
+    if (!fp)
+        return -1;
+
+    FILE *out = NULL;
+    char *result_path = NULL;
+    if (result_file && result_file[0] != '\0')
+    {
+        int result_path_size = snprintf(NULL, 0, "%s/results/%s", path, result_file) + 1;
+        result_path = malloc(result_path_size);
+        if (result_path)
+        {
+            snprintf(result_path, result_path_size, "%s/results/%s", path, result_file);
+            out = fopen(result_path, "a");
+        }
+    }
+
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
+        if (out)
+            fputs(line, out);
+        if (sscanf(line, "%lf %lf %lf %lf", &avg_delay, &avg_queue, &utilization, &simulation_time) == 4)
+            parsed = 1;
+    }
+
+    if (out)
+        fclose(out);
+    free(result_path);
+    pclose(fp);
+
+    if (!parsed)
+        return -1;
+
+    if (total_time)
+        *total_time = simulation_time;
+
+    return 0;
+}
+
+static double application_time(struct worker *my_data)
+{
+    if (!my_data || my_data->sizeWorker <= 0)
+        return 0.0;
+
+    struct stage_definition *stage_def = global_stage_definition(my_data->stage);
+    double avg_service_time = stage_def ? stage_def->application_mean_service_time : 0.0;
+    if (avg_service_time <= 0.0)
+        return 0.0;
+
+    char result_file[128];
+    snprintf(result_file, sizeof(result_file), "w%d_stage%d_application.txt", my_data->id, my_data->stage);
+
+    double total_time = 0.0;
+
+    printf("APPLICATION TIME: Worker %d (machine %d) stage %d application with average service time %f seconds, interarrival time %f seconds; samples %d; running queue estimator...\n",
+           my_data->id,
+           my_data->machine_id,
+           my_data->stage,
+           avg_service_time,
+           my_data->trace[0].mean_interarrival,
+           my_data->sizeWorker);
+    if (run_queue_estimator("application_agent",
+                            my_data->id,
+                            my_data->trace[0].mean_interarrival,
+                            avg_service_time,
+                            my_data->sizeWorker,
+                            result_file,
+                            &total_time) != 0)
+    {
+        total_time = avg_service_time * my_data->sizeWorker;
+        printf("Warning: application queue estimator failed for worker %d stage %d; using %f seconds fallback\n",
+               my_data->id,
+               my_data->stage,
+               total_time);
+    }
+
+    double per_object_time = total_time / (double)my_data->sizeWorker;
+    printf("Worker %d (machine %d) stage %d application estimated total time %f seconds for %d objects (average per object: %f seconds)\n",
+           my_data->id,
+           my_data->machine_id,
+           my_data->stage,
+           total_time,
+           my_data->sizeWorker,
+           per_object_time);
+    for (int j = 0; j < my_data->sizeWorker; ++j)
+        my_data->trace[j].service_time_app += (float)per_object_time;
+
+    printf("Worker %d (machine %d) completed stage %d application with average service time %f seconds and simulated total time %f seconds\n",
+           my_data->id,
+           my_data->machine_id,
+           my_data->stage,
+           avg_service_time,
+           total_time);
+
+    return total_time;
 }
 
 void compress_time(struct worker *my_data)
 {
     int j;
-    float st_sum, st_avg;
+    double st_sum, st_avg;
 
     st_sum = 0;
     st_avg = 0;
 
     if (my_data->sizeWorker > 0)
     {
+        double *raw_times = calloc(my_data->sizeWorker, sizeof(double));
         for (j = 0; j < my_data->sizeWorker; ++j)
         {
             double t_read = 0.0, t_write = 0.0;
@@ -1934,10 +2294,13 @@ void compress_time(struct worker *my_data)
             if (my_data->b_fs > 0.0)
                 t_write = (double)new_size / my_data->b_fs;
 
-            my_data->trace[j].service_time_c += comp_time + (float)(t_read + t_write);
+            double raw_time = comp_time + t_read + t_write;
+            my_data->trace[j].service_time_c += (float)raw_time;
             trace_push_restore_size(&my_data->trace[j], (double)size_before);
             my_data->trace[j].size = new_size;
-            st_sum += comp_time + (float)(t_read + t_write);
+            if (raw_times)
+                raw_times[j] = raw_time;
+            st_sum += raw_time;
             printf("****Worker %d (machine %d) compressed object %d from %.2f MB to %f MB in %.2f seconds (I/O time: %.2f seconds)\n",
                    my_data->id, my_data->machine_id, j, (double)size_before / 1048576.0, (double)new_size / 1048576.0, comp_time, (float)(t_read + t_write));
         }
@@ -1945,7 +2308,10 @@ void compress_time(struct worker *my_data)
     
         printf("------Worker %d (machine %d) completed compression stage with average time %.2f seconds\n", my_data->id, my_data->machine_id, st_avg);
         refresh_worker_storage(my_data);
-        record_queue_result(my_data, 1, st_avg);
+        double queued_total = st_sum;
+        record_queue_result(my_data, 1, st_avg, &queued_total);
+        apply_queue_total_to_nfr_times(my_data, NFR_COMPRESS, raw_times, st_sum, queued_total);
+        free(raw_times);
     }
 }
 
@@ -1957,13 +2323,14 @@ void hashing_time(struct worker *my_data)
 static void hash_task_time(struct worker *my_data, int result_stage)
 {
     int j;
-    float st_sum, st_avg;
+    double st_sum, st_avg;
 
     st_sum = 0;
     st_avg = 0;
 
     if (my_data->sizeWorker > 0)
     {
+        double *raw_times = calloc(my_data->sizeWorker, sizeof(double));
         for (j = 0; j < my_data->sizeWorker; ++j)
         {
             double t_read = 0.0, t_write = 0.0;
@@ -1977,11 +2344,17 @@ static void hash_task_time(struct worker *my_data, int result_stage)
             if (my_data->b_fs > 0.0)
                 t_write = (double)size_before / my_data->b_fs;
 
-            my_data->trace[j].service_time_h += hash_time + (float)(t_read + t_write);
-            st_sum += hash_time + (float)(t_read + t_write);
+            double raw_time = hash_time + t_read + t_write;
+            my_data->trace[j].service_time_h += (float)raw_time;
+            if (raw_times)
+                raw_times[j] = raw_time;
+            st_sum += raw_time;
         }
         st_avg = st_sum / my_data->sizeWorker;
-        record_queue_result(my_data, result_stage, st_avg);
+        double queued_total = st_sum;
+        record_queue_result(my_data, result_stage, st_avg, &queued_total);
+        apply_queue_total_to_nfr_times(my_data, NFR_HASH, raw_times, st_sum, queued_total);
+        free(raw_times);
     }
 }
 
@@ -1998,13 +2371,14 @@ void hash_verify_time(struct worker *my_data)
 static void crypto_task_time(struct worker *my_data, int is_decrypt)
 {
     int j;
-    float st_sum, st_avg;
+    double st_sum, st_avg;
 
     st_sum = 0;
     st_avg = 0;
 
     if (my_data->sizeWorker > 0)
     {
+        double *raw_times = calloc(my_data->sizeWorker, sizeof(double));
         for (j = 0; j < my_data->sizeWorker; ++j)
         {
             double t_read = 0.0, t_write = 0.0;
@@ -2021,12 +2395,18 @@ static void crypto_task_time(struct worker *my_data, int is_decrypt)
             if (crypto_time <= 0.0f)
                 crypto_time = hashingStage((double)size_before);
 
-            my_data->trace[j].service_time_ida += crypto_time + (float)(t_read + t_write);
-            st_sum += crypto_time + (float)(t_read + t_write);
+            double raw_time = crypto_time + t_read + t_write;
+            my_data->trace[j].service_time_ida += (float)raw_time;
+            if (raw_times)
+                raw_times[j] = raw_time;
+            st_sum += raw_time;
         }
 
         st_avg = st_sum / my_data->sizeWorker;
-        record_queue_result(my_data, 4, st_avg);
+        double queued_total = st_sum;
+        record_queue_result(my_data, 4, st_avg, &queued_total);
+        apply_queue_total_to_nfr_times(my_data, NFR_ENCRYPT, raw_times, st_sum, queued_total);
+        free(raw_times);
     }
 }
 
@@ -2205,13 +2585,14 @@ void IDA_reconstruct_time(struct worker *my_data)
 void decompress_time(struct worker *my_data)
 {
     int j;
-    float st_sum, st_avg;
+    double st_sum, st_avg;
 
     st_sum = 0;
     st_avg = 0;
 
     if (my_data->sizeWorker > 0)
     {
+        double *raw_times = calloc(my_data->sizeWorker, sizeof(double));
         for (j = 0; j < my_data->sizeWorker; ++j)
         {
             double t_read = 0.0, t_write = 0.0;
@@ -2241,16 +2622,22 @@ void decompress_time(struct worker *my_data)
             if (my_data->b_fs > 0.0)
                 t_write = (double)new_size / my_data->b_fs;
 
-            my_data->trace[j].service_time_c += dec_time + (float)(t_read + t_write);
+            double raw_time = dec_time + t_read + t_write;
+            my_data->trace[j].service_time_c += (float)raw_time;
             my_data->trace[j].size = new_size;
-            st_sum += dec_time + (float)(t_read + t_write);
+            if (raw_times)
+                raw_times[j] = raw_time;
+            st_sum += raw_time;
         }
         st_avg = st_sum / my_data->sizeWorker;
         refresh_worker_storage(my_data);
 
         printf("Worker %d - Decompress stage: avg service time = %f seconds\n", my_data->id, st_avg);
 
-        record_queue_result(my_data, 1, st_avg);
+        double queued_total = st_sum;
+        record_queue_result(my_data, 1, st_avg, &queued_total);
+        apply_queue_total_to_nfr_times(my_data, NFR_COMPRESS, raw_times, st_sum, queued_total);
+        free(raw_times);
     }
 }
 

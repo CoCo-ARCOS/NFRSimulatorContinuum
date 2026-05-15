@@ -6,6 +6,7 @@
   "stages": [
     {
       "name": "stage1",
+      "application_mean_service_time": 0.5,
       "output_requirements": [
         { "type": "compress", "algorithm": "ZLIB" },
         { "type": "cipher", "algorithm": "RS" },
@@ -14,18 +15,21 @@
     },
     {
       "name": "stage2",
+      "application_mean_service_time": 1.0,
       "output_requirements": [
         { "type": "hash", "algorithm": "BLAKE3" }
       ]
     },
     {
       "name": "stage3",
+      "application_mean_service_time": 1.5,
       "output_requirements": [
         { "type": "cipher", "algorithm": "RS" }
       ]
     },
     {
       "name": "stage4",
+      "application_mean_service_time": 2.0,
       "output_requirements": [
         { "type": "compress", "algorithm": "LZ4" }
       ]
