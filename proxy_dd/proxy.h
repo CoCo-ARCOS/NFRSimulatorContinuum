@@ -25,6 +25,7 @@ struct traces
 	float service_time_idx; /* indexing */
 	float service_time_ida; /* IDA/reconstruct */
 	float service_time_io;
+	float service_time_app;
 	int MUESTRAS;
 };
 
@@ -71,6 +72,7 @@ struct stage_definition
 	struct nfr_requirement output_requirements[MAX_PIPELINE_TASKS];
 	int output_count;
 	double b_fs; /* filesystem bandwidth bytes/sec for this stage */
+	double application_mean_service_time; /* average application execution time in seconds */
 };
 
 struct machine_node
@@ -114,6 +116,7 @@ struct worker
 	double b_fs; /* filesystem bandwidth bytes/sec for this worker */
 	double stage_input_time[MAX_STAGES];
 	double stage_output_time[MAX_STAGES];
+	double stage_application_time[MAX_STAGES];
 	double stage_transfer_time[MAX_STAGES];
 	long stage_input_size[MAX_STAGES];
 	long stage_output_size[MAX_STAGES];
@@ -147,6 +150,7 @@ struct config
 	int ida_k;											   /**< IDA k_datos.*/
 	int ida_m;											   /**< IDA m_paridad.*/
 	double b_fs;										   /**< Theoretical filesystem bandwidth (bytes/sec). Configured in MB/s and converted at startup. */
+	double application_mean_service_time;				   /**< Average application execution time in seconds. */
 	struct machine_node machines[MAX_MACHINES];			   /**< Optional distributed machines */
 	int machines_number;
 	struct link_node links[MAX_LINKS]; /**< Links between machines */
@@ -230,11 +234,13 @@ struct nfr_manager
 	pthread_cond_t cond_nonfull;
 	int stop;
 	int is_input; /* 1=input pipeline, 0=output pipeline */
+	int is_application; /* 1=application step between input and output pipelines */
 	/* runtime metrics */
 	long jobs_processed;
 	double total_processing_time; /* seconds */
+	double total_simulated_time;	 /* seconds reported by the queue/service model */
 };
-int nfr_manager_init(struct nfr_manager *m, int stage, int task_id, int task_type, const char *task_name, const char *task_algorithm, int num_threads, int q_size, int is_input);
+int nfr_manager_init(struct nfr_manager *m, int stage, int task_id, int task_type, const char *task_name, const char *task_algorithm, int num_threads, int q_size, int is_input, int is_application);
 int nfr_manager_enqueue(struct nfr_manager *m, struct worker *w);
 void nfr_manager_shutdown(struct nfr_manager *m);
 void shutdown_and_report_metrics(struct config *configuration);

@@ -49,6 +49,7 @@ for i in range(workers): #workers
             results4[i] += avg_number_queue
 
 #for i in range(workers):
+
 print "No. trabajadores: ",workers,"\n",\
       "Simulation Time:" ,sum(results)/workers, " seconds\n",\
       "avg_delay_queue: ", sum(results2)/workers, " seconds\n",\

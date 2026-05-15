@@ -1,5 +1,5 @@
 {
-  "workers": 3,
+  "workers": 8,
   "traces_number": 2,
   "traces_fileName": "traces.cfg",
   "agent_type": "output",
@@ -7,6 +7,7 @@
     {
       "name": "stage1",
       "b_fs": 100,
+      "application_mean_service_time": 4,
       "input_requirements": [],
       "output_requirements": [
         { "type": "hash", "algorithm": "SHA256" },
@@ -16,6 +17,7 @@
     {
       "name": "stage2",
       "b_fs": 250,
+      "application_mean_service_time": 1.0,
       "output_requirements": [
         { "type": "cipher", "algorithm": "RS" },
         { "type": "hash", "algorithm": "BLAKE3" }
@@ -24,6 +26,7 @@
     {
       "name": "stage3",
       "b_fs": 75,
+      "application_mean_service_time": 1.5,
       "output_requirements": [
         { "type": "compress", "algorithm": "LZ4" },
         { "type": "cipher", "algorithm": "RS" },
@@ -33,6 +36,7 @@
     {
       "name": "stage4",
       "b_fs": 150,
+      "application_mean_service_time": 2.0,
       "output_requirements": [
         { "type": "hash", "algorithm": "SHA256" }
       ]

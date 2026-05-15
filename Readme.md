@@ -26,4 +26,4 @@ In ```proxy_dd``` directory, edit the file ```config.cfg``` specifying the follo
 * ```workers```: number of parallel workers to simulate.
 * ```traces_number```: number of input traces for each worker.
 * ```traces_fileName```: configuration file containing the parameters of each trace.
-
+* ```application_mean_service_time```: per-stage average application execution time, in seconds, configured inside each stage and simulated between that stage's input and output pipelines with the ```single:queue``` estimator.
