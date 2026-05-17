@@ -1,0 +1,53 @@
+Simulator output for lambda=1.0, mu=5.0:
+0.050230	0.050268	0.200156	49962.023438	
+
+Simulator output for lambda=2.0, mu=5.0:
+0.134202	0.268605	0.400302	24981.251953	
+
+Simulator output for lambda=3.0, mu=5.0:
+0.302576	0.908416	0.600448	16654.281250	
+
+Simulator output for lambda=4.0, mu=5.0:
+0.769662	3.080923	0.800586	12490.957031	
+
+Simulator output for lambda=4.5, mu=5.0:
+1.566448	7.053961	0.900591	11103.906250	
+
+Reference validation
+Scenario	Model	Servers	Rho	Baseline	Base Wq	Ref Wq	Base W	Ref W	Ref Wq Err(%)	Ref W Err(%)
+mm1_rho_0.2	mm1	1	0.20	theoretical	0.050000	0.050116	0.250000	0.250234	0.23	0.09
+mm1_rho_0.4	mm1	1	0.40	theoretical	0.133333	0.128530	0.333333	0.326211	3.60	2.14
+mm1_rho_0.6	mm1	1	0.60	theoretical	0.300000	0.292614	0.500000	0.492688	2.46	1.46
+mm1_rho_0.8	mm1	1	0.80	theoretical	0.800000	0.836714	1.000000	1.037462	4.59	3.75
+mm1_rho_0.9	mm1	1	0.90	theoretical	1.800000	1.880950	2.000000	2.082916	4.50	4.15
+md1_rho_0.2	md1	1	0.20	theoretical	0.025000	0.026184	0.225000	0.226184	4.74	0.53
+md1_rho_0.4	md1	1	0.40	theoretical	0.066667	0.065884	0.266667	0.265884	1.17	0.29
+md1_rho_0.6	md1	1	0.60	theoretical	0.150000	0.144662	0.350000	0.344662	3.56	1.53
+md1_rho_0.8	md1	1	0.80	theoretical	0.400000	0.413881	0.600000	0.613881	3.47	2.31
+md1_rho_0.9	md1	1	0.90	theoretical	0.900000	0.893108	1.100000	1.093108	0.77	0.63
+mmc_c2_rho_0.4	mmc	2	0.40	theoretical	0.038095	0.036707	0.238095	0.236625	3.64	0.62
+mmc_c2_rho_0.6	mmc	2	0.60	theoretical	0.112500	0.108006	0.312500	0.307392	3.99	1.63
+mmc_c2_rho_0.8	mmc	2	0.80	theoretical	0.355556	0.328186	0.555556	0.526565	7.70	5.22
+mmc_c2_rho_0.9	mmc	2	0.90	theoretical	0.852632	0.762851	1.052632	0.961348	10.53	8.67
+mgc_c2_zlib_compress_rho_0.40	mgc	2	0.40	allen-cunneen-approx	0.411246	0.416456	1.560906	1.560424	1.27	0.03
+mgc_c2_zlib_compress_rho_0.70	mgc	2	0.70	allen-cunneen-approx	2.074375	2.067991	3.224035	3.212176	0.31	0.37
+mgc_c2_zlib_compress_rho_0.85	mgc	2	0.85	allen-cunneen-approx	5.621292	5.655023	6.770952	6.813202	0.60	0.62
+mgc_c2_sha256_hash_rho_0.40	mgc	2	0.40	allen-cunneen-approx	0.048288	0.049196	0.183434	0.185122	1.88	0.92
+mgc_c2_sha256_hash_rho_0.70	mgc	2	0.70	allen-cunneen-approx	0.243568	0.247987	0.378715	0.382307	1.81	0.95
+mgc_c2_sha256_hash_rho_0.85	mgc	2	0.85	allen-cunneen-approx	0.660039	0.608876	0.795186	0.743749	7.75	6.47
+mgc_c2_rs84_encode_rho_0.40	mgc	2	0.40	allen-cunneen-approx	0.218818	0.229917	0.809181	0.820760	5.07	1.43
+mgc_c2_rs84_encode_rho_0.70	mgc	2	0.70	allen-cunneen-approx	1.103742	1.213369	1.694106	1.810715	9.93	6.88
+mgc_c2_rs84_encode_rho_0.85	mgc	2	0.85	allen-cunneen-approx	2.991002	2.646161	3.581365	3.235985	11.53	9.64
+
+Simulator validation (MM1 only)
+Scenario	Sim Wq	Sim W	Sim Wq Err(%)	Sim W Err(%)
+mm1_rho_0.2	0.050230	0.250230	0.46	0.09
+mm1_rho_0.4	0.134202	0.334202	0.65	0.26
+mm1_rho_0.6	0.302576	0.502576	0.86	0.52
+mm1_rho_0.8	0.769662	0.969662	3.79	3.03
+mm1_rho_0.9	1.566448	1.766448	12.98	11.68
+
+Summary written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/queueing/c3/summary.csv
+Validation tables written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/queueing/c3/tables.csv
+Overall metrics written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/queueing/c3/overall.csv
+Plots written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/queueing/c3/plots

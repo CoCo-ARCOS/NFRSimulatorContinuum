@@ -1,0 +1,66 @@
+Requirement already satisfied: pycryptodome>=3.18.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 2)) (3.23.0)
+Requirement already satisfied: ascon in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 5)) (0.0.9)
+Requirement already satisfied: zfec>=1.5.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 8)) (1.6.0.0)
+Requirement already satisfied: lz4>=4.3.2 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 11)) (4.4.5)
+Requirement already satisfied: zstandard>=0.21.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 14)) (0.25.0)
+Requirement already satisfied: blake3>=0.3.3 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 18)) (1.0.8)
+Requirement already satisfied: typing-extensions>=4.6.0 in ./venv/lib64/python3.11/site-packages (from blake3>=0.3.3->-r requirements.txt (line 18)) (4.15.0)
+Trabajo iniciado en: mié may 13 21:02:59 CEST 2026
+Nodo de ejecución: 
+========================================
+ Starting NFR Benchmarks
+ Sizes: 1000 MB
+ Objects: 31
+========================================
+
+[2/4] Running security (confidentiality) benchmarks...
+
+=============================================================================================================================
+                              Cryptographic Algorithm Benchmark (Encryption + Decryption + I/O)                              
+=============================================================================================================================
+Objects per config: 31
+Algorithm    | Size (MB)  | Key (bits) | Enc (s)      | Dec (s)      | I/O W (s)    | I/O R (s)   
+-----------------------------------------------------------------------------------------------------------------------------
+AES          | 1000       | 128        | 2.118542     | 2.113476     | 0.363910     | 0.528379    
+AES          | 1000       | 256        | 2.388695     | 2.382262     | 0.370221     | 0.577639    
+CHACHA20     | 1000       | 256        | 2.766893     | 2.710347     | 0.371921     | 0.580520    
+
+[OK] Raw data saved to: security/conf_raw.csv
+[OK] Aggregated statistics saved to: security/conf_stats.csv
+Confidentiality benchmarks completed.
+
+[3/4] Running security (integrity) benchmarks...
+
+===================================================================================================================
+                           Benchmark de Algoritmos de Integridad (Hashing & HMAC + I/O)                            
+===================================================================================================================
+Algoritmo       | Archivo    | Tiempo Medio (s)   | Velocidad (MB/s) | Std Dev (s)  | I/O W (s)    | I/O R (s)   
+-------------------------------------------------------------------------------------------------------------------
+SHA256          | 1000    MB | 0.581645           | 1719.26         | 0.003267     | 0.364206     | 0.157291    
+SHA3_256        | 1000    MB | 2.152478           | 464.58          | 0.015844     | 0.363858     | 0.154467    
+BLAKE3          | 1000    MB | 0.251629           | 3974.11         | 0.001071     | 0.364411     | 0.155539    
+HMAC_SHA256     | 1000    MB | 0.581152           | 1720.72         | 0.001060     | 0.365068     | 0.157580    
+
+[OK] Datos crudos guardados en: security/integ_raw.csv
+[OK] Estadísticas guardadas en: security/integ_stats.csv
+Integrity benchmarks completed.
+
+[4/4] Running reliability (erasure coding) benchmarks...
+
+============================================================================================================================================
+                                        Benchmark de Erasure Coding (ZFEC) con I/O y Decodificación                                         
+============================================================================================================================================
+Algoritmo  | Archivo (MB) | Config (K+M)  | Codif. (s)   | Decod. (s)   | I/O W (s)    | I/O R (s)   
+--------------------------------------------------------------------------------------------------------------------------------------------
+RS | 1000         | 4+2           | 1.518518     | 0.144163     | 0.365519     | 0.571100    
+RS | 1000         | 8+4           | 2.592170     | 0.121023     | 0.370274     | 0.601072    
+RS | 1000         | 10+4          | 2.514774     | 0.122474     | 0.370432     | 0.460090    
+
+[OK] Datos crudos guardados en: reliability/erasure_raw.csv
+[OK] Estadísticas guardadas en: reliability/erasure_stats.csv
+Reliability benchmarks completed.
+
+========================================
+ All benchmarks completed successfully!
+========================================
+Trabajo finalizado en: mié may 13 21:45:47 CEST 2026

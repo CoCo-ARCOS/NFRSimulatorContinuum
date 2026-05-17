@@ -1,0 +1,37 @@
+Interpolation validation mode: leave-one-out
+
+Dataset	Operation	Group	Samples	MAE(s)	RMSE(s)	MAPE(%)
+cost-efficiency	compress	cost-efficiency:compress	25	7.288080	32.541945	178.99
+cost-efficiency	decompress	cost-efficiency:decompress	25	0.315833	1.132547	177.90
+integrity	hash	integrity:hash	20	0.162146	0.466237	196.31
+reliability	decode	reliability:decode	15	0.023678	0.052183	215.03
+reliability	encode	reliability:encode	15	0.411448	0.925275	205.24
+
+OVERALL	all	overall	100	1.998676	16.286114	191.52
+
+Detailed groups:
+Dataset	Operation	Group	Samples	MAE(s)	RMSE(s)	MAPE(%)
+cost-efficiency	compress	BZ2	5	32.756542	72.487490	202.31
+cost-efficiency	compress	LZ4	5	0.018531	0.040850	195.65
+cost-efficiency	compress	LZMA	5	2.733542	6.039562	183.10
+cost-efficiency	compress	ZLIB	5	0.900345	1.992973	198.48
+cost-efficiency	compress	ZSTD	5	0.031440	0.069490	115.42
+cost-efficiency	decompress	BZ2	5	1.119085	2.461487	183.94
+cost-efficiency	decompress	LZ4	5	0.086538	0.189754	241.67
+cost-efficiency	decompress	LZMA	5	0.208269	0.459998	190.19
+cost-efficiency	decompress	ZLIB	5	0.146854	0.324286	180.83
+cost-efficiency	decompress	ZSTD	5	0.018419	0.040287	92.85
+integrity	hash	BLAKE3	5	0.045893	0.101320	191.94
+integrity	hash	HMAC_SHA256	5	0.105635	0.233774	197.24
+integrity	hash	SHA256	5	0.105734	0.234019	198.64
+integrity	hash	SHA3_256	5	0.391322	0.865925	197.42
+reliability	decode	RS k=10 m=4	5	0.022258	0.048828	246.72
+reliability	decode	RS k=4 m=2	5	0.026537	0.058547	166.37
+reliability	decode	RS k=8 m=4	5	0.022240	0.048552	231.99
+reliability	encode	RS k=10 m=4	5	0.466106	1.026075	201.60
+reliability	encode	RS k=4 m=2	5	0.286108	0.626544	206.43
+reliability	encode	RS k=8 m=4	5	0.482130	1.059724	207.68
+
+Detailed results written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/interpolation/c3/detailed.csv
+Summary written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/interpolation/c3/summary.csv
+Plots written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/interpolation/c3/plots

@@ -1,0 +1,2064 @@
+Compress Table: ZLIB 1048576.000000 0.006448 148.860001
+Compress Table: ZLIB 10485760.000000 0.058908 154.490005
+Compress Table: ZLIB 52428800.000000 0.279192 158.470001
+Compress Table: ZLIB 104857600.000000 0.548262 158.750000
+Compress Table: BZ2 1048576.000000 0.253705 1191.560059
+Compress Table: BZ2 10485760.000000 2.740345 1878.500000
+Compress Table: BZ2 52428800.000000 14.431828 1917.589966
+Compress Table: BZ2 104857600.000000 49.860970 1930.229980
+Compress Table: LZMA 1048576.000000 0.027456 2545.090088
+Compress Table: LZMA 10485760.000000 0.197901 5851.430176
+Compress Table: LZMA 52428800.000000 0.851459 6643.279785
+Compress Table: LZMA 104857600.000000 1.762460 6758.029785
+Compress Table: LZ4 1048576.000000 0.000776 60.910000
+Compress Table: LZ4 10485760.000000 0.001484 61.389999
+Compress Table: LZ4 52428800.000000 0.008109 61.500000
+Compress Table: LZ4 104857600.000000 0.013973 61.730000
+Compress Table: ZSTD 1048576.000000 0.000455 104.129997
+Compress Table: ZSTD 10485760.000000 0.002212 535.210022
+Compress Table: ZSTD 52428800.000000 0.009686 2237.489990
+Compress Table: ZSTD 104857600.000000 0.018124 3714.139893
+Decompress Table: ZLIB 1048576.000000 0.001371 148.860001
+Decompress Table: ZLIB 10485760.000000 0.014042 154.490005
+Decompress Table: ZLIB 52428800.000000 0.109711 158.470001
+Decompress Table: ZLIB 104857600.000000 0.223561 158.750000
+Decompress Table: BZ2 1048576.000000 0.011246 1191.560059
+Decompress Table: BZ2 10485760.000000 0.115207 1878.500000
+Decompress Table: BZ2 52428800.000000 0.653815 1917.589966
+Decompress Table: BZ2 104857600.000000 1.753955 1930.229980
+Decompress Table: LZMA 1048576.000000 0.002992 2545.090088
+Decompress Table: LZMA 10485760.000000 0.005004 5851.430176
+Decompress Table: LZMA 52428800.000000 0.069355 6643.279785
+Decompress Table: LZMA 104857600.000000 0.163791 6758.029785
+Decompress Table: LZ4 1048576.000000 0.001302 60.910000
+Decompress Table: LZ4 10485760.000000 0.004569 61.389999
+Decompress Table: LZ4 52428800.000000 0.064734 61.500000
+Decompress Table: LZ4 104857600.000000 0.129831 61.730000
+Decompress Table: ZSTD 1048576.000000 0.001228 104.129997
+Decompress Table: ZSTD 10485760.000000 0.001519 535.210022
+Decompress Table: ZSTD 52428800.000000 0.028259 2237.489990
+Decompress Table: ZSTD 104857600.000000 0.058166 3714.139893
+Hashing Table: SHA256 1048576.000000 0.000592 1.100000
+Hashing Table: SHA256 10485760.000000 0.005782 1.100000
+Hashing Table: SHA256 52428800.000000 0.030439 1.100000
+Hashing Table: SHA256 104857600.000000 0.061901 1.100000
+Hashing Table: SHA3_256 1048576.000000 0.002703 1.100000
+Hashing Table: SHA3_256 10485760.000000 0.037787 1.100000
+Hashing Table: SHA3_256 52428800.000000 0.163051 1.100000
+Hashing Table: SHA3_256 104857600.000000 0.330098 1.100000
+Hashing Table: BLAKE3 1048576.000000 0.000577 1.100000
+Hashing Table: BLAKE3 10485760.000000 0.003935 1.100000
+Hashing Table: BLAKE3 52428800.000000 0.019166 1.100000
+Hashing Table: BLAKE3 104857600.000000 0.037542 1.100000
+Hashing Table: HMAC_SHA256 1048576.000000 0.000636 1.100000
+Hashing Table: HMAC_SHA256 10485760.000000 0.005542 1.100000
+Hashing Table: HMAC_SHA256 52428800.000000 0.030108 1.100000
+Hashing Table: HMAC_SHA256 104857600.000000 0.059382 1.100000
+[ENQUEUE] Stage 1 APP task 0 (application:) worker 0
+[ENQUEUE] Stage 1 APP task 0 (application:) worker 1
+[ENQUEUE] Stage 1 APP task 0 (application:) worker 2
+[ENQUEUE] Stage 1 APP task 0 (application:) worker 3
+[ENQUEUE] Stage 1 APP task 0 (application:) worker 4
+[ENQUEUE] Stage 1 APP task 0 (application:) worker 5
+[ENQUEUE] Stage 1 APP task 0 (application:) worker 6
+[ENQUEUE] Stage 1 APP task 0 (application:) worker 7
+APPLICATION TIME: Worker 1 (machine 0) stage 1 application with average service time 4.514984 seconds, size factor 0.800000, interarrival time 2.000000 seconds; samples 13; running queue estimator...
+APPLICATION TIME: Worker 0 (machine 0) stage 1 application with average service time 4.514984 seconds, size factor 0.800000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 0 (machine 0) stage 1 application estimated total time 50.630268 seconds for 12 objects (average per object: 4.219189 seconds)
+Worker 0 (machine 0) completed stage 1 application with average service time 4.514984 seconds and simulated total time 50.630268 seconds
+[ENQUEUE] Stage 1 OUT task 0 (compress:ZSTD) worker 0
+Worker 1 (machine 0) stage 1 application estimated total time 56.263474 seconds for 13 objects (average per object: 4.327960 seconds)
+APPLICATION TIME: Worker 2 (machine 0) stage 1 application with average service time 4.514984 seconds, size factor 0.800000, interarrival time 2.000000 seconds; samples 13; running queue estimator...
+Worker 1 (machine 0) completed stage 1 application with average service time 4.514984 seconds and simulated total time 56.263474 seconds
+[ENQUEUE] Stage 1 OUT task 0 (compress:ZSTD) worker 1
+APPLICATION TIME: Worker 3 (machine 0) stage 1 application with average service time 4.514984 seconds, size factor 0.800000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 0 (machine 0) processing stage 1 output task 0 (compress:ZSTD)
+Worker 1 (machine 0) processing stage 1 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 0 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 1 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 2 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 3 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 4 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 5 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 6 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 7 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 8 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 9 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 10 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 0 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 1 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 2 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 0 (machine 0) compressed object 11 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+------Worker 0 (machine 0) completed compression stage with average time 0.23 seconds
+****Worker 1 (machine 0) compressed object 3 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 4 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 5 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 6 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 7 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 8 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 9 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 10 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 11 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 1 (machine 0) compressed object 12 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+------Worker 1 (machine 0) completed compression stage with average time 0.23 seconds
+Worker 0 (machine 0) completed stage 1 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 1 OUT task 1 (hash_calculate:SHA3_256) worker 0
+Worker 0 (machine 0) processing stage 1 output task 1 (hash_calculate:SHA3_256)
+Worker 2 (machine 0) stage 1 application estimated total time 56.263474 seconds for 13 objects (average per object: 4.327960 seconds)
+Worker 2 (machine 0) completed stage 1 application with average service time 4.514984 seconds and simulated total time 56.263474 seconds
+[ENQUEUE] Stage 1 OUT task 0 (compress:ZSTD) worker 2
+APPLICATION TIME: Worker 4 (machine 0) stage 1 application with average service time 4.514984 seconds, size factor 0.800000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 2 (machine 0) processing stage 1 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 0 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 1 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 2 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 3 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 4 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 5 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 6 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 7 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 8 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 9 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 10 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 11 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 2 (machine 0) compressed object 12 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+------Worker 2 (machine 0) completed compression stage with average time 0.23 seconds
+Worker 3 (machine 0) stage 1 application estimated total time 50.630268 seconds for 12 objects (average per object: 4.219189 seconds)
+Worker 3 (machine 0) completed stage 1 application with average service time 4.514984 seconds and simulated total time 50.630268 seconds
+[ENQUEUE] Stage 1 OUT task 0 (compress:ZSTD) worker 3
+APPLICATION TIME: Worker 5 (machine 0) stage 1 application with average service time 4.514984 seconds, size factor 0.800000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 1 (machine 0) completed stage 1 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 1 OUT task 1 (hash_calculate:SHA3_256) worker 1
+Worker 3 (machine 0) processing stage 1 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 0 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 1 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 2 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 3 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+Worker 1 (machine 0) processing stage 1 output task 1 (hash_calculate:SHA3_256)
+****Worker 3 (machine 0) compressed object 4 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 5 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 6 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 7 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 8 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 9 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 10 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 3 (machine 0) compressed object 11 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+------Worker 3 (machine 0) completed compression stage with average time 0.23 seconds
+Worker 0 (machine 0) completed stage 1 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 1 OUT task 2 (encrypt:RS) worker 0
+Worker 0 (machine 0) processing stage 1 output task 2 (encrypt:RS)
+Worker 4 (machine 0) stage 1 application estimated total time 50.630268 seconds for 12 objects (average per object: 4.219189 seconds)
+Worker 4 (machine 0) completed stage 1 application with average service time 4.514984 seconds and simulated total time 50.630268 seconds
+[ENQUEUE] Stage 1 OUT task 0 (compress:ZSTD) worker 4
+APPLICATION TIME: Worker 6 (machine 0) stage 1 application with average service time 4.514984 seconds, size factor 0.800000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 3 (machine 0) completed stage 1 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 1 OUT task 1 (hash_calculate:SHA3_256) worker 3
+Worker 4 (machine 0) processing stage 1 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 0 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 1 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 2 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 3 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 4 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 5 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 6 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 7 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 8 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 9 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 10 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 4 (machine 0) compressed object 11 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+------Worker 4 (machine 0) completed compression stage with average time 0.23 seconds
+Worker 2 (machine 0) completed stage 1 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 1 OUT task 1 (hash_calculate:SHA3_256) worker 2
+Worker 3 (machine 0) processing stage 1 output task 1 (hash_calculate:SHA3_256)
+Worker 1 (machine 0) completed stage 1 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 1 OUT task 2 (encrypt:RS) worker 1
+Worker 2 (machine 0) processing stage 1 output task 1 (hash_calculate:SHA3_256)
+Worker 1 (machine 0) processing stage 1 output task 2 (encrypt:RS)
+Worker 5 (machine 0) stage 1 application estimated total time 50.630268 seconds for 12 objects (average per object: 4.219189 seconds)
+Worker 5 (machine 0) completed stage 1 application with average service time 4.514984 seconds and simulated total time 50.630268 seconds
+[ENQUEUE] Stage 1 OUT task 0 (compress:ZSTD) worker 5
+APPLICATION TIME: Worker 7 (machine 0) stage 1 application with average service time 4.514984 seconds, size factor 0.800000, interarrival time 2.000000 seconds; samples 14; running queue estimator...
+Worker 5 (machine 0) processing stage 1 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 0 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 1 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 2 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 3 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 4 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 5 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 6 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 7 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 8 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 9 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 10 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 5 (machine 0) compressed object 11 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+------Worker 5 (machine 0) completed compression stage with average time 0.23 seconds
+Worker 6 (machine 0) stage 1 application estimated total time 50.630268 seconds for 12 objects (average per object: 4.219189 seconds)
+Worker 6 (machine 0) completed stage 1 application with average service time 4.514984 seconds and simulated total time 50.630268 seconds
+[ENQUEUE] Stage 1 OUT task 0 (compress:ZSTD) worker 6
+Worker 3 (machine 0) completed stage 1 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 1 OUT task 2 (encrypt:RS) worker 3
+Worker 2 (machine 0) completed stage 1 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 1 OUT task 2 (encrypt:RS) worker 2
+Worker 7 (machine 0) stage 1 application estimated total time 59.109409 seconds for 14 objects (average per object: 4.222101 seconds)
+Worker 7 (machine 0) completed stage 1 application with average service time 4.514984 seconds and simulated total time 59.109409 seconds
+[ENQUEUE] Stage 1 OUT task 0 (compress:ZSTD) worker 7
+Worker 1 (machine 0) completed stage 1 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 1 OUT task 3 (hash_calculate:BLAKE3) worker 1
+Worker 3 (machine 0) processing stage 1 output task 2 (encrypt:RS)
+Worker 1 (machine 0) processing stage 1 output task 3 (hash_calculate:BLAKE3)
+Worker 0 (machine 0) completed stage 1 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 1 OUT task 3 (hash_calculate:BLAKE3) worker 0
+Worker 2 (machine 0) processing stage 1 output task 2 (encrypt:RS)
+Worker 0 (machine 0) processing stage 1 output task 3 (hash_calculate:BLAKE3)
+Worker 4 (machine 0) completed stage 1 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 1 OUT task 1 (hash_calculate:SHA3_256) worker 4
+Worker 6 (machine 0) processing stage 1 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 0 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 1 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+Worker 4 (machine 0) processing stage 1 output task 1 (hash_calculate:SHA3_256)
+****Worker 6 (machine 0) compressed object 2 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 3 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 4 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 5 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 6 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 7 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 8 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 9 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 10 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 6 (machine 0) compressed object 11 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+------Worker 6 (machine 0) completed compression stage with average time 0.23 seconds
+Worker 5 (machine 0) completed stage 1 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 1 OUT task 1 (hash_calculate:SHA3_256) worker 5
+Worker 7 (machine 0) processing stage 1 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 0 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 1 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 2 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 3 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+Worker 5 (machine 0) processing stage 1 output task 1 (hash_calculate:SHA3_256)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 4 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 5 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 6 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 7 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 8 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 9 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 10 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 11 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 12 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 1083.692383
+****Worker 7 (machine 0) compressed object 13 from 22.89 MB to 0.021120 MB in 0.00 seconds (I/O time: 0.23 seconds)
+------Worker 7 (machine 0) completed compression stage with average time 0.23 seconds
+Worker 2 (machine 0) completed stage 1 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 1 OUT task 3 (hash_calculate:BLAKE3) worker 2
+Worker 5 (machine 0) completed stage 1 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 1 OUT task 2 (encrypt:RS) worker 5
+Worker 5 (machine 0) processing stage 1 output task 2 (encrypt:RS)
+Worker 0 (machine 0) completed stage 1 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 2 IN task 0 (hash_verify:BLAKE3) worker 0
+Worker 2 (machine 0) processing stage 1 output task 3 (hash_calculate:BLAKE3)
+Worker 0 (machine 1) processing stage 2 input task 0 (hash_verify:BLAKE3)
+Worker 1 (machine 0) completed stage 1 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 2 IN task 0 (hash_verify:BLAKE3) worker 1
+Worker 1 (machine 1) processing stage 2 input task 0 (hash_verify:BLAKE3)
+Worker 3 (machine 0) completed stage 1 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 1 OUT task 3 (hash_calculate:BLAKE3) worker 3
+Worker 3 (machine 0) processing stage 1 output task 3 (hash_calculate:BLAKE3)
+Worker 4 (machine 0) completed stage 1 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 1 OUT task 2 (encrypt:RS) worker 4
+Worker 4 (machine 0) processing stage 1 output task 2 (encrypt:RS)
+Worker 6 (machine 0) completed stage 1 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 1 OUT task 1 (hash_calculate:SHA3_256) worker 6
+Worker 6 (machine 0) processing stage 1 output task 1 (hash_calculate:SHA3_256)
+Worker 7 (machine 0) completed stage 1 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 1 OUT task 1 (hash_calculate:SHA3_256) worker 7
+Worker 7 (machine 0) processing stage 1 output task 1 (hash_calculate:SHA3_256)
+Worker 2 (machine 0) completed stage 1 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 2 IN task 0 (hash_verify:BLAKE3) worker 2
+Worker 0 (machine 1) completed stage 2 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 2 IN task 1 (unencrypt:RS) worker 0
+Worker 2 (machine 1) processing stage 2 input task 0 (hash_verify:BLAKE3)
+Worker 0 (machine 1) processing stage 2 input task 1 (unencrypt:RS)
+Worker 4 (machine 0) completed stage 1 output task 2 (encrypt:RS)
+Worker 3 (machine 0) completed stage 1 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 1 OUT task 3 (hash_calculate:BLAKE3) worker 4
+Worker 4 (machine 0) processing stage 1 output task 3 (hash_calculate:BLAKE3)
+Worker 1 (machine 1) completed stage 2 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 2 IN task 1 (unencrypt:RS) worker 1
+Worker 1 (machine 1) processing stage 2 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 2 IN task 0 (hash_verify:BLAKE3) worker 3
+Worker 3 (machine 1) processing stage 2 input task 0 (hash_verify:BLAKE3)
+Worker 5 (machine 0) completed stage 1 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 1 OUT task 3 (hash_calculate:BLAKE3) worker 5
+Worker 6 (machine 0) completed stage 1 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 1 OUT task 2 (encrypt:RS) worker 6
+Worker 6 (machine 0) processing stage 1 output task 2 (encrypt:RS)
+Worker 5 (machine 0) processing stage 1 output task 3 (hash_calculate:BLAKE3)
+Worker 7 (machine 0) completed stage 1 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 1 OUT task 2 (encrypt:RS) worker 7
+Worker 7 (machine 0) processing stage 1 output task 2 (encrypt:RS)
+Worker 2 (machine 1) completed stage 2 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 2 IN task 1 (unencrypt:RS) worker 2
+Worker 5 (machine 0) completed stage 1 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 2 IN task 0 (hash_verify:BLAKE3) worker 5
+Worker 5 (machine 1) processing stage 2 input task 0 (hash_verify:BLAKE3)
+Worker 3 (machine 1) completed stage 2 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 2 IN task 1 (unencrypt:RS) worker 3
+Worker 4 (machine 0) completed stage 1 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 2 IN task 0 (hash_verify:BLAKE3) worker 4
+Worker 4 (machine 1) processing stage 2 input task 0 (hash_verify:BLAKE3)
+Worker 1 (machine 1) completed stage 2 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 2 IN task 2 (hash_verify:SHA3_256) worker 1
+Worker 2 (machine 1) processing stage 2 input task 1 (unencrypt:RS)
+Worker 1 (machine 1) processing stage 2 input task 2 (hash_verify:SHA3_256)
+Worker 0 (machine 1) completed stage 2 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 2 IN task 2 (hash_verify:SHA3_256) worker 0
+Worker 3 (machine 1) processing stage 2 input task 1 (unencrypt:RS)
+Worker 0 (machine 1) processing stage 2 input task 2 (hash_verify:SHA3_256)
+Worker 6 (machine 0) completed stage 1 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 1 OUT task 3 (hash_calculate:BLAKE3) worker 6
+Worker 6 (machine 0) processing stage 1 output task 3 (hash_calculate:BLAKE3)
+Worker 7 (machine 0) completed stage 1 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 1 OUT task 3 (hash_calculate:BLAKE3) worker 7
+Worker 7 (machine 0) processing stage 1 output task 3 (hash_calculate:BLAKE3)
+Worker 5 (machine 1) completed stage 2 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 2 IN task 1 (unencrypt:RS) worker 5
+Worker 0 (machine 1) completed stage 2 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 2 IN task 3 (uncompress:ZSTD) worker 0
+Worker 0 (machine 1) processing stage 2 input task 3 (uncompress:ZSTD)
+****Worker 0 (machine 1) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 1) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 0 - Decompress stage: avg service time = 0.092865 seconds
+Worker 2 (machine 1) completed stage 2 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 2 IN task 2 (hash_verify:SHA3_256) worker 2
+Worker 6 (machine 0) completed stage 1 output task 3 (hash_calculate:BLAKE3)
+Worker 5 (machine 1) processing stage 2 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 2 IN task 0 (hash_verify:BLAKE3) worker 6
+Worker 2 (machine 1) processing stage 2 input task 2 (hash_verify:SHA3_256)
+Worker 6 (machine 1) processing stage 2 input task 0 (hash_verify:BLAKE3)
+Worker 4 (machine 1) completed stage 2 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 2 IN task 1 (unencrypt:RS) worker 4
+Worker 3 (machine 1) completed stage 2 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 2 IN task 2 (hash_verify:SHA3_256) worker 3
+Worker 4 (machine 1) processing stage 2 input task 1 (unencrypt:RS)
+Worker 1 (machine 1) completed stage 2 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 2 IN task 3 (uncompress:ZSTD) worker 1
+Worker 3 (machine 1) processing stage 2 input task 2 (hash_verify:SHA3_256)
+Worker 1 (machine 1) processing stage 2 input task 3 (uncompress:ZSTD)
+****Worker 1 (machine 1) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 1) decompressing object 12 of size 0.02 MB with algorithm ZSTD
+Worker 1 - Decompress stage: avg service time = 0.092865 seconds
+Worker 7 (machine 0) completed stage 1 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 2 IN task 0 (hash_verify:BLAKE3) worker 7
+Worker 7 (machine 1) processing stage 2 input task 0 (hash_verify:BLAKE3)
+Worker 5 (machine 1) completed stage 2 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 2 IN task 2 (hash_verify:SHA3_256) worker 5
+Worker 2 (machine 1) completed stage 2 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 2 IN task 3 (uncompress:ZSTD) worker 2
+Worker 5 (machine 1) processing stage 2 input task 2 (hash_verify:SHA3_256)
+Worker 1 (machine 1) completed stage 2 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 2 APP task 0 (application:) worker 1
+Worker 2 (machine 1) processing stage 2 input task 3 (uncompress:ZSTD)
+****Worker 2 (machine 1) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 1) decompressing object 12 of size 0.02 MB with algorithm ZSTD
+Worker 2 - Decompress stage: avg service time = 0.092865 seconds
+APPLICATION TIME: Worker 1 (machine 1) stage 2 application with average service time 1.201416 seconds, size factor 1.200000, interarrival time 2.000000 seconds; samples 13; running queue estimator...
+Worker 7 (machine 1) completed stage 2 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 2 IN task 1 (unencrypt:RS) worker 7
+Worker 7 (machine 1) processing stage 2 input task 1 (unencrypt:RS)
+Worker 6 (machine 1) completed stage 2 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 2 IN task 1 (unencrypt:RS) worker 6
+Worker 3 (machine 1) completed stage 2 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 2 IN task 3 (uncompress:ZSTD) worker 3
+Worker 0 (machine 1) completed stage 2 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 2 APP task 0 (application:) worker 0
+Worker 3 (machine 1) processing stage 2 input task 3 (uncompress:ZSTD)
+****Worker 3 (machine 1) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 1) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 3 - Decompress stage: avg service time = 0.092865 seconds
+APPLICATION TIME: Worker 0 (machine 1) stage 2 application with average service time 1.201416 seconds, size factor 1.200000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 4 (machine 1) completed stage 2 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 2 IN task 2 (hash_verify:SHA3_256) worker 4
+Worker 6 (machine 1) processing stage 2 input task 1 (unencrypt:RS)
+Worker 4 (machine 1) processing stage 2 input task 2 (hash_verify:SHA3_256)
+Worker 1 (machine 1) stage 2 application estimated total time 20.230644 seconds for 13 objects (average per object: 1.556203 seconds)
+Worker 1 (machine 1) completed stage 2 application with average service time 1.201416 seconds and simulated total time 20.230644 seconds
+[ENQUEUE] Stage 2 OUT task 0 (compress:ZSTD) worker 1
+Worker 1 (machine 1) processing stage 2 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 1) compressed object 12 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+------Worker 1 (machine 1) completed compression stage with average time 0.12 seconds
+Worker 6 (machine 1) completed stage 2 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 2 IN task 2 (hash_verify:SHA3_256) worker 6
+Worker 7 (machine 1) completed stage 2 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 2 IN task 2 (hash_verify:SHA3_256) worker 7
+Worker 0 (machine 1) stage 2 application estimated total time 18.731674 seconds for 12 objects (average per object: 1.560973 seconds)
+Worker 0 (machine 1) completed stage 2 application with average service time 1.201416 seconds and simulated total time 18.731674 seconds
+[ENQUEUE] Stage 2 OUT task 0 (compress:ZSTD) worker 0
+Worker 0 (machine 1) processing stage 2 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 1) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+------Worker 0 (machine 1) completed compression stage with average time 0.12 seconds
+Worker 5 (machine 1) completed stage 2 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 2 IN task 3 (uncompress:ZSTD) worker 5
+Worker 6 (machine 1) processing stage 2 input task 2 (hash_verify:SHA3_256)
+Worker 3 (machine 1) completed stage 2 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 2 APP task 0 (application:) worker 3
+Worker 5 (machine 1) processing stage 2 input task 3 (uncompress:ZSTD)
+****Worker 5 (machine 1) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 1) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 1) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 1) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 1) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 1) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 1) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+APPLICATION TIME: Worker 3 (machine 1) stage 2 application with average service time 1.201416 seconds, size factor 1.200000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+****Worker 5 (machine 1) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 1) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 1) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 1) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 1) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 5 - Decompress stage: avg service time = 0.092865 seconds
+Worker 2 (machine 1) completed stage 2 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 2 APP task 0 (application:) worker 2
+APPLICATION TIME: Worker 2 (machine 1) stage 2 application with average service time 1.201416 seconds, size factor 1.200000, interarrival time 2.000000 seconds; samples 13; running queue estimator...
+Worker 4 (machine 1) completed stage 2 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 2 IN task 3 (uncompress:ZSTD) worker 4
+Worker 7 (machine 1) processing stage 2 input task 2 (hash_verify:SHA3_256)
+Worker 4 (machine 1) processing stage 2 input task 3 (uncompress:ZSTD)
+****Worker 4 (machine 1) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 1) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 4 - Decompress stage: avg service time = 0.092865 seconds
+Worker 3 (machine 1) stage 2 application estimated total time 18.731674 seconds for 12 objects (average per object: 1.560973 seconds)
+Worker 3 (machine 1) completed stage 2 application with average service time 1.201416 seconds and simulated total time 18.731674 seconds
+[ENQUEUE] Stage 2 OUT task 0 (compress:ZSTD) worker 3
+Worker 1 (machine 1) completed stage 2 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 2 OUT task 1 (hash_calculate:SHA3_256) worker 1
+Worker 3 (machine 1) processing stage 2 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 1) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+------Worker 3 (machine 1) completed compression stage with average time 0.12 seconds
+Worker 1 (machine 1) processing stage 2 output task 1 (hash_calculate:SHA3_256)
+Worker 4 (machine 1) completed stage 2 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 2 APP task 0 (application:) worker 4
+Worker 6 (machine 1) completed stage 2 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 2 IN task 3 (uncompress:ZSTD) worker 6
+Worker 6 (machine 1) processing stage 2 input task 3 (uncompress:ZSTD)
+****Worker 6 (machine 1) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 1) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 6 - Decompress stage: avg service time = 0.092865 seconds
+APPLICATION TIME: Worker 4 (machine 1) stage 2 application with average service time 1.201416 seconds, size factor 1.200000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 2 (machine 1) stage 2 application estimated total time 20.230644 seconds for 13 objects (average per object: 1.556203 seconds)
+Worker 2 (machine 1) completed stage 2 application with average service time 1.201416 seconds and simulated total time 20.230644 seconds
+Worker 5 (machine 1) completed stage 2 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 2 OUT task 0 (compress:ZSTD) worker 2
+[ENQUEUE] Stage 2 APP task 0 (application:) worker 5
+APPLICATION TIME: Worker 5 (machine 1) stage 2 application with average service time 1.201416 seconds, size factor 1.200000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 0 (machine 1) completed stage 2 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 2 OUT task 1 (hash_calculate:SHA3_256) worker 0
+Worker 2 (machine 1) processing stage 2 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+Worker 0 (machine 1) processing stage 2 output task 1 (hash_calculate:SHA3_256)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 1) compressed object 12 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+------Worker 2 (machine 1) completed compression stage with average time 0.12 seconds
+Worker 7 (machine 1) completed stage 2 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 2 IN task 3 (uncompress:ZSTD) worker 7
+Worker 7 (machine 1) processing stage 2 input task 3 (uncompress:ZSTD)
+****Worker 7 (machine 1) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 12 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 1) decompressing object 13 of size 0.02 MB with algorithm ZSTD
+Worker 7 - Decompress stage: avg service time = 0.092865 seconds
+Worker 1 (machine 1) completed stage 2 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 2 OUT task 2 (encrypt:RS) worker 1
+Worker 1 (machine 1) processing stage 2 output task 2 (encrypt:RS)
+Worker 5 (machine 1) stage 2 application estimated total time 18.731674 seconds for 12 objects (average per object: 1.560973 seconds)
+Worker 5 (machine 1) completed stage 2 application with average service time 1.201416 seconds and simulated total time 18.731674 seconds
+[ENQUEUE] Stage 2 OUT task 0 (compress:ZSTD) worker 5
+Worker 3 (machine 1) completed stage 2 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 2 OUT task 1 (hash_calculate:SHA3_256) worker 3
+Worker 5 (machine 1) processing stage 2 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+Worker 3 (machine 1) processing stage 2 output task 1 (hash_calculate:SHA3_256)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 1) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+------Worker 5 (machine 1) completed compression stage with average time 0.12 seconds
+Worker 2 (machine 1) completed stage 2 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 2 OUT task 1 (hash_calculate:SHA3_256) worker 2
+Worker 0 (machine 1) completed stage 2 output task 1 (hash_calculate:SHA3_256)
+Worker 6 (machine 1) completed stage 2 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 2 OUT task 2 (encrypt:RS) worker 0
+[ENQUEUE] Stage 2 APP task 0 (application:) worker 6
+Worker 7 (machine 1) completed stage 2 input task 3 (uncompress:ZSTD)
+Worker 2 (machine 1) processing stage 2 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 2 APP task 0 (application:) worker 7
+Worker 0 (machine 1) processing stage 2 output task 2 (encrypt:RS)
+APPLICATION TIME: Worker 6 (machine 1) stage 2 application with average service time 1.201416 seconds, size factor 1.200000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 4 (machine 1) stage 2 application estimated total time 18.731674 seconds for 12 objects (average per object: 1.560973 seconds)
+Worker 4 (machine 1) completed stage 2 application with average service time 1.201416 seconds and simulated total time 18.731674 seconds
+[ENQUEUE] Stage 2 OUT task 0 (compress:ZSTD) worker 4
+APPLICATION TIME: Worker 7 (machine 1) stage 2 application with average service time 1.201416 seconds, size factor 1.200000, interarrival time 2.000000 seconds; samples 14; running queue estimator...
+Worker 4 (machine 1) processing stage 2 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 1) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+------Worker 4 (machine 1) completed compression stage with average time 0.12 seconds
+Worker 0 (machine 1) completed stage 2 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 2 OUT task 3 (hash_calculate:BLAKE3) worker 0
+Worker 0 (machine 1) processing stage 2 output task 3 (hash_calculate:BLAKE3)
+Worker 1 (machine 1) completed stage 2 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 2 OUT task 3 (hash_calculate:BLAKE3) worker 1
+Worker 1 (machine 1) processing stage 2 output task 3 (hash_calculate:BLAKE3)
+Worker 6 (machine 1) stage 2 application estimated total time 18.731674 seconds for 12 objects (average per object: 1.560973 seconds)
+Worker 6 (machine 1) completed stage 2 application with average service time 1.201416 seconds and simulated total time 18.731674 seconds
+[ENQUEUE] Stage 2 OUT task 0 (compress:ZSTD) worker 6
+Worker 4 (machine 1) completed stage 2 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 2 OUT task 1 (hash_calculate:SHA3_256) worker 4
+Worker 6 (machine 1) processing stage 2 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 1) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+------Worker 6 (machine 1) completed compression stage with average time 0.12 seconds
+Worker 7 (machine 1) stage 2 application estimated total time 20.987934 seconds for 14 objects (average per object: 1.499138 seconds)
+Worker 7 (machine 1) completed stage 2 application with average service time 1.201416 seconds and simulated total time 20.987934 seconds
+[ENQUEUE] Stage 2 OUT task 0 (compress:ZSTD) worker 7
+Worker 2 (machine 1) completed stage 2 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 2 OUT task 2 (encrypt:RS) worker 2
+Worker 4 (machine 1) processing stage 2 output task 1 (hash_calculate:SHA3_256)
+Worker 2 (machine 1) processing stage 2 output task 2 (encrypt:RS)
+Worker 3 (machine 1) completed stage 2 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 2 OUT task 2 (encrypt:RS) worker 3
+Worker 3 (machine 1) processing stage 2 output task 2 (encrypt:RS)
+Worker 5 (machine 1) completed stage 2 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 2 OUT task 1 (hash_calculate:SHA3_256) worker 5
+Worker 7 (machine 1) processing stage 2 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 12 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 1) compressed object 13 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.11 seconds)
+------Worker 7 (machine 1) completed compression stage with average time 0.12 seconds
+Worker 5 (machine 1) processing stage 2 output task 1 (hash_calculate:SHA3_256)
+Worker 0 (machine 1) completed stage 2 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 3 IN task 0 (hash_verify:BLAKE3) worker 0
+Worker 0 (machine 2) processing stage 3 input task 0 (hash_verify:BLAKE3)
+Worker 1 (machine 1) completed stage 2 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 3 IN task 0 (hash_verify:BLAKE3) worker 1
+Worker 1 (machine 2) processing stage 3 input task 0 (hash_verify:BLAKE3)
+Worker 6 (machine 1) completed stage 2 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 2 OUT task 1 (hash_calculate:SHA3_256) worker 6
+Worker 7 (machine 1) completed stage 2 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 2 OUT task 1 (hash_calculate:SHA3_256) worker 7
+Worker 2 (machine 1) completed stage 2 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 2 OUT task 3 (hash_calculate:BLAKE3) worker 2
+Worker 2 (machine 1) processing stage 2 output task 3 (hash_calculate:BLAKE3)
+Worker 3 (machine 1) completed stage 2 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 2 OUT task 3 (hash_calculate:BLAKE3) worker 3
+Worker 3 (machine 1) processing stage 2 output task 3 (hash_calculate:BLAKE3)
+Worker 4 (machine 1) completed stage 2 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 2 OUT task 2 (encrypt:RS) worker 4
+Worker 6 (machine 1) processing stage 2 output task 1 (hash_calculate:SHA3_256)
+Worker 4 (machine 1) processing stage 2 output task 2 (encrypt:RS)
+Worker 5 (machine 1) completed stage 2 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 2 OUT task 2 (encrypt:RS) worker 5
+Worker 7 (machine 1) processing stage 2 output task 1 (hash_calculate:SHA3_256)
+Worker 5 (machine 1) processing stage 2 output task 2 (encrypt:RS)
+Worker 1 (machine 2) completed stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 3 IN task 1 (unencrypt:RS) worker 1
+Worker 1 (machine 2) processing stage 3 input task 1 (unencrypt:RS)
+Worker 0 (machine 2) completed stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 3 IN task 1 (unencrypt:RS) worker 0
+Worker 0 (machine 2) processing stage 3 input task 1 (unencrypt:RS)
+Worker 2 (machine 1) completed stage 2 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 3 IN task 0 (hash_verify:BLAKE3) worker 2
+Worker 2 (machine 2) processing stage 3 input task 0 (hash_verify:BLAKE3)
+Worker 4 (machine 1) completed stage 2 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 2 OUT task 3 (hash_calculate:BLAKE3) worker 4
+Worker 7 (machine 1) completed stage 2 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 2 OUT task 2 (encrypt:RS) worker 7
+Worker 7 (machine 1) processing stage 2 output task 2 (encrypt:RS)
+Worker 4 (machine 1) processing stage 2 output task 3 (hash_calculate:BLAKE3)
+Worker 5 (machine 1) completed stage 2 output task 2 (encrypt:RS)
+Worker 3 (machine 1) completed stage 2 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 2 OUT task 3 (hash_calculate:BLAKE3) worker 5
+[ENQUEUE] Stage 3 IN task 0 (hash_verify:BLAKE3) worker 3
+Worker 5 (machine 1) processing stage 2 output task 3 (hash_calculate:BLAKE3)
+Worker 3 (machine 2) processing stage 3 input task 0 (hash_verify:BLAKE3)
+Worker 6 (machine 1) completed stage 2 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 2 OUT task 2 (encrypt:RS) worker 6
+Worker 6 (machine 1) processing stage 2 output task 2 (encrypt:RS)
+Worker 1 (machine 2) completed stage 3 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 3 IN task 2 (hash_verify:SHA3_256) worker 1
+Worker 1 (machine 2) processing stage 3 input task 2 (hash_verify:SHA3_256)
+Worker 0 (machine 2) completed stage 3 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 3 IN task 2 (hash_verify:SHA3_256) worker 0
+Worker 0 (machine 2) processing stage 3 input task 2 (hash_verify:SHA3_256)
+Worker 4 (machine 1) completed stage 2 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 3 IN task 0 (hash_verify:BLAKE3) worker 4
+Worker 7 (machine 1) completed stage 2 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 2 OUT task 3 (hash_calculate:BLAKE3) worker 7
+Worker 7 (machine 1) processing stage 2 output task 3 (hash_calculate:BLAKE3)
+Worker 2 (machine 2) completed stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 3 IN task 1 (unencrypt:RS) worker 2
+Worker 4 (machine 2) processing stage 3 input task 0 (hash_verify:BLAKE3)
+Worker 2 (machine 2) processing stage 3 input task 1 (unencrypt:RS)
+Worker 3 (machine 2) completed stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 3 IN task 1 (unencrypt:RS) worker 3
+Worker 3 (machine 2) processing stage 3 input task 1 (unencrypt:RS)
+Worker 6 (machine 1) completed stage 2 output task 2 (encrypt:RS)
+Worker 5 (machine 1) completed stage 2 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 3 IN task 0 (hash_verify:BLAKE3) worker 5
+Worker 5 (machine 2) processing stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 2 OUT task 3 (hash_calculate:BLAKE3) worker 6
+Worker 6 (machine 1) processing stage 2 output task 3 (hash_calculate:BLAKE3)
+Worker 4 (machine 2) completed stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 3 IN task 1 (unencrypt:RS) worker 4
+Worker 0 (machine 2) completed stage 3 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 3 IN task 3 (uncompress:ZSTD) worker 0
+Worker 0 (machine 2) processing stage 3 input task 3 (uncompress:ZSTD)
+****Worker 0 (machine 2) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 2) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 0 - Decompress stage: avg service time = 0.367725 seconds
+Worker 7 (machine 1) completed stage 2 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 3 IN task 0 (hash_verify:BLAKE3) worker 7
+Worker 7 (machine 2) processing stage 3 input task 0 (hash_verify:BLAKE3)
+Worker 2 (machine 2) completed stage 3 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 3 IN task 2 (hash_verify:SHA3_256) worker 2
+Worker 4 (machine 2) processing stage 3 input task 1 (unencrypt:RS)
+Worker 2 (machine 2) processing stage 3 input task 2 (hash_verify:SHA3_256)
+Worker 3 (machine 2) completed stage 3 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 3 IN task 2 (hash_verify:SHA3_256) worker 3
+Worker 5 (machine 2) completed stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 3 IN task 1 (unencrypt:RS) worker 5
+Worker 1 (machine 2) completed stage 3 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 3 IN task 3 (uncompress:ZSTD) worker 1
+Worker 3 (machine 2) processing stage 3 input task 2 (hash_verify:SHA3_256)
+Worker 5 (machine 2) processing stage 3 input task 1 (unencrypt:RS)
+Worker 1 (machine 2) processing stage 3 input task 3 (uncompress:ZSTD)
+****Worker 1 (machine 2) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 2) decompressing object 12 of size 0.02 MB with algorithm ZSTD
+Worker 1 - Decompress stage: avg service time = 0.367725 seconds
+Worker 6 (machine 1) completed stage 2 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 3 IN task 0 (hash_verify:BLAKE3) worker 6
+Worker 6 (machine 2) processing stage 3 input task 0 (hash_verify:BLAKE3)
+Worker 7 (machine 2) completed stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 3 IN task 1 (unencrypt:RS) worker 7
+Worker 5 (machine 2) completed stage 3 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 3 IN task 2 (hash_verify:SHA3_256) worker 5
+Worker 7 (machine 2) processing stage 3 input task 1 (unencrypt:RS)
+Worker 2 (machine 2) completed stage 3 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 3 IN task 3 (uncompress:ZSTD) worker 2
+Worker 5 (machine 2) processing stage 3 input task 2 (hash_verify:SHA3_256)
+Worker 0 (machine 2) completed stage 3 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 3 APP task 0 (application:) worker 0
+Worker 2 (machine 2) processing stage 3 input task 3 (uncompress:ZSTD)
+****Worker 2 (machine 2) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 2) decompressing object 12 of size 0.02 MB with algorithm ZSTD
+Worker 2 - Decompress stage: avg service time = 0.367725 seconds
+APPLICATION TIME: Worker 0 (machine 2) stage 3 application with average service time 2.232422 seconds, size factor 1.000000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 4 (machine 2) completed stage 3 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 3 IN task 2 (hash_verify:SHA3_256) worker 4
+Worker 3 (machine 2) completed stage 3 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 3 IN task 3 (uncompress:ZSTD) worker 3
+Worker 4 (machine 2) processing stage 3 input task 2 (hash_verify:SHA3_256)
+Worker 1 (machine 2) completed stage 3 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 3 APP task 0 (application:) worker 1
+Worker 3 (machine 2) processing stage 3 input task 3 (uncompress:ZSTD)
+****Worker 3 (machine 2) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 2) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 3 - Decompress stage: avg service time = 0.367725 seconds
+APPLICATION TIME: Worker 1 (machine 2) stage 3 application with average service time 2.232422 seconds, size factor 1.000000, interarrival time 2.000000 seconds; samples 13; running queue estimator...
+Worker 6 (machine 2) completed stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 3 IN task 1 (unencrypt:RS) worker 6
+Worker 6 (machine 2) processing stage 3 input task 1 (unencrypt:RS)
+Worker 4 (machine 2) completed stage 3 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 3 IN task 3 (uncompress:ZSTD) worker 4
+Worker 5 (machine 2) completed stage 3 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 3 IN task 3 (uncompress:ZSTD) worker 5
+Worker 1 (machine 2) stage 3 application estimated total time 28.150795 seconds for 13 objects (average per object: 2.165446 seconds)
+Worker 1 (machine 2) completed stage 3 application with average service time 2.232422 seconds and simulated total time 28.150795 seconds
+[ENQUEUE] Stage 3 OUT task 0 (compress:ZSTD) worker 1
+Worker 1 (machine 2) processing stage 3 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 1 (machine 2) compressed object 12 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+------Worker 1 (machine 2) completed compression stage with average time 0.37 seconds
+Worker 7 (machine 2) completed stage 3 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 3 IN task 2 (hash_verify:SHA3_256) worker 7
+Worker 7 (machine 2) processing stage 3 input task 2 (hash_verify:SHA3_256)
+Worker 0 (machine 2) stage 3 application estimated total time 25.365471 seconds for 12 objects (average per object: 2.113789 seconds)
+Worker 0 (machine 2) completed stage 3 application with average service time 2.232422 seconds and simulated total time 25.365471 seconds
+[ENQUEUE] Stage 3 OUT task 0 (compress:ZSTD) worker 0
+Worker 0 (machine 2) processing stage 3 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 0 (machine 2) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+------Worker 0 (machine 2) completed compression stage with average time 0.37 seconds
+Worker 3 (machine 2) completed stage 3 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 3 APP task 0 (application:) worker 3
+Worker 4 (machine 2) processing stage 3 input task 3 (uncompress:ZSTD)
+****Worker 4 (machine 2) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 2) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 4 - Decompress stage: avg service time = 0.367725 seconds
+APPLICATION TIME: Worker 3 (machine 2) stage 3 application with average service time 2.232422 seconds, size factor 1.000000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 2 (machine 2) completed stage 3 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 3 APP task 0 (application:) worker 2
+Worker 5 (machine 2) processing stage 3 input task 3 (uncompress:ZSTD)
+****Worker 5 (machine 2) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 2) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 5 - Decompress stage: avg service time = 0.367725 seconds
+APPLICATION TIME: Worker 2 (machine 2) stage 3 application with average service time 2.232422 seconds, size factor 1.000000, interarrival time 2.000000 seconds; samples 13; running queue estimator...
+Worker 6 (machine 2) completed stage 3 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 3 IN task 2 (hash_verify:SHA3_256) worker 6
+Worker 6 (machine 2) processing stage 3 input task 2 (hash_verify:SHA3_256)
+Worker 7 (machine 2) completed stage 3 input task 2 (hash_verify:SHA3_256)
+Worker 3 (machine 2) stage 3 application estimated total time 25.365471 seconds for 12 objects (average per object: 2.113789 seconds)
+Worker 3 (machine 2) completed stage 3 application with average service time 2.232422 seconds and simulated total time 25.365471 seconds
+[ENQUEUE] Stage 3 OUT task 0 (compress:ZSTD) worker 3
+Worker 4 (machine 2) completed stage 3 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 3 APP task 0 (application:) worker 4
+[ENQUEUE] Stage 3 IN task 3 (uncompress:ZSTD) worker 7
+Worker 7 (machine 2) processing stage 3 input task 3 (uncompress:ZSTD)
+****Worker 7 (machine 2) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 12 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 2) decompressing object 13 of size 0.02 MB with algorithm ZSTD
+Worker 7 - Decompress stage: avg service time = 0.367725 seconds
+APPLICATION TIME: Worker 4 (machine 2) stage 3 application with average service time 2.232422 seconds, size factor 1.000000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 1 (machine 2) completed stage 3 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 3 OUT task 1 (hash_calculate:SHA3_256) worker 1
+Worker 3 (machine 2) processing stage 3 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+Worker 1 (machine 2) processing stage 3 output task 1 (hash_calculate:SHA3_256)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 3 (machine 2) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+------Worker 3 (machine 2) completed compression stage with average time 0.37 seconds
+Worker 5 (machine 2) completed stage 3 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 3 APP task 0 (application:) worker 5
+Worker 2 (machine 2) stage 3 application estimated total time 28.150795 seconds for 13 objects (average per object: 2.165446 seconds)
+Worker 2 (machine 2) completed stage 3 application with average service time 2.232422 seconds and simulated total time 28.150795 seconds
+[ENQUEUE] Stage 3 OUT task 0 (compress:ZSTD) worker 2
+APPLICATION TIME: Worker 5 (machine 2) stage 3 application with average service time 2.232422 seconds, size factor 1.000000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 0 (machine 2) completed stage 3 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 3 OUT task 1 (hash_calculate:SHA3_256) worker 0
+Worker 2 (machine 2) processing stage 3 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+Worker 0 (machine 2) processing stage 3 output task 1 (hash_calculate:SHA3_256)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 2 (machine 2) compressed object 12 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+------Worker 2 (machine 2) completed compression stage with average time 0.37 seconds
+Worker 6 (machine 2) completed stage 3 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 3 IN task 3 (uncompress:ZSTD) worker 6
+Worker 6 (machine 2) processing stage 3 input task 3 (uncompress:ZSTD)
+****Worker 6 (machine 2) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 2) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 6 - Decompress stage: avg service time = 0.367725 seconds
+Worker 5 (machine 2) stage 3 application estimated total time 25.365471 seconds for 12 objects (average per object: 2.113789 seconds)
+Worker 5 (machine 2) completed stage 3 application with average service time 2.232422 seconds and simulated total time 25.365471 seconds
+[ENQUEUE] Stage 3 OUT task 0 (compress:ZSTD) worker 5
+Worker 3 (machine 2) completed stage 3 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 3 OUT task 1 (hash_calculate:SHA3_256) worker 3
+Worker 5 (machine 2) processing stage 3 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 5 (machine 2) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+------Worker 5 (machine 2) completed compression stage with average time 0.37 seconds
+Worker 2 (machine 2) completed stage 3 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 3 OUT task 1 (hash_calculate:SHA3_256) worker 2
+Worker 1 (machine 2) completed stage 3 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 3 OUT task 2 (encrypt:RS) worker 1
+Worker 3 (machine 2) processing stage 3 output task 1 (hash_calculate:SHA3_256)
+Worker 1 (machine 2) processing stage 3 output task 2 (encrypt:RS)
+Worker 7 (machine 2) completed stage 3 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 3 APP task 0 (application:) worker 7
+APPLICATION TIME: Worker 7 (machine 2) stage 3 application with average service time 2.232422 seconds, size factor 1.000000, interarrival time 2.000000 seconds; samples 14; running queue estimator...
+Worker 0 (machine 2) completed stage 3 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 3 OUT task 2 (encrypt:RS) worker 0
+Worker 2 (machine 2) processing stage 3 output task 1 (hash_calculate:SHA3_256)
+Worker 0 (machine 2) processing stage 3 output task 2 (encrypt:RS)
+Worker 4 (machine 2) stage 3 application estimated total time 25.365471 seconds for 12 objects (average per object: 2.113789 seconds)
+Worker 4 (machine 2) completed stage 3 application with average service time 2.232422 seconds and simulated total time 25.365471 seconds
+[ENQUEUE] Stage 3 OUT task 0 (compress:ZSTD) worker 4
+Worker 4 (machine 2) processing stage 3 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 4 (machine 2) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+------Worker 4 (machine 2) completed compression stage with average time 0.37 seconds
+Worker 6 (machine 2) completed stage 3 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 3 APP task 0 (application:) worker 6
+APPLICATION TIME: Worker 6 (machine 2) stage 3 application with average service time 2.232422 seconds, size factor 1.000000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 2 (machine 2) completed stage 3 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 3 OUT task 2 (encrypt:RS) worker 2
+Worker 7 (machine 2) stage 3 application estimated total time 29.557961 seconds for 14 objects (average per object: 2.111283 seconds)
+Worker 7 (machine 2) completed stage 3 application with average service time 2.232422 seconds and simulated total time 29.557961 seconds
+[ENQUEUE] Stage 3 OUT task 0 (compress:ZSTD) worker 7
+Worker 4 (machine 2) completed stage 3 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 3 OUT task 1 (hash_calculate:SHA3_256) worker 4
+Worker 7 (machine 2) processing stage 3 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 12 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 7 (machine 2) compressed object 13 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+------Worker 7 (machine 2) completed compression stage with average time 0.37 seconds
+Worker 4 (machine 2) processing stage 3 output task 1 (hash_calculate:SHA3_256)
+Worker 3 (machine 2) completed stage 3 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 3 OUT task 2 (encrypt:RS) worker 3
+Worker 1 (machine 2) completed stage 3 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 3 OUT task 3 (hash_calculate:BLAKE3) worker 1
+Worker 2 (machine 2) processing stage 3 output task 2 (encrypt:RS)
+Worker 1 (machine 2) processing stage 3 output task 3 (hash_calculate:BLAKE3)
+Worker 0 (machine 2) completed stage 3 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 3 OUT task 3 (hash_calculate:BLAKE3) worker 0
+Worker 3 (machine 2) processing stage 3 output task 2 (encrypt:RS)
+Worker 0 (machine 2) processing stage 3 output task 3 (hash_calculate:BLAKE3)
+Worker 5 (machine 2) completed stage 3 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 3 OUT task 1 (hash_calculate:SHA3_256) worker 5
+Worker 5 (machine 2) processing stage 3 output task 1 (hash_calculate:SHA3_256)
+Worker 6 (machine 2) stage 3 application estimated total time 25.365471 seconds for 12 objects (average per object: 2.113789 seconds)
+Worker 6 (machine 2) completed stage 3 application with average service time 2.232422 seconds and simulated total time 25.365471 seconds
+[ENQUEUE] Stage 3 OUT task 0 (compress:ZSTD) worker 6
+Worker 6 (machine 2) processing stage 3 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 0 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 1 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 2 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 3 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 4 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 5 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 6 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 7 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 8 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 9 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 10 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 1278.502930
+****Worker 6 (machine 2) compressed object 11 from 27.47 MB to 0.021482 MB in 0.01 seconds (I/O time: 0.37 seconds)
+------Worker 6 (machine 2) completed compression stage with average time 0.37 seconds
+Worker 2 (machine 2) completed stage 3 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 3 OUT task 3 (hash_calculate:BLAKE3) worker 2
+Worker 1 (machine 2) completed stage 3 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 4 IN task 0 (hash_verify:BLAKE3) worker 1
+Worker 2 (machine 2) processing stage 3 output task 3 (hash_calculate:BLAKE3)
+Worker 1 (machine 3) processing stage 4 input task 0 (hash_verify:BLAKE3)
+Worker 4 (machine 2) completed stage 3 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 3 OUT task 2 (encrypt:RS) worker 4
+Worker 0 (machine 2) completed stage 3 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 4 IN task 0 (hash_verify:BLAKE3) worker 0
+Worker 0 (machine 3) processing stage 4 input task 0 (hash_verify:BLAKE3)
+Worker 4 (machine 2) processing stage 3 output task 2 (encrypt:RS)
+Worker 3 (machine 2) completed stage 3 output task 2 (encrypt:RS)
+Worker 7 (machine 2) completed stage 3 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 3 OUT task 3 (hash_calculate:BLAKE3) worker 3
+[ENQUEUE] Stage 3 OUT task 1 (hash_calculate:SHA3_256) worker 7
+Worker 3 (machine 2) processing stage 3 output task 3 (hash_calculate:BLAKE3)
+Worker 7 (machine 2) processing stage 3 output task 1 (hash_calculate:SHA3_256)
+Worker 5 (machine 2) completed stage 3 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 3 OUT task 2 (encrypt:RS) worker 5
+Worker 5 (machine 2) processing stage 3 output task 2 (encrypt:RS)
+Worker 6 (machine 2) completed stage 3 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 3 OUT task 1 (hash_calculate:SHA3_256) worker 6
+Worker 6 (machine 2) processing stage 3 output task 1 (hash_calculate:SHA3_256)
+Worker 4 (machine 2) completed stage 3 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 3 OUT task 3 (hash_calculate:BLAKE3) worker 4
+Worker 7 (machine 2) completed stage 3 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 3 OUT task 2 (encrypt:RS) worker 7
+Worker 7 (machine 2) processing stage 3 output task 2 (encrypt:RS)
+Worker 1 (machine 3) completed stage 4 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 4 IN task 1 (unencrypt:RS) worker 1
+Worker 1 (machine 3) processing stage 4 input task 1 (unencrypt:RS)
+Worker 2 (machine 2) completed stage 3 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 4 IN task 0 (hash_verify:BLAKE3) worker 2
+Worker 4 (machine 2) processing stage 3 output task 3 (hash_calculate:BLAKE3)
+Worker 2 (machine 3) processing stage 4 input task 0 (hash_verify:BLAKE3)
+Worker 6 (machine 2) completed stage 3 output task 1 (hash_calculate:SHA3_256)
+Worker 3 (machine 2) completed stage 3 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 3 OUT task 2 (encrypt:RS) worker 6
+[ENQUEUE] Stage 4 IN task 0 (hash_verify:BLAKE3) worker 3
+Worker 5 (machine 2) completed stage 3 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 3 OUT task 3 (hash_calculate:BLAKE3) worker 5
+Worker 6 (machine 2) processing stage 3 output task 2 (encrypt:RS)
+Worker 5 (machine 2) processing stage 3 output task 3 (hash_calculate:BLAKE3)
+Worker 0 (machine 3) completed stage 4 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 4 IN task 1 (unencrypt:RS) worker 0
+Worker 3 (machine 3) processing stage 4 input task 0 (hash_verify:BLAKE3)
+Worker 0 (machine 3) processing stage 4 input task 1 (unencrypt:RS)
+Worker 1 (machine 3) completed stage 4 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 4 IN task 2 (hash_verify:SHA3_256) worker 1
+Worker 1 (machine 3) processing stage 4 input task 2 (hash_verify:SHA3_256)
+Worker 2 (machine 3) completed stage 4 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 4 IN task 1 (unencrypt:RS) worker 2
+Worker 2 (machine 3) processing stage 4 input task 1 (unencrypt:RS)
+Worker 7 (machine 2) completed stage 3 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 3 OUT task 3 (hash_calculate:BLAKE3) worker 7
+Worker 6 (machine 2) completed stage 3 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 3 OUT task 3 (hash_calculate:BLAKE3) worker 6
+Worker 3 (machine 3) completed stage 4 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 4 IN task 1 (unencrypt:RS) worker 3
+Worker 5 (machine 2) completed stage 3 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 4 IN task 0 (hash_verify:BLAKE3) worker 5
+Worker 7 (machine 2) processing stage 3 output task 3 (hash_calculate:BLAKE3)
+Worker 5 (machine 3) processing stage 4 input task 0 (hash_verify:BLAKE3)
+Worker 0 (machine 3) completed stage 4 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 4 IN task 2 (hash_verify:SHA3_256) worker 0
+Worker 3 (machine 3) processing stage 4 input task 1 (unencrypt:RS)
+Worker 0 (machine 3) processing stage 4 input task 2 (hash_verify:SHA3_256)
+Worker 4 (machine 2) completed stage 3 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 4 IN task 0 (hash_verify:BLAKE3) worker 4
+Worker 6 (machine 2) processing stage 3 output task 3 (hash_calculate:BLAKE3)
+Worker 4 (machine 3) processing stage 4 input task 0 (hash_verify:BLAKE3)
+Worker 7 (machine 2) completed stage 3 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 4 IN task 0 (hash_verify:BLAKE3) worker 7
+Worker 3 (machine 3) completed stage 4 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 4 IN task 2 (hash_verify:SHA3_256) worker 3
+Worker 5 (machine 3) completed stage 4 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 4 IN task 1 (unencrypt:RS) worker 5
+Worker 7 (machine 3) processing stage 4 input task 0 (hash_verify:BLAKE3)
+Worker 5 (machine 3) processing stage 4 input task 1 (unencrypt:RS)
+Worker 1 (machine 3) completed stage 4 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 4 IN task 3 (uncompress:ZSTD) worker 1
+Worker 3 (machine 3) processing stage 4 input task 2 (hash_verify:SHA3_256)
+Worker 1 (machine 3) processing stage 4 input task 3 (uncompress:ZSTD)
+****Worker 1 (machine 3) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+****Worker 1 (machine 3) decompressing object 12 of size 0.02 MB with algorithm ZSTD
+Worker 1 - Decompress stage: avg service time = 0.184477 seconds
+Worker 2 (machine 3) completed stage 4 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 4 IN task 2 (hash_verify:SHA3_256) worker 2
+Worker 4 (machine 3) completed stage 4 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 4 IN task 1 (unencrypt:RS) worker 4
+Worker 4 (machine 3) processing stage 4 input task 1 (unencrypt:RS)
+Worker 0 (machine 3) completed stage 4 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 4 IN task 3 (uncompress:ZSTD) worker 0
+Worker 2 (machine 3) processing stage 4 input task 2 (hash_verify:SHA3_256)
+Worker 0 (machine 3) processing stage 4 input task 3 (uncompress:ZSTD)
+****Worker 0 (machine 3) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 0 (machine 3) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 0 - Decompress stage: avg service time = 0.184477 seconds
+Worker 6 (machine 2) completed stage 3 output task 3 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 4 IN task 0 (hash_verify:BLAKE3) worker 6
+Worker 6 (machine 3) processing stage 4 input task 0 (hash_verify:BLAKE3)
+Worker 4 (machine 3) completed stage 4 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 4 IN task 2 (hash_verify:SHA3_256) worker 4
+Worker 3 (machine 3) completed stage 4 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 4 IN task 3 (uncompress:ZSTD) worker 3
+Worker 4 (machine 3) processing stage 4 input task 2 (hash_verify:SHA3_256)
+Worker 1 (machine 3) completed stage 4 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 4 APP task 0 (application:) worker 1
+Worker 2 (machine 3) completed stage 4 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 4 IN task 3 (uncompress:ZSTD) worker 2
+Worker 3 (machine 3) processing stage 4 input task 3 (uncompress:ZSTD)
+****Worker 3 (machine 3) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 3 (machine 3) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 3 - Decompress stage: avg service time = 0.184477 seconds
+APPLICATION TIME: Worker 1 (machine 3) stage 4 application with average service time 2.292969 seconds, size factor 0.600000, interarrival time 2.000000 seconds; samples 13; running queue estimator...
+Worker 5 (machine 3) completed stage 4 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 4 IN task 2 (hash_verify:SHA3_256) worker 5
+Worker 5 (machine 3) processing stage 4 input task 2 (hash_verify:SHA3_256)
+Worker 7 (machine 3) completed stage 4 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 4 IN task 1 (unencrypt:RS) worker 7
+Worker 7 (machine 3) processing stage 4 input task 1 (unencrypt:RS)
+Worker 0 (machine 3) completed stage 4 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 4 APP task 0 (application:) worker 0
+Worker 2 (machine 3) processing stage 4 input task 3 (uncompress:ZSTD)
+****Worker 2 (machine 3) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+****Worker 2 (machine 3) decompressing object 12 of size 0.02 MB with algorithm ZSTD
+Worker 2 - Decompress stage: avg service time = 0.184477 seconds
+APPLICATION TIME: Worker 0 (machine 3) stage 4 application with average service time 2.292969 seconds, size factor 0.600000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 6 (machine 3) completed stage 4 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 4 IN task 1 (unencrypt:RS) worker 6
+Worker 6 (machine 3) processing stage 4 input task 1 (unencrypt:RS)
+Worker 0 (machine 3) stage 4 application estimated total time 26.035641 seconds for 12 objects (average per object: 2.169637 seconds)
+Worker 0 (machine 3) completed stage 4 application with average service time 2.292969 seconds and simulated total time 26.035641 seconds
+[ENQUEUE] Stage 4 OUT task 0 (compress:ZSTD) worker 0
+Worker 0 (machine 3) processing stage 4 output task 0 (compress:ZSTD)
+Worker 4 (machine 3) completed stage 4 input task 2 (hash_verify:SHA3_256)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 0 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 1 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 2 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+[ENQUEUE] Stage 4 IN task 3 (uncompress:ZSTD) worker 4
+****Worker 0 (machine 3) compressed object 3 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 4 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 5 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 6 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 7 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 8 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 9 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 10 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 0 (machine 3) compressed object 11 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+------Worker 0 (machine 3) completed compression stage with average time 0.11 seconds
+Worker 2 (machine 3) completed stage 4 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 4 APP task 0 (application:) worker 2
+Worker 4 (machine 3) processing stage 4 input task 3 (uncompress:ZSTD)
+****Worker 4 (machine 3) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 4 (machine 3) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 4 - Decompress stage: avg service time = 0.184477 seconds
+APPLICATION TIME: Worker 2 (machine 3) stage 4 application with average service time 2.292969 seconds, size factor 0.600000, interarrival time 2.000000 seconds; samples 13; running queue estimator...
+Worker 1 (machine 3) stage 4 application estimated total time 28.896507 seconds for 13 objects (average per object: 2.222808 seconds)
+Worker 1 (machine 3) completed stage 4 application with average service time 2.292969 seconds and simulated total time 28.896507 seconds
+[ENQUEUE] Stage 4 OUT task 0 (compress:ZSTD) worker 1
+Worker 1 (machine 3) processing stage 4 output task 0 (compress:ZSTD)
+Worker 5 (machine 3) completed stage 4 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 4 IN task 3 (uncompress:ZSTD) worker 5
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 0 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 1 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 2 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 3 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 4 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 5 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 6 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 7 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 8 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 9 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 10 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 11 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 1 (machine 3) compressed object 12 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+------Worker 1 (machine 3) completed compression stage with average time 0.11 seconds
+Worker 3 (machine 3) completed stage 4 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 4 APP task 0 (application:) worker 3
+Worker 5 (machine 3) processing stage 4 input task 3 (uncompress:ZSTD)
+****Worker 5 (machine 3) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 5 (machine 3) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 5 - Decompress stage: avg service time = 0.184477 seconds
+APPLICATION TIME: Worker 3 (machine 3) stage 4 application with average service time 2.292969 seconds, size factor 0.600000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 7 (machine 3) completed stage 4 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 4 IN task 2 (hash_verify:SHA3_256) worker 7
+Worker 7 (machine 3) processing stage 4 input task 2 (hash_verify:SHA3_256)
+Worker 6 (machine 3) completed stage 4 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 4 IN task 2 (hash_verify:SHA3_256) worker 6
+Worker 6 (machine 3) processing stage 4 input task 2 (hash_verify:SHA3_256)
+Worker 1 (machine 3) completed stage 4 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 4 OUT task 1 (hash_calculate:SHA3_256) worker 1
+Worker 1 (machine 3) processing stage 4 output task 1 (hash_calculate:SHA3_256)
+Worker 4 (machine 3) completed stage 4 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 4 APP task 0 (application:) worker 4
+Worker 6 (machine 3) completed stage 4 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 4 IN task 3 (uncompress:ZSTD) worker 6
+Worker 6 (machine 3) processing stage 4 input task 3 (uncompress:ZSTD)
+****Worker 6 (machine 3) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 6 (machine 3) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+Worker 6 - Decompress stage: avg service time = 0.184477 seconds
+Worker 0 (machine 3) completed stage 4 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 4 OUT task 1 (hash_calculate:SHA3_256) worker 0
+Worker 0 (machine 3) processing stage 4 output task 1 (hash_calculate:SHA3_256)
+Worker 7 (machine 3) completed stage 4 input task 2 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 4 IN task 3 (uncompress:ZSTD) worker 7
+Worker 3 (machine 3) stage 4 application estimated total time 26.035641 seconds for 12 objects (average per object: 2.169637 seconds)
+Worker 3 (machine 3) completed stage 4 application with average service time 2.292969 seconds and simulated total time 26.035641 seconds
+[ENQUEUE] Stage 4 OUT task 0 (compress:ZSTD) worker 3
+APPLICATION TIME: Worker 4 (machine 3) stage 4 application with average service time 2.292969 seconds, size factor 0.600000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 3 (machine 3) processing stage 4 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 0 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 1 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 2 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 3 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 4 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 5 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 6 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 7 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 8 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 9 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 10 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 3 (machine 3) compressed object 11 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+------Worker 3 (machine 3) completed compression stage with average time 0.11 seconds
+Worker 2 (machine 3) stage 4 application estimated total time 28.896507 seconds for 13 objects (average per object: 2.222808 seconds)
+Worker 2 (machine 3) completed stage 4 application with average service time 2.292969 seconds and simulated total time 28.896507 seconds
+[ENQUEUE] Stage 4 OUT task 0 (compress:ZSTD) worker 2
+Worker 2 (machine 3) processing stage 4 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 0 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 1 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 2 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 3 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 4 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 5 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 6 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 7 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 8 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 9 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 10 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 11 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 2 (machine 3) compressed object 12 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+------Worker 2 (machine 3) completed compression stage with average time 0.11 seconds
+Worker 5 (machine 3) completed stage 4 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 4 APP task 0 (application:) worker 5
+Worker 7 (machine 3) processing stage 4 input task 3 (uncompress:ZSTD)
+****Worker 7 (machine 3) decompressing object 0 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 1 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 2 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 3 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 4 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 5 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 6 of size 0.02 MB with algorithm ZSTD
+APPLICATION TIME: Worker 5 (machine 3) stage 4 application with average service time 2.292969 seconds, size factor 0.600000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+****Worker 7 (machine 3) decompressing object 7 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 8 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 9 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 10 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 11 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 12 of size 0.02 MB with algorithm ZSTD
+****Worker 7 (machine 3) decompressing object 13 of size 0.02 MB with algorithm ZSTD
+Worker 7 - Decompress stage: avg service time = 0.184477 seconds
+Worker 6 (machine 3) completed stage 4 input task 3 (uncompress:ZSTD)
+Worker 4 (machine 3) stage 4 application estimated total time 26.035641 seconds for 12 objects (average per object: 2.169637 seconds)
+Worker 4 (machine 3) completed stage 4 application with average service time 2.292969 seconds and simulated total time 26.035641 seconds
+Worker 0 (machine 3) completed stage 4 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 4 OUT task 0 (compress:ZSTD) worker 4
+[ENQUEUE] Stage 4 OUT task 2 (encrypt:RS) worker 0
+[ENQUEUE] Stage 4 APP task 0 (application:) worker 6
+APPLICATION TIME: Worker 6 (machine 3) stage 4 application with average service time 2.292969 seconds, size factor 0.600000, interarrival time 2.000000 seconds; samples 12; running queue estimator...
+Worker 0 (machine 3) processing stage 4 output task 2 (encrypt:RS)
+Worker 2 (machine 3) completed stage 4 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 4 OUT task 1 (hash_calculate:SHA3_256) worker 2
+Worker 4 (machine 3) processing stage 4 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+Worker 2 (machine 3) processing stage 4 output task 1 (hash_calculate:SHA3_256)
+****Worker 4 (machine 3) compressed object 0 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 1 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 2 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 3 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 4 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 5 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 6 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 7 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 8 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 9 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 10 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 4 (machine 3) compressed object 11 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+------Worker 4 (machine 3) completed compression stage with average time 0.11 seconds
+Worker 5 (machine 3) stage 4 application estimated total time 26.035641 seconds for 12 objects (average per object: 2.169637 seconds)
+Worker 5 (machine 3) completed stage 4 application with average service time 2.292969 seconds and simulated total time 26.035641 seconds
+[ENQUEUE] Stage 4 OUT task 0 (compress:ZSTD) worker 5
+Worker 1 (machine 3) completed stage 4 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 4 OUT task 2 (encrypt:RS) worker 1
+Worker 1 (machine 3) processing stage 4 output task 2 (encrypt:RS)
+Worker 3 (machine 3) completed stage 4 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 4 OUT task 1 (hash_calculate:SHA3_256) worker 3
+Worker 5 (machine 3) processing stage 4 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 0 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+Worker 3 (machine 3) processing stage 4 output task 1 (hash_calculate:SHA3_256)
+****Worker 5 (machine 3) compressed object 1 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 2 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 3 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 4 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 5 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 6 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 7 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 8 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 9 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 10 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 5 (machine 3) compressed object 11 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+------Worker 5 (machine 3) completed compression stage with average time 0.11 seconds
+Worker 7 (machine 3) completed stage 4 input task 3 (uncompress:ZSTD)
+[ENQUEUE] Stage 4 APP task 0 (application:) worker 7
+APPLICATION TIME: Worker 7 (machine 3) stage 4 application with average service time 2.292969 seconds, size factor 0.600000, interarrival time 2.000000 seconds; samples 14; running queue estimator...
+Worker 0 (machine 3) completed stage 4 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 4 OUT task 3 (hash_calculate:BLAKE3) worker 0
+Worker 0 (machine 3) processing stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 5 (machine 3) completed stage 4 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 4 OUT task 1 (hash_calculate:SHA3_256) worker 5
+Worker 4 (machine 3) completed stage 4 output task 0 (compress:ZSTD)
+Worker 7 (machine 3) stage 4 application estimated total time 30.341837 seconds for 14 objects (average per object: 2.167274 seconds)
+Worker 7 (machine 3) completed stage 4 application with average service time 2.292969 seconds and simulated total time 30.341837 seconds
+[ENQUEUE] Stage 4 OUT task 0 (compress:ZSTD) worker 7
+[ENQUEUE] Stage 4 OUT task 1 (hash_calculate:SHA3_256) worker 4
+Worker 7 (machine 3) processing stage 4 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 0 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 1 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 2 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 3 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 4 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 5 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 6 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 7 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 8 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 9 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 10 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 11 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 12 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 7 (machine 3) compressed object 13 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+------Worker 7 (machine 3) completed compression stage with average time 0.11 seconds
+Worker 3 (machine 3) completed stage 4 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 4 OUT task 2 (encrypt:RS) worker 3
+Worker 5 (machine 3) processing stage 4 output task 1 (hash_calculate:SHA3_256)
+Worker 3 (machine 3) processing stage 4 output task 2 (encrypt:RS)
+Worker 1 (machine 3) completed stage 4 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 4 OUT task 3 (hash_calculate:BLAKE3) worker 1
+Worker 1 (machine 3) processing stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 6 (machine 3) stage 4 application estimated total time 26.035641 seconds for 12 objects (average per object: 2.169637 seconds)
+Worker 6 (machine 3) completed stage 4 application with average service time 2.292969 seconds and simulated total time 26.035641 seconds
+[ENQUEUE] Stage 4 OUT task 0 (compress:ZSTD) worker 6
+Worker 6 (machine 3) processing stage 4 output task 0 (compress:ZSTD)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 0 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 1 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 2 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 3 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 4 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 5 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 6 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 7 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 8 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 9 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 10 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+CompressStageSizeAlgo: filesize = 17280000.000000, ratio = 810.957764
+****Worker 6 (machine 3) compressed object 11 from 16.48 MB to 0.020321 MB in 0.00 seconds (I/O time: 0.11 seconds)
+------Worker 6 (machine 3) completed compression stage with average time 0.11 seconds
+Worker 2 (machine 3) completed stage 4 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 4 OUT task 2 (encrypt:RS) worker 2
+Worker 4 (machine 3) processing stage 4 output task 1 (hash_calculate:SHA3_256)
+Worker 2 (machine 3) processing stage 4 output task 2 (encrypt:RS)
+Worker 6 (machine 3) completed stage 4 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 4 OUT task 1 (hash_calculate:SHA3_256) worker 6
+Worker 3 (machine 3) completed stage 4 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 4 OUT task 3 (hash_calculate:BLAKE3) worker 3
+Worker 7 (machine 3) completed stage 4 output task 0 (compress:ZSTD)
+[ENQUEUE] Stage 4 OUT task 1 (hash_calculate:SHA3_256) worker 7
+Worker 4 (machine 3) completed stage 4 output task 1 (hash_calculate:SHA3_256)
+Worker 2 (machine 3) completed stage 4 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 4 OUT task 2 (encrypt:RS) worker 4
+[ENQUEUE] Stage 4 OUT task 3 (hash_calculate:BLAKE3) worker 2
+Worker 6 (machine 3) processing stage 4 output task 1 (hash_calculate:SHA3_256)
+Worker 4 (machine 3) processing stage 4 output task 2 (encrypt:RS)
+Worker 1 (machine 3) completed stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 3 (machine 3) processing stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 0 (machine 3) completed stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 2 (machine 3) processing stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 5 (machine 3) completed stage 4 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 4 OUT task 2 (encrypt:RS) worker 5
+Worker 7 (machine 3) processing stage 4 output task 1 (hash_calculate:SHA3_256)
+Worker 5 (machine 3) processing stage 4 output task 2 (encrypt:RS)
+Worker 3 (machine 3) completed stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 7 (machine 3) completed stage 4 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 4 OUT task 2 (encrypt:RS) worker 7
+Worker 5 (machine 3) completed stage 4 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 4 OUT task 3 (hash_calculate:BLAKE3) worker 5
+Worker 7 (machine 3) processing stage 4 output task 2 (encrypt:RS)
+Worker 5 (machine 3) processing stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 4 (machine 3) completed stage 4 output task 2 (encrypt:RS)
+Worker 6 (machine 3) completed stage 4 output task 1 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 4 OUT task 2 (encrypt:RS) worker 6
+[ENQUEUE] Stage 4 OUT task 3 (hash_calculate:BLAKE3) worker 4
+Worker 6 (machine 3) processing stage 4 output task 2 (encrypt:RS)
+Worker 2 (machine 3) completed stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 4 (machine 3) processing stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 6 (machine 3) completed stage 4 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 4 OUT task 3 (hash_calculate:BLAKE3) worker 6
+Worker 4 (machine 3) completed stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 6 (machine 3) processing stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 7 (machine 3) completed stage 4 output task 2 (encrypt:RS)
+[ENQUEUE] Stage 4 OUT task 3 (hash_calculate:BLAKE3) worker 7
+Worker 5 (machine 3) completed stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 7 (machine 3) processing stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 6 (machine 3) completed stage 4 output task 3 (hash_calculate:BLAKE3)
+Worker 7 (machine 3) completed stage 4 output task 3 (hash_calculate:BLAKE3)
+
+Shutting down NFR managers...
+
+=== Manager Metrics ===
+Stage 1 APP task 0 (application): jobs=8 wall_time=0.579672 s avg_wall=0.072459 s simulated_time=424.787697 s avg_simulated=53.098462 s
+Stage 1 OUT task 0 (compress:ZSTD): jobs=8 wall_time=0.617279 s avg_wall=0.077160 s simulated_time=132.860124 s avg_simulated=16.607516 s
+Stage 1 OUT task 1 (hash_calculate:SHA3_256): jobs=8 wall_time=0.606350 s avg_wall=0.075794 s simulated_time=132.860131 s avg_simulated=16.607516 s
+Stage 1 OUT task 2 (encrypt:RS): jobs=8 wall_time=0.648615 s avg_wall=0.081077 s simulated_time=132.860124 s avg_simulated=16.607516 s
+Stage 1 OUT task 3 (hash_calculate:BLAKE3): jobs=8 wall_time=0.618851 s avg_wall=0.077356 s simulated_time=132.860131 s avg_simulated=16.607516 s
+Stage 1 COMBINED: jobs=40 wall_time=3.070766 s avg_wall=0.076769 s simulated_time=956.228208 s avg_simulated=23.905705 s
+Stage 2 IN task 0 (hash_verify:BLAKE3): jobs=8 wall_time=0.622084 s avg_wall=0.077760 s simulated_time=132.860132 s avg_simulated=16.607517 s
+Stage 2 IN task 1 (unencrypt:RS): jobs=8 wall_time=0.627611 s avg_wall=0.078451 s simulated_time=132.860124 s avg_simulated=16.607516 s
+Stage 2 IN task 2 (hash_verify:SHA3_256): jobs=8 wall_time=0.612523 s avg_wall=0.076565 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 2 IN task 3 (uncompress:ZSTD): jobs=8 wall_time=0.628060 s avg_wall=0.078507 s simulated_time=132.860124 s avg_simulated=16.607516 s
+Stage 2 APP task 0 (application): jobs=8 wall_time=0.638346 s avg_wall=0.079793 s simulated_time=155.107592 s avg_simulated=19.388449 s
+Stage 2 OUT task 0 (compress:ZSTD): jobs=8 wall_time=0.642607 s avg_wall=0.080326 s simulated_time=132.860118 s avg_simulated=16.607515 s
+Stage 2 OUT task 1 (hash_calculate:SHA3_256): jobs=8 wall_time=0.684898 s avg_wall=0.085612 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 2 OUT task 2 (encrypt:RS): jobs=8 wall_time=0.649614 s avg_wall=0.081202 s simulated_time=132.860118 s avg_simulated=16.607515 s
+Stage 2 OUT task 3 (hash_calculate:BLAKE3): jobs=8 wall_time=0.631783 s avg_wall=0.078973 s simulated_time=132.860106 s avg_simulated=16.607513 s
+Stage 2 COMBINED: jobs=72 wall_time=5.737526 s avg_wall=0.079688 s simulated_time=1217.988574 s avg_simulated=16.916508 s
+Stage 3 IN task 0 (hash_verify:BLAKE3): jobs=8 wall_time=0.622043 s avg_wall=0.077755 s simulated_time=132.860102 s avg_simulated=16.607513 s
+Stage 3 IN task 1 (unencrypt:RS): jobs=8 wall_time=0.620598 s avg_wall=0.077575 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 3 IN task 2 (hash_verify:SHA3_256): jobs=8 wall_time=0.615387 s avg_wall=0.076923 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 3 IN task 3 (uncompress:ZSTD): jobs=8 wall_time=0.602936 s avg_wall=0.075367 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 3 APP task 0 (application): jobs=8 wall_time=0.605933 s avg_wall=0.075742 s simulated_time=212.686906 s avg_simulated=26.585863 s
+Stage 3 OUT task 0 (compress:ZSTD): jobs=8 wall_time=0.605629 s avg_wall=0.075704 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 3 OUT task 1 (hash_calculate:SHA3_256): jobs=8 wall_time=0.594392 s avg_wall=0.074299 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 3 OUT task 2 (encrypt:RS): jobs=8 wall_time=0.594560 s avg_wall=0.074320 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 3 OUT task 3 (hash_calculate:BLAKE3): jobs=8 wall_time=0.627832 s avg_wall=0.078479 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 3 COMBINED: jobs=72 wall_time=5.489308 s avg_wall=0.076240 s simulated_time=1275.567920 s avg_simulated=17.716221 s
+Stage 4 IN task 0 (hash_verify:BLAKE3): jobs=8 wall_time=0.629443 s avg_wall=0.078680 s simulated_time=132.860092 s avg_simulated=16.607512 s
+Stage 4 IN task 1 (unencrypt:RS): jobs=8 wall_time=0.659307 s avg_wall=0.082413 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 4 IN task 2 (hash_verify:SHA3_256): jobs=8 wall_time=0.690893 s avg_wall=0.086362 s simulated_time=132.860142 s avg_simulated=16.607518 s
+Stage 4 IN task 3 (uncompress:ZSTD): jobs=8 wall_time=0.672187 s avg_wall=0.084023 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 4 APP task 0 (application): jobs=8 wall_time=0.659551 s avg_wall=0.082444 s simulated_time=218.313056 s avg_simulated=27.289132 s
+Stage 4 OUT task 0 (compress:ZSTD): jobs=8 wall_time=0.644829 s avg_wall=0.080604 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 4 OUT task 1 (hash_calculate:SHA3_256): jobs=8 wall_time=0.647757 s avg_wall=0.080970 s simulated_time=132.860092 s avg_simulated=16.607512 s
+Stage 4 OUT task 2 (encrypt:RS): jobs=8 wall_time=0.611969 s avg_wall=0.076496 s simulated_time=132.860130 s avg_simulated=16.607516 s
+Stage 4 OUT task 3 (hash_calculate:BLAKE3): jobs=8 wall_time=0.597273 s avg_wall=0.074659 s simulated_time=132.860168 s avg_simulated=16.607521 s
+Stage 4 COMBINED: jobs=72 wall_time=5.813209 s avg_wall=0.080739 s simulated_time=1281.194072 s avg_simulated=17.794362 s
+
+=== Link Metrics ===
+Link m0->m1 transfers=8 bytes=2214600.000000 total_time=0.101120 s
+Link m1->m2 transfers=8 bytes=2252600.000000 total_time=0.202965 s
+Link m2->m3 transfers=8 bytes=2252600.000000 total_time=0.202965 s
+
+=== Stage Execution Times ===
+Stage	Name	Workers	Objects	InputStage(s)	Application(s)	OutputStage(s)	Total(s)
+1	stage1	8	100	0.000000	59.109409	82.509819	141.619228
+2	stage2	8	100	82.509819	20.987934	82.509819	186.007572
+3	stage3	8	100	82.509819	29.557961	82.509819	194.577599
+4	stage4	8	100	82.509792	30.341837	82.509819	195.361448

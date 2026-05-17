@@ -1,0 +1,37 @@
+Interpolation validation mode: leave-one-out
+
+Dataset	Operation	Group	Samples	MAE(s)	RMSE(s)	MAPE(%)
+cost-efficiency	compress	cost-efficiency:compress	25	8.111883	36.306988	182.89
+cost-efficiency	decompress	cost-efficiency:decompress	25	0.479935	1.780509	123.13
+integrity	hash	integrity:hash	20	0.160967	0.470410	170.68
+reliability	decode	reliability:decode	15	0.073047	0.161153	282.33
+reliability	encode	reliability:encode	15	0.430232	0.967603	198.44
+
+OVERALL	all	overall	100	2.255640	18.180497	182.76
+
+Detailed groups:
+Dataset	Operation	Group	Samples	MAE(s)	RMSE(s)	MAPE(%)
+cost-efficiency	compress	BZ2	5	36.603301	80.861476	216.31
+cost-efficiency	compress	LZ4	5	0.023161	0.051127	204.31
+cost-efficiency	compress	LZMA	5	3.198529	7.069765	174.86
+cost-efficiency	compress	ZLIB	5	0.703366	1.555486	199.64
+cost-efficiency	compress	ZSTD	5	0.031059	0.068469	119.32
+cost-efficiency	decompress	BZ2	5	1.766814	3.909005	178.14
+cost-efficiency	decompress	LZ4	5	0.137877	0.303102	77.20
+cost-efficiency	decompress	LZMA	5	0.198587	0.432274	82.35
+cost-efficiency	decompress	ZLIB	5	0.237676	0.524780	210.30
+cost-efficiency	decompress	ZSTD	5	0.058718	0.128890	67.66
+integrity	hash	BLAKE3	5	0.051019	0.112857	96.09
+integrity	hash	HMAC_SHA256	5	0.096884	0.214305	195.59
+integrity	hash	SHA256	5	0.096755	0.214115	194.46
+integrity	hash	SHA3_256	5	0.399211	0.883534	196.59
+reliability	decode	RS k=10 m=4	5	0.073063	0.161164	289.11
+reliability	decode	RS k=4 m=2	5	0.073386	0.161989	283.56
+reliability	decode	RS k=8 m=4	5	0.072692	0.160301	274.33
+reliability	encode	RS k=10 m=4	5	0.492924	1.084654	196.88
+reliability	encode	RS k=4 m=2	5	0.299383	0.656701	201.27
+reliability	encode	RS k=8 m=4	5	0.498388	1.095919	197.16
+
+Detailed results written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/interpolation/dianalap/detailed.csv
+Summary written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/interpolation/dianalap/summary.csv
+Plots written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/interpolation/dianalap/plots

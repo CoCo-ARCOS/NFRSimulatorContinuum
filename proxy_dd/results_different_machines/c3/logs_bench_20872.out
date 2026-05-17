@@ -1,0 +1,31 @@
+Collecting pycryptodome>=3.18.0
+  Downloading pycryptodome-3.23.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 41.6 MB/s eta 0:00:00
+Collecting ascon
+  Downloading ascon-0.0.9-py3-none-any.whl (9.7 kB)
+Collecting zfec>=1.5.0
+  Downloading zfec-1.6.0.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl (94 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 94.6/94.6 kB 24.4 MB/s eta 0:00:00
+Collecting lz4>=4.3.2
+  Downloading lz4-4.4.5-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 64.2 MB/s eta 0:00:00
+Collecting zstandard>=0.21.0
+  Downloading zstandard-0.25.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.6/5.6 MB 42.4 MB/s eta 0:00:00
+Collecting blake3>=0.3.3
+  Downloading blake3-1.0.8-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (387 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 387.6/387.6 kB 30.8 MB/s eta 0:00:00
+Collecting typing-extensions>=4.6.0
+  Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 kB 9.5 MB/s eta 0:00:00
+Installing collected packages: zfec, zstandard, typing-extensions, pycryptodome, lz4, ascon, blake3
+Successfully installed ascon-0.0.9 blake3-1.0.8 lz4-4.4.5 pycryptodome-3.23.0 typing-extensions-4.15.0 zfec-1.6.0.0 zstandard-0.25.0
+Trabajo iniciado en: Mon May 11 11:11:26 CEST 2026
+Nodo de ejecución: 
+========================================
+ Starting NFR Benchmarks
+ Sizes: 1 10 50 100 1000 MB
+ Objects: 31
+========================================
+
+[1/4] Running cost-efficiency (compression) benchmarks...
