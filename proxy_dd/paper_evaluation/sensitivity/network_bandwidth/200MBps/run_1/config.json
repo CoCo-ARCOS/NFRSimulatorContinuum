@@ -1,0 +1,129 @@
+{
+  "workers": 8,
+  "traces_number": 2,
+  "traces_fileName": "traces.cfg",
+  "agent_type": "output",
+  "stages": [
+    {
+      "name": "stage1",
+      "b_fs": 100,
+      "application_mean_service_time": 4,
+      "application_size_factor": 0.8,
+      "input_requirements": [],
+      "output_requirements": [
+        {
+          "type": "hash",
+          "algorithm": "SHA256"
+        },
+        {
+          "type": "compress",
+          "algorithm": "ZLIB"
+        }
+      ]
+    },
+    {
+      "name": "stage2",
+      "b_fs": 250,
+      "application_mean_service_time": 1.0,
+      "application_size_factor": 1.2,
+      "output_requirements": [
+        {
+          "type": "cipher",
+          "algorithm": "RS"
+        },
+        {
+          "type": "hash",
+          "algorithm": "BLAKE3"
+        }
+      ]
+    },
+    {
+      "name": "stage3",
+      "b_fs": 75,
+      "application_mean_service_time": 1.5,
+      "application_size_factor": 1.0,
+      "output_requirements": [
+        {
+          "type": "compress",
+          "algorithm": "LZ4"
+        },
+        {
+          "type": "cipher",
+          "algorithm": "RS"
+        },
+        {
+          "type": "hash",
+          "algorithm": "SHA3_256"
+        }
+      ]
+    },
+    {
+      "name": "stage4",
+      "b_fs": 150,
+      "application_mean_service_time": 2.0,
+      "application_size_factor": 0.6,
+      "output_requirements": [
+        {
+          "type": "hash",
+          "algorithm": "SHA256"
+        }
+      ]
+    }
+  ],
+  "compression_algo": "ZLIB",
+  "hashing_algo": "SHA256",
+  "ida_algo": "RS",
+  "ida_k": 8,
+  "ida_m": 4,
+  "b_fs": 100,
+  "machines": [
+    {
+      "name": "m0",
+      "stages": [
+        "stage1"
+      ],
+      "hardware_profile": "toge"
+    },
+    {
+      "name": "m1",
+      "stages": [
+        "stage2"
+      ],
+      "hardware_profile": "dianalap"
+    },
+    {
+      "name": "m2",
+      "stages": [
+        "stage3"
+      ],
+      "hardware_profile": "c3"
+    },
+    {
+      "name": "m3",
+      "stages": [
+        "stage4"
+      ],
+      "hardware_profile": "c3"
+    }
+  ],
+  "links": [
+    {
+      "from": "m0",
+      "to": "m1",
+      "b_net": 200.0,
+      "latency_ms": 10
+    },
+    {
+      "from": "m1",
+      "to": "m2",
+      "b_net": 200.0,
+      "latency_ms": 20
+    },
+    {
+      "from": "m2",
+      "to": "m3",
+      "b_net": 200.0,
+      "latency_ms": 20
+    }
+  ]
+}

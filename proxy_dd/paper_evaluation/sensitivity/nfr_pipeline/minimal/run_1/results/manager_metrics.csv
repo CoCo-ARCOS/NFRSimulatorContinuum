@@ -1,0 +1,16 @@
+stage,stage_name,pipeline,task_index,task_name,algorithm,jobs,wall_seconds,avg_wall_seconds,simulated_seconds,avg_simulated_seconds
+1,stage1,application,0,application,,8,0.576295,0.072037,425.224519,53.153065
+1,stage1,output,0,hash_calculate,SHA256,8,0.658499,0.082312,134.257288,16.782161
+1,stage1,combined,-1,combined,,16,1.234794,0.077175,559.481807,34.967613
+2,stage2,input,0,hash_verify,SHA256,8,0.796024,0.099503,133.861789,16.732724
+2,stage2,application,0,application,,8,0.853720,0.106715,155.223828,19.402979
+2,stage2,output,0,hash_calculate,BLAKE3,8,0.847773,0.105972,133.861783,16.732723
+2,stage2,combined,-1,combined,,24,2.497516,0.104063,422.947400,17.622808
+3,stage3,input,0,hash_verify,BLAKE3,8,0.735388,0.091923,138.124037,17.265505
+3,stage3,application,0,application,,8,0.654368,0.081796,212.902892,26.612862
+3,stage3,output,0,hash_calculate,SHA3_256,8,0.611728,0.076466,139.840197,17.480025
+3,stage3,combined,-1,combined,,24,2.001483,0.083395,490.867125,20.452797
+4,stage4,input,0,hash_verify,SHA3_256,8,0.574811,0.071851,134.201308,16.775163
+4,stage4,application,0,application,,8,0.564537,0.070567,218.534899,27.316862
+4,stage4,output,0,hash_calculate,SHA256,8,0.539373,0.067422,133.861801,16.732725
+4,stage4,combined,-1,combined,,24,1.678721,0.069947,486.598008,20.274917

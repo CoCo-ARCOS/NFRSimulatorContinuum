@@ -1,0 +1,177 @@
+--- Configurando el entorno virtual ---
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: pycryptodome>=3.18.0 in ./venv/lib/python3.13/site-packages (from -r requirements.txt (line 2)) (3.23.0)
+Requirement already satisfied: ascon in ./venv/lib/python3.13/site-packages (from -r requirements.txt (line 5)) (0.0.9)
+Requirement already satisfied: zfec>=1.5.0 in ./venv/lib/python3.13/site-packages (from -r requirements.txt (line 8)) (1.6.0.0)
+Requirement already satisfied: lz4>=4.3.2 in ./venv/lib/python3.13/site-packages (from -r requirements.txt (line 11)) (4.4.5)
+Requirement already satisfied: zstandard>=0.21.0 in ./venv/lib/python3.13/site-packages (from -r requirements.txt (line 14)) (0.25.0)
+Requirement already satisfied: blake3>=0.3.3 in ./venv/lib/python3.13/site-packages (from -r requirements.txt (line 18)) (1.0.8)
+Trabajo iniciado en: jue 14 may 2026 21:51:04 CEST
+--- Preparando permisos de ejecución ---
+--- Iniciando benchmarks ---
+========================================
+ Starting NFR Benchmarks
+ Sizes: 1 10 50 100 1000 MB
+ Objects: 31
+========================================
+
+[1/4] Running cost-efficiency (compression) benchmarks...
+
+============================================================================================================================================
+                                              Benchmark de Algoritmos de Compresión (con I/O)                                               
+============================================================================================================================================
+Algoritmo  | MB orig.   | Ratio    | Comp. (s)    | I/O W (s)    | I/O R (s)    | Descomp. (s)
+--------------------------------------------------------------------------------------------------------------------------------------------
+ZLIB       | 1          | 148.86x | 0.006621     | 0.000331     | 0.000326     | 0.000858    
+ZLIB       | 10         | 154.49x | 0.068045     | 0.003172     | 0.003082     | 0.009759    
+ZLIB       | 50         | 158.47x | 0.332231     | 0.016276     | 0.017045     | 0.055108    
+ZLIB       | 100        | 158.75x | 0.657954     | 0.030725     | 0.032189     | 0.109819    
+ZLIB       | 1000       | 159.01x | 6.629516     | 0.303936     | 0.322826     | 1.092114    
+BZ2        | 1          | 1191.56x | 0.616038     | 0.000375     | 0.001072     | 0.016492    
+BZ2        | 10         | 1878.50x | 6.555685     | 0.003410     | 0.003057     | 0.160256    
+BZ2        | 50         | 1917.59x | 34.593073    | 0.016685     | 0.017846     | 0.855427    
+BZ2        | 100        | 1930.23x | 70.616970    | 0.031223     | 0.033413     | 1.757350    
+BZ2        | 1000       | 1937.27x | 709.355476   | 0.307729     | 0.326107     | 17.206112   
+LZMA       | 1          | 2545.09x | 0.029284     | 0.000404     | 0.001070     | 0.002633    
+LZMA       | 10         | 5851.43x | 0.273768     | 0.003162     | 0.002950     | 0.019244    
+LZMA       | 50         | 6643.28x | 1.354455     | 0.015652     | 0.017244     | 0.105882    
+LZMA       | 100        | 6758.03x | 2.700442     | 0.030609     | 0.033766     | 0.210249    
+LZMA       | 1000       | 6862.95x | 26.670634    | 0.307299     | 0.326549     | 2.059779    
+LZ4        | 1          | 60.91x | 0.000234     | 0.000315     | 0.000995     | 0.001090    
+LZ4        | 10         | 61.39x | 0.002272     | 0.003258     | 0.003049     | 0.004772    
+LZ4        | 50         | 61.50x | 0.011701     | 0.014977     | 0.015925     | 0.027504    
+LZ4        | 100        | 61.73x | 0.024152     | 0.030538     | 0.033458     | 0.057493    
+LZ4        | 1000       | 61.66x | 0.254877     | 0.310805     | 0.333691     | 0.576345    
+ZSTD       | 1          | 104.13x | 0.000664     | 0.000316     | 0.001049     | 0.001067    
+ZSTD       | 10         | 535.21x | 0.004199     | 0.002941     | 0.002754     | 0.002612    
+ZSTD       | 50         | 2237.49x | 0.018959     | 0.015320     | 0.016392     | 0.012569    
+ZSTD       | 100        | 3714.14x | 0.035135     | 0.030591     | 0.033861     | 0.024936    
+ZSTD       | 1000       | 9147.32x | 0.358756     | 0.313115     | 0.334290     | 0.243420    
+
+[OK] Datos crudos: cost-efficiency/comp_raw.csv
+[OK] Estadísticas: cost-efficiency/comp_stats.csv
+Cost-efficiency benchmarks completed.
+
+[2/4] Running security (confidentiality) benchmarks...
+
+=============================================================================================================================
+                              Cryptographic Algorithm Benchmark (Encryption + Decryption + I/O)                              
+=============================================================================================================================
+Objects per config: 31
+Algorithm    | Size (MB)  | Key (bits) | Enc (s)      | Dec (s)      | I/O W (s)    | I/O R (s)   
+-----------------------------------------------------------------------------------------------------------------------------
+AES          | 1          | 128        | 0.006015     | 0.006162     | 0.000249     | 0.000322    
+AES          | 1          | 256        | 0.007836     | 0.007993     | 0.000235     | 0.000335    
+AES          | 10         | 128        | 0.060832     | 0.063389     | 0.003384     | 0.003113    
+AES          | 10         | 256        | 0.076326     | 0.080472     | 0.003350     | 0.003098    
+AES          | 50         | 128        | 0.300372     | 0.320683     | 0.016432     | 0.017590    
+AES          | 50         | 256        | 0.379960     | 0.402141     | 0.016023     | 0.017510    
+AES          | 100        | 128        | 0.591529     | 0.630306     | 0.030362     | 0.033151    
+AES          | 100        | 256        | 0.750359     | 0.797584     | 0.030368     | 0.033228    
+AES          | 1000       | 128        | 5.832497     | 6.221154     | 0.298175     | 0.317207    
+AES          | 1000       | 256        | 7.429952     | 7.873609     | 0.299118     | 0.319433    
+CHACHA20     | 1          | 256        | 0.004137     | 0.004005     | 0.000256     | 0.000977    
+CHACHA20     | 10         | 256        | 0.041766     | 0.041549     | 0.002934     | 0.002750    
+CHACHA20     | 50         | 256        | 0.214490     | 0.214197     | 0.015587     | 0.016200    
+CHACHA20     | 100        | 256        | 0.431072     | 0.431801     | 0.031060     | 0.033890    
+CHACHA20     | 1000       | 256        | 4.278766     | 4.275890     | 0.306795     | 0.319970    
+
+[OK] Raw data saved to: security/conf_raw.csv
+[OK] Aggregated statistics saved to: security/conf_stats.csv
+Confidentiality benchmarks completed.
+
+[3/4] Running security (integrity) benchmarks...
+
+===================================================================================================================
+                           Benchmark de Algoritmos de Integridad (Hashing & HMAC + I/O)                            
+===================================================================================================================
+Algoritmo       | Archivo    | Tiempo Medio (s)   | Velocidad (MB/s) | Std Dev (s)  | I/O W (s)    | I/O R (s)   
+-------------------------------------------------------------------------------------------------------------------
+SHA256          | 1       MB | 0.000706           | 1416.07         | 0.000010     | 0.000246     | 0.000269    
+SHA256          | 10      MB | 0.006866           | 1456.51         | 0.000010     | 0.003079     | 0.002984    
+SHA256          | 50      MB | 0.034240           | 1460.27         | 0.000024     | 0.018006     | 0.018512    
+SHA256          | 100     MB | 0.068411           | 1461.76         | 0.000027     | 0.035388     | 0.035531    
+SHA256          | 1000    MB | 0.683735           | 1462.56         | 0.000130     | 0.308249     | 0.320773    
+SHA3_256        | 1       MB | 0.003460           | 289.06          | 0.000014     | 0.000220     | 0.000955    
+SHA3_256        | 10      MB | 0.034357           | 291.06          | 0.000013     | 0.002705     | 0.002673    
+SHA3_256        | 50      MB | 0.171683           | 291.23          | 0.000028     | 0.014886     | 0.016287    
+SHA3_256        | 100     MB | 0.343315           | 291.28          | 0.000040     | 0.030998     | 0.035068    
+SHA3_256        | 1000    MB | 3.433032           | 291.29          | 0.000164     | 0.309928     | 0.320293    
+BLAKE3          | 1       MB | 0.002376           | 420.80          | 0.000031     | 0.000224     | 0.000946    
+BLAKE3          | 10      MB | 0.023668           | 422.51          | 0.000349     | 0.002699     | 0.002669    
+BLAKE3          | 50      MB | 0.116788           | 428.12          | 0.000038     | 0.014983     | 0.016410    
+BLAKE3          | 100     MB | 0.233411           | 428.43          | 0.000064     | 0.030321     | 0.035039    
+BLAKE3          | 1000    MB | 2.333784           | 428.49          | 0.000286     | 0.303180     | 0.320032    
+HMAC_SHA256     | 1       MB | 0.000716           | 1396.11         | 0.000012     | 0.000224     | 0.000932    
+HMAC_SHA256     | 10      MB | 0.006884           | 1452.56         | 0.000010     | 0.002703     | 0.002675    
+HMAC_SHA256     | 50      MB | 0.034256           | 1459.60         | 0.000022     | 0.015065     | 0.016178    
+HMAC_SHA256     | 100     MB | 0.068441           | 1461.11         | 0.000025     | 0.030903     | 0.034737    
+HMAC_SHA256     | 1000    MB | 0.683737           | 1462.55         | 0.000152     | 0.304165     | 0.319605    
+
+[OK] Datos crudos guardados en: security/integ_raw.csv
+[OK] Estadísticas guardadas en: security/integ_stats.csv
+Integrity benchmarks completed.
+
+[4/4] Running reliability (erasure coding) benchmarks...
+
+============================================================================================================================================
+                                        Benchmark de Erasure Coding (ZFEC) con I/O y Decodificación                                         
+============================================================================================================================================
+Algoritmo  | Archivo (MB) | Config (K+M)  | Codif. (s)   | Decod. (s)   | I/O W (s)    | I/O R (s)   
+--------------------------------------------------------------------------------------------------------------------------------------------
+RS | 1            | 4+2           | 0.001359     | 0.000279     | 0.000244     | 0.000329    
+RS | 1            | 8+4           | 0.002444     | 0.000291     | 0.000257     | 0.000322    
+Error: Decoding verification failed for object 1
+Error: Decoding verification failed for object 2
+Error: Decoding verification failed for object 3
+Error: Decoding verification failed for object 4
+Error: Decoding verification failed for object 5
+Error: Decoding verification failed for object 6
+Error: Decoding verification failed for object 7
+Error: Decoding verification failed for object 8
+Error: Decoding verification failed for object 9
+Error: Decoding verification failed for object 10
+Error: Decoding verification failed for object 11
+Error: Decoding verification failed for object 12
+Error: Decoding verification failed for object 13
+Error: Decoding verification failed for object 14
+Error: Decoding verification failed for object 15
+Error: Decoding verification failed for object 16
+Error: Decoding verification failed for object 17
+Error: Decoding verification failed for object 18
+Error: Decoding verification failed for object 19
+Error: Decoding verification failed for object 20
+Error: Decoding verification failed for object 21
+Error: Decoding verification failed for object 22
+Error: Decoding verification failed for object 23
+Error: Decoding verification failed for object 24
+Error: Decoding verification failed for object 25
+Error: Decoding verification failed for object 26
+Error: Decoding verification failed for object 27
+Error: Decoding verification failed for object 28
+Error: Decoding verification failed for object 29
+Error: Decoding verification failed for object 30
+Error: Decoding verification failed for object 31
+RS | 1            | 10+4          | 0.002418     | 0.000246     | 0.000273     | 0.000343    
+RS | 10           | 4+2           | 0.013954     | 0.002645     | 0.003373     | 0.003442    
+RS | 10           | 8+4           | 0.024558     | 0.002600     | 0.003127     | 0.003081    
+RS | 10           | 10+4          | 0.024487     | 0.002654     | 0.003231     | 0.003253    
+RS | 50           | 4+2           | 0.070580     | 0.015203     | 0.017566     | 0.017700    
+RS | 50           | 8+4           | 0.123384     | 0.016362     | 0.017411     | 0.018501    
+RS | 50           | 10+4          | 0.122734     | 0.016957     | 0.017553     | 0.018742    
+RS | 100          | 4+2           | 0.139735     | 0.031457     | 0.033337     | 0.034999    
+RS | 100          | 8+4           | 0.245171     | 0.034099     | 0.034229     | 0.038400    
+RS | 100          | 10+4          | 0.244865     | 0.036420     | 0.034188     | 0.039740    
+RS | 1000         | 4+2           | 1.456735     | 0.291751     | 0.313204     | 0.324465    
+RS | 1000         | 8+4           | 2.536591     | 0.292178     | 0.316683     | 0.327519    
+RS | 1000         | 10+4          | 2.523444     | 0.292839     | 0.316812     | 0.328564    
+
+[OK] Datos crudos guardados en: reliability/erasure_raw.csv
+[OK] Estadísticas guardadas en: reliability/erasure_stats.csv
+Reliability benchmarks completed.
+
+========================================
+ All benchmarks completed successfully!
+========================================
+--- Benchmarks completados con éxito ---
+Trabajo finalizado en: vie 15 may 2026 06:40:23 CEST

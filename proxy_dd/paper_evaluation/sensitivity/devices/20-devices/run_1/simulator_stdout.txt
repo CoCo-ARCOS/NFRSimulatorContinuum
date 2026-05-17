@@ -1,0 +1,95 @@
+Compress Table: ZLIB 1048576.000000 0.006448 148.860001
+Compress Table: ZLIB 10485760.000000 0.058908 154.490005
+Compress Table: ZLIB 52428800.000000 0.279192 158.470001
+Compress Table: ZLIB 104857600.000000 0.548262 158.750000
+Compress Table: BZ2 1048576.000000 0.253705 1191.560059
+Compress Table: BZ2 10485760.000000 2.740345 1878.500000
+Compress Table: BZ2 52428800.000000 14.431828 1917.589966
+Compress Table: BZ2 104857600.000000 49.860970 1930.229980
+Compress Table: LZMA 1048576.000000 0.027456 2545.090088
+Compress Table: LZMA 10485760.000000 0.197901 5851.430176
+Compress Table: LZMA 52428800.000000 0.851459 6643.279785
+Compress Table: LZMA 104857600.000000 1.762460 6758.029785
+Compress Table: LZ4 1048576.000000 0.000776 60.910000
+Compress Table: LZ4 10485760.000000 0.001484 61.389999
+Compress Table: LZ4 52428800.000000 0.008109 61.500000
+Compress Table: LZ4 104857600.000000 0.013973 61.730000
+Compress Table: ZSTD 1048576.000000 0.000455 104.129997
+Compress Table: ZSTD 10485760.000000 0.002212 535.210022
+Compress Table: ZSTD 52428800.000000 0.009686 2237.489990
+Compress Table: ZSTD 104857600.000000 0.018124 3714.139893
+Decompress Table: ZLIB 1048576.000000 0.001371 148.860001
+Decompress Table: ZLIB 10485760.000000 0.014042 154.490005
+Decompress Table: ZLIB 52428800.000000 0.109711 158.470001
+Decompress Table: ZLIB 104857600.000000 0.223561 158.750000
+Decompress Table: BZ2 1048576.000000 0.011246 1191.560059
+Decompress Table: BZ2 10485760.000000 0.115207 1878.500000
+Decompress Table: BZ2 52428800.000000 0.653815 1917.589966
+Decompress Table: BZ2 104857600.000000 1.753955 1930.229980
+Decompress Table: LZMA 1048576.000000 0.002992 2545.090088
+Decompress Table: LZMA 10485760.000000 0.005004 5851.430176
+Decompress Table: LZMA 52428800.000000 0.069355 6643.279785
+Decompress Table: LZMA 104857600.000000 0.163791 6758.029785
+Decompress Table: LZ4 1048576.000000 0.001302 60.910000
+Decompress Table: LZ4 10485760.000000 0.004569 61.389999
+Decompress Table: LZ4 52428800.000000 0.064734 61.500000
+Decompress Table: LZ4 104857600.000000 0.129831 61.730000
+Decompress Table: ZSTD 1048576.000000 0.001228 104.129997
+Decompress Table: ZSTD 10485760.000000 0.001519 535.210022
+Decompress Table: ZSTD 52428800.000000 0.028259 2237.489990
+Decompress Table: ZSTD 104857600.000000 0.058166 3714.139893
+Hashing Table: SHA256 1048576.000000 0.000592 1.100000
+Hashing Table: SHA256 10485760.000000 0.005782 1.100000
+Hashing Table: SHA256 52428800.000000 0.030439 1.100000
+Hashing Table: SHA256 104857600.000000 0.061901 1.100000
+Hashing Table: SHA3_256 1048576.000000 0.002703 1.100000
+Hashing Table: SHA3_256 10485760.000000 0.037787 1.100000
+Hashing Table: SHA3_256 52428800.000000 0.163051 1.100000
+Hashing Table: SHA3_256 104857600.000000 0.330098 1.100000
+Hashing Table: BLAKE3 1048576.000000 0.000577 1.100000
+Hashing Table: BLAKE3 10485760.000000 0.003935 1.100000
+Hashing Table: BLAKE3 52428800.000000 0.019166 1.100000
+Hashing Table: BLAKE3 104857600.000000 0.037542 1.100000
+Hashing Table: HMAC_SHA256 1048576.000000 0.000636 1.100000
+Hashing Table: HMAC_SHA256 10485760.000000 0.005542 1.100000
+Hashing Table: HMAC_SHA256 52428800.000000 0.030108 1.100000
+Hashing Table: HMAC_SHA256 104857600.000000 0.059382 1.100000
+
+Shutting down NFR managers...
+
+=== Manager Metrics ===
+Stage 1 APP task 0 (application): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 1 OUT task 0 (hash_calculate:SHA256): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 1 OUT task 1 (compress:ZLIB): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 1 COMBINED: jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 2 IN task 0 (uncompress:ZLIB): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 2 IN task 1 (hash_verify:SHA256): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 2 APP task 0 (application): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 2 OUT task 0 (encrypt:RS): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 2 OUT task 1 (hash_calculate:BLAKE3): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 2 COMBINED: jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 3 IN task 0 (hash_verify:BLAKE3): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 3 IN task 1 (unencrypt:RS): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 3 APP task 0 (application): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 3 OUT task 0 (compress:LZ4): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 3 OUT task 1 (encrypt:RS): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 3 OUT task 2 (hash_calculate:SHA3_256): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 3 COMBINED: jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 4 IN task 0 (hash_verify:SHA3_256): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 4 IN task 1 (unencrypt:RS): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 4 IN task 2 (uncompress:LZ4): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 4 APP task 0 (application): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 4 OUT task 0 (hash_calculate:SHA256): jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+Stage 4 COMBINED: jobs=0 wall_time=0.000000 s avg_wall=0.000000 s simulated_time=0.000000 s avg_simulated=0.000000 s
+
+=== Link Metrics ===
+Link m0->m1 transfers=0 bytes=0.000000 total_time=0.000000 s
+Link m1->m2 transfers=0 bytes=0.000000 total_time=0.000000 s
+Link m2->m3 transfers=0 bytes=0.000000 total_time=0.000000 s
+
+=== Stage Execution Times ===
+Stage	Name	Workers	Objects	InputStage(s)	Application(s)	OutputStage(s)	Total(s)
+1	stage1	8	0	0.000000	0.000000	0.000000	0.000000
+2	stage2	8	0	0.000000	0.000000	0.000000	0.000000
+3	stage3	8	0	0.000000	0.000000	0.000000	0.000000
+4	stage4	8	0	0.000000	0.000000	0.000000	0.000000

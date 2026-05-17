@@ -1,0 +1,16 @@
+Requirement already satisfied: pycryptodome>=3.18.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 2)) (3.23.0)
+Requirement already satisfied: ascon in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 5)) (0.0.9)
+Requirement already satisfied: zfec>=1.5.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 8)) (1.6.0.0)
+Requirement already satisfied: lz4>=4.3.2 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 11)) (4.4.5)
+Requirement already satisfied: zstandard>=0.21.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 14)) (0.25.0)
+Requirement already satisfied: blake3>=0.3.3 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 18)) (1.0.8)
+Requirement already satisfied: typing-extensions>=4.6.0 in ./venv/lib64/python3.11/site-packages (from blake3>=0.3.3->-r requirements.txt (line 18)) (4.15.0)
+Trabajo iniciado en: mar may 12 10:35:38 CEST 2026
+Nodo de ejecución: 
+========================================
+ Starting NFR Benchmarks
+ Sizes: 1 10 50 100 1000 MB
+ Objects: 31
+========================================
+
+[2/4] Running security (confidentiality) benchmarks...

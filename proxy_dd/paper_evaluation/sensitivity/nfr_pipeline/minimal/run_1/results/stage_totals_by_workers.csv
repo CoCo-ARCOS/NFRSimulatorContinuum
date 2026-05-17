@@ -1,0 +1,5 @@
+stage,stage_name,workers,objects,input_stage_seconds,input_compression_seconds,input_hash_seconds,input_crypto_seconds,application_seconds,output_stage_seconds,output_compression_seconds,output_hash_seconds,output_crypto_seconds,total_seconds,input_requirement_1,input_requirement_1_seconds,output_requirement_1,output_requirement_1_seconds
+1,stage1,8,100,0.000000,0.000000,0.000000,0.000000,59.109409,20.627455,0.000000,20.627455,0.000000,79.736864,,0.000000,hash_calculate:SHA256,20.627455
+2,stage2,8,100,20.627455,0.000000,20.627455,0.000000,20.987934,20.627455,0.000000,20.627455,0.000000,62.242844,hash_verify:SHA256,20.627455,hash_calculate:BLAKE3,20.627455
+3,stage3,8,100,20.627455,0.000000,20.627455,0.000000,29.557961,20.627455,0.000000,20.627455,0.000000,70.812871,hash_verify:BLAKE3,20.627455,hash_calculate:SHA3_256,20.627455
+4,stage4,8,100,20.627455,0.000000,20.627455,0.000000,30.341837,20.627455,0.000000,20.627455,0.000000,71.596747,hash_verify:SHA3_256,20.627455,hash_calculate:SHA256,20.627455

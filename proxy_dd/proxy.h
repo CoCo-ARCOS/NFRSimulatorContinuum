@@ -73,6 +73,7 @@ struct stage_definition
 	int output_count;
 	double b_fs; /* filesystem bandwidth bytes/sec for this stage */
 	double application_mean_service_time; /* average application execution time in seconds */
+	double application_size_factor; /* multiplicative change in object size caused by the application */
 };
 
 struct machine_node
@@ -80,6 +81,9 @@ struct machine_node
 	char name[64];
 	int stages[10];
 	int stages_number;
+	char hardware_profile[64];
+	char real_values_dir[512];
+	int service_profile_index;
 };
 
 struct link_node
@@ -105,6 +109,7 @@ struct worker
 	int stage;
 	int stage_owner;		 /* Current stage this worker batch is assigned to (1..10). */
 	int machine_id;			 /* Assigned machine index, -1 if local/not set */
+	int service_profile_index; /* Loaded interpolation profile for this worker's active machine. */
 	char agent_type[16];	 /**< "output" or "input" */
 	int pipeline_is_input;	 /**< Current pipeline: 1=input/acquisition, 0=output/delivery. */
 	int task_id;			 /**< Current task index inside the active pipeline. */
@@ -149,6 +154,7 @@ struct config
 	char ida_algo[32];									   /**< IDA algorithm.*/
 	int ida_k;											   /**< IDA k_datos.*/
 	int ida_m;											   /**< IDA m_paridad.*/
+	char real_values_dir[512];							   /**< Default service-time dataset directory. */
 	double b_fs;										   /**< Theoretical filesystem bandwidth (bytes/sec). Configured in MB/s and converted at startup. */
 	double application_mean_service_time;				   /**< Average application execution time in seconds. */
 	struct machine_node machines[MAX_MACHINES];			   /**< Optional distributed machines */

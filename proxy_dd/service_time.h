@@ -26,6 +26,8 @@
 
 struct config;
 void load_service_times(struct config *configuration);
+void load_service_times_with_base(struct config *configuration, const char *runtime_base_dir);
+void set_service_time_profile(int profile_index);
 
 float interpolation( float x, float x0, float x1, float y0, float y1) ;
 

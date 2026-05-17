@@ -1,0 +1,63 @@
+Running sensitivity factor=payload_size value=1MB repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/payload_size/1MB/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=payload_size value=10MB repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/payload_size/10MB/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=payload_size value=100MB repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/payload_size/100MB/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=payload_size value=1000MB repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/payload_size/1000MB/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=devices value=20-devices repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/devices/20-devices/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=devices value=50-devices repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/devices/50-devices/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=devices value=100-devices repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/devices/100-devices/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=devices value=200-devices repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/devices/200-devices/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=devices value=400-devices repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/devices/400-devices/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=workers value=1-worker repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/workers/1-worker/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=workers value=2-workers repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/workers/2-workers/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=workers value=4-workers repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/workers/4-workers/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=workers value=8-workers repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/workers/8-workers/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=workers value=16-workers repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/workers/16-workers/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=network_bandwidth value=10MBps repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/network_bandwidth/10MBps/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=network_bandwidth value=25MBps repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/network_bandwidth/25MBps/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=network_bandwidth value=50MBps repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/network_bandwidth/50MBps/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=network_bandwidth value=100MBps repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/network_bandwidth/100MBps/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=network_bandwidth value=200MBps repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/network_bandwidth/200MBps/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=storage_bandwidth value=10MBps repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/storage_bandwidth/10MBps/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=storage_bandwidth value=50MBps repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/storage_bandwidth/50MBps/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=storage_bandwidth value=100MBps repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/storage_bandwidth/100MBps/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=storage_bandwidth value=250MBps repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/storage_bandwidth/250MBps/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=storage_bandwidth value=500MBps repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/storage_bandwidth/500MBps/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=hardware_profile value=c3 repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/hardware_profile/c3/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=hardware_profile value=dianalap repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/hardware_profile/dianalap/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=hardware_profile value=toge repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/hardware_profile/toge/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=nfr_pipeline value=minimal repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/nfr_pipeline/minimal/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=nfr_pipeline value=baseline repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/nfr_pipeline/baseline/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=nfr_pipeline value=heavy repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/nfr_pipeline/heavy/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Running sensitivity factor=nfr_pipeline value=maximal repeat=1/1
+Running simulator with config: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/nfr_pipeline/maximal/run_1/config.json /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/main
+Sensitivity analysis complete. Summary: /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/sensitivity/sensitivity_summary.csv

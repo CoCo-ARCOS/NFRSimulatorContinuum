@@ -1,0 +1,827 @@
+Compress Table: ZLIB 1048576.000000 0.006448 148.860001
+Compress Table: ZLIB 10485760.000000 0.058908 154.490005
+Compress Table: ZLIB 52428800.000000 0.279192 158.470001
+Compress Table: ZLIB 104857600.000000 0.548262 158.750000
+Compress Table: BZ2 1048576.000000 0.253705 1191.560059
+Compress Table: BZ2 10485760.000000 2.740345 1878.500000
+Compress Table: BZ2 52428800.000000 14.431828 1917.589966
+Compress Table: BZ2 104857600.000000 49.860970 1930.229980
+Compress Table: LZMA 1048576.000000 0.027456 2545.090088
+Compress Table: LZMA 10485760.000000 0.197901 5851.430176
+Compress Table: LZMA 52428800.000000 0.851459 6643.279785
+Compress Table: LZMA 104857600.000000 1.762460 6758.029785
+Compress Table: LZ4 1048576.000000 0.000776 60.910000
+Compress Table: LZ4 10485760.000000 0.001484 61.389999
+Compress Table: LZ4 52428800.000000 0.008109 61.500000
+Compress Table: LZ4 104857600.000000 0.013973 61.730000
+Compress Table: ZSTD 1048576.000000 0.000455 104.129997
+Compress Table: ZSTD 10485760.000000 0.002212 535.210022
+Compress Table: ZSTD 52428800.000000 0.009686 2237.489990
+Compress Table: ZSTD 104857600.000000 0.018124 3714.139893
+Decompress Table: ZLIB 1048576.000000 0.001371 148.860001
+Decompress Table: ZLIB 10485760.000000 0.014042 154.490005
+Decompress Table: ZLIB 52428800.000000 0.109711 158.470001
+Decompress Table: ZLIB 104857600.000000 0.223561 158.750000
+Decompress Table: BZ2 1048576.000000 0.011246 1191.560059
+Decompress Table: BZ2 10485760.000000 0.115207 1878.500000
+Decompress Table: BZ2 52428800.000000 0.653815 1917.589966
+Decompress Table: BZ2 104857600.000000 1.753955 1930.229980
+Decompress Table: LZMA 1048576.000000 0.002992 2545.090088
+Decompress Table: LZMA 10485760.000000 0.005004 5851.430176
+Decompress Table: LZMA 52428800.000000 0.069355 6643.279785
+Decompress Table: LZMA 104857600.000000 0.163791 6758.029785
+Decompress Table: LZ4 1048576.000000 0.001302 60.910000
+Decompress Table: LZ4 10485760.000000 0.004569 61.389999
+Decompress Table: LZ4 52428800.000000 0.064734 61.500000
+Decompress Table: LZ4 104857600.000000 0.129831 61.730000
+Decompress Table: ZSTD 1048576.000000 0.001228 104.129997
+Decompress Table: ZSTD 10485760.000000 0.001519 535.210022
+Decompress Table: ZSTD 52428800.000000 0.028259 2237.489990
+Decompress Table: ZSTD 104857600.000000 0.058166 3714.139893
+Hashing Table: SHA256 1048576.000000 0.000592 1.100000
+Hashing Table: SHA256 10485760.000000 0.005782 1.100000
+Hashing Table: SHA256 52428800.000000 0.030439 1.100000
+Hashing Table: SHA256 104857600.000000 0.061901 1.100000
+Hashing Table: SHA3_256 1048576.000000 0.002703 1.100000
+Hashing Table: SHA3_256 10485760.000000 0.037787 1.100000
+Hashing Table: SHA3_256 52428800.000000 0.163051 1.100000
+Hashing Table: SHA3_256 104857600.000000 0.330098 1.100000
+Hashing Table: BLAKE3 1048576.000000 0.000577 1.100000
+Hashing Table: BLAKE3 10485760.000000 0.003935 1.100000
+Hashing Table: BLAKE3 52428800.000000 0.019166 1.100000
+Hashing Table: BLAKE3 104857600.000000 0.037542 1.100000
+Hashing Table: HMAC_SHA256 1048576.000000 0.000636 1.100000
+Hashing Table: HMAC_SHA256 10485760.000000 0.005542 1.100000
+Hashing Table: HMAC_SHA256 52428800.000000 0.030108 1.100000
+Hashing Table: HMAC_SHA256 104857600.000000 0.059382 1.100000
+[ENQUEUE] Stage 1 APP task 0 (application:) worker 0
+[ENQUEUE] Stage 1 APP task 0 (application:) worker 1
+APPLICATION TIME: Worker 0 (machine 0) stage 1 application with average service time 4.514984 seconds, size factor 0.800000, interarrival time 2.000000 seconds; samples 50; running queue estimator...
+Warning: application queue estimator failed for worker 0 stage 1; using 225.749207 seconds fallback
+Worker 0 (machine 0) stage 1 application estimated total time 225.749207 seconds for 50 objects (average per object: 4.514984 seconds)
+Worker 0 (machine 0) completed stage 1 application with average service time 4.514984 seconds and simulated total time 225.749207 seconds
+[ENQUEUE] Stage 1 OUT task 0 (hash_calculate:SHA256) worker 0
+APPLICATION TIME: Worker 1 (machine 0) stage 1 application with average service time 4.514984 seconds, size factor 0.800000, interarrival time 2.000000 seconds; samples 50; running queue estimator...
+Worker 0 (machine 0) processing stage 1 output task 0 (hash_calculate:SHA256)
+Worker 0 (machine 0) completed stage 1 output task 0 (hash_calculate:SHA256)
+[ENQUEUE] Stage 1 OUT task 1 (compress:ZLIB) worker 0
+Worker 0 (machine 0) processing stage 1 output task 1 (compress:ZLIB)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 0 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 1 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 2 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 3 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 4 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 5 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 6 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 7 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 8 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 9 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 10 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 11 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 12 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 13 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 14 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 15 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 16 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 17 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 18 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 19 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 20 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 21 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 22 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 23 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 24 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 25 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 26 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 27 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 28 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 29 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 30 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 31 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 32 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 33 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 34 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 35 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 36 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 37 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 38 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 39 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 40 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 41 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 42 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 43 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 44 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 45 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 46 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 47 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 48 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 0 (machine 0) compressed object 49 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+------Worker 0 (machine 0) completed compression stage with average time 0.36 seconds
+Worker 0 (machine 0) completed stage 1 output task 1 (compress:ZLIB)
+[ENQUEUE] Stage 2 IN task 0 (uncompress:ZLIB) worker 0
+Worker 0 (machine 1) processing stage 2 input task 0 (uncompress:ZLIB)
+****Worker 0 (machine 1) decompressing object 0 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 1 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 2 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 3 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 4 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 5 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 6 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 7 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 8 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 9 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 10 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 11 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 12 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 13 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 14 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 15 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 16 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 17 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 18 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 19 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 20 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 21 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 22 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 23 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 24 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 25 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 26 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 27 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 28 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 29 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 30 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 31 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 32 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 33 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 34 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 35 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 36 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 37 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 38 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 39 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 40 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 41 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 42 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 43 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 44 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 45 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 46 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 47 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 48 of size 0.15 MB with algorithm ZLIB
+****Worker 0 (machine 1) decompressing object 49 of size 0.15 MB with algorithm ZLIB
+Worker 0 - Decompress stage: avg service time = 0.093511 seconds
+Worker 0 (machine 1) completed stage 2 input task 0 (uncompress:ZLIB)
+[ENQUEUE] Stage 2 IN task 1 (hash_verify:SHA256) worker 0
+Worker 0 (machine 1) processing stage 2 input task 1 (hash_verify:SHA256)
+Warning: application queue estimator failed for worker 1 stage 1; using 225.749207 seconds fallback
+Worker 1 (machine 0) stage 1 application estimated total time 225.749207 seconds for 50 objects (average per object: 4.514984 seconds)
+Worker 1 (machine 0) completed stage 1 application with average service time 4.514984 seconds and simulated total time 225.749207 seconds
+[ENQUEUE] Stage 1 OUT task 0 (hash_calculate:SHA256) worker 1
+Worker 1 (machine 0) processing stage 1 output task 0 (hash_calculate:SHA256)
+Worker 0 (machine 1) completed stage 2 input task 1 (hash_verify:SHA256)
+[ENQUEUE] Stage 2 APP task 0 (application:) worker 0
+APPLICATION TIME: Worker 0 (machine 1) stage 2 application with average service time 1.201416 seconds, size factor 1.200000, interarrival time 2.000000 seconds; samples 50; running queue estimator...
+Worker 1 (machine 0) completed stage 1 output task 0 (hash_calculate:SHA256)
+[ENQUEUE] Stage 1 OUT task 1 (compress:ZLIB) worker 1
+Worker 1 (machine 0) processing stage 1 output task 1 (compress:ZLIB)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 0 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 1 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 2 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 3 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 4 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 5 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 6 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 7 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 8 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 9 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 10 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 11 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 12 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 13 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 14 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 15 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 16 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 17 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 18 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 19 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 20 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 21 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 22 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 23 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 24 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 25 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 26 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 27 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 28 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 29 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 30 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 31 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 32 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 33 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 34 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 35 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 36 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 37 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 38 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 39 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 40 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 41 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 42 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 43 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 44 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 45 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 46 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 47 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 48 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+CompressStageSizeAlgo: filesize = 24000000.000000, ratio = 155.772385
+****Worker 1 (machine 0) compressed object 49 from 22.89 MB to 0.146933 MB in 0.13 seconds (I/O time: 0.23 seconds)
+------Worker 1 (machine 0) completed compression stage with average time 0.36 seconds
+Worker 0 (machine 1) stage 2 application estimated total time 75.175385 seconds for 50 objects (average per object: 1.503508 seconds)
+Worker 0 (machine 1) completed stage 2 application with average service time 1.201416 seconds and simulated total time 75.175385 seconds
+[ENQUEUE] Stage 2 OUT task 0 (encrypt:RS) worker 0
+Worker 0 (machine 1) processing stage 2 output task 0 (encrypt:RS)
+Worker 1 (machine 0) completed stage 1 output task 1 (compress:ZLIB)
+[ENQUEUE] Stage 2 IN task 0 (uncompress:ZLIB) worker 1
+Worker 1 (machine 1) processing stage 2 input task 0 (uncompress:ZLIB)
+****Worker 1 (machine 1) decompressing object 0 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 1 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 2 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 3 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 4 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 5 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 6 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 7 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 8 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 9 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 10 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 11 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 12 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 13 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 14 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 15 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 16 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 17 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 18 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 19 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 20 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 21 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 22 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 23 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 24 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 25 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 26 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 27 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 28 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 29 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 30 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 31 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 32 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 33 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 34 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 35 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 36 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 37 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 38 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 39 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 40 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 41 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 42 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 43 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 44 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 45 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 46 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 47 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 48 of size 0.15 MB with algorithm ZLIB
+****Worker 1 (machine 1) decompressing object 49 of size 0.15 MB with algorithm ZLIB
+Worker 1 - Decompress stage: avg service time = 0.093511 seconds
+Worker 0 (machine 1) completed stage 2 output task 0 (encrypt:RS)
+[ENQUEUE] Stage 2 OUT task 1 (hash_calculate:BLAKE3) worker 0
+Worker 0 (machine 1) processing stage 2 output task 1 (hash_calculate:BLAKE3)
+Worker 1 (machine 1) completed stage 2 input task 0 (uncompress:ZLIB)
+[ENQUEUE] Stage 2 IN task 1 (hash_verify:SHA256) worker 1
+Worker 1 (machine 1) processing stage 2 input task 1 (hash_verify:SHA256)
+Worker 0 (machine 1) completed stage 2 output task 1 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 3 IN task 0 (hash_verify:BLAKE3) worker 0
+Worker 0 (machine 2) processing stage 3 input task 0 (hash_verify:BLAKE3)
+Worker 1 (machine 1) completed stage 2 input task 1 (hash_verify:SHA256)
+[ENQUEUE] Stage 2 APP task 0 (application:) worker 1
+APPLICATION TIME: Worker 1 (machine 1) stage 2 application with average service time 1.201416 seconds, size factor 1.200000, interarrival time 2.000000 seconds; samples 50; running queue estimator...
+Worker 1 (machine 1) stage 2 application estimated total time 75.175385 seconds for 50 objects (average per object: 1.503508 seconds)
+Worker 1 (machine 1) completed stage 2 application with average service time 1.201416 seconds and simulated total time 75.175385 seconds
+[ENQUEUE] Stage 2 OUT task 0 (encrypt:RS) worker 1
+Worker 1 (machine 1) processing stage 2 output task 0 (encrypt:RS)
+Worker 0 (machine 2) completed stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 3 IN task 1 (unencrypt:RS) worker 0
+Worker 0 (machine 2) processing stage 3 input task 1 (unencrypt:RS)
+Worker 1 (machine 1) completed stage 2 output task 0 (encrypt:RS)
+[ENQUEUE] Stage 2 OUT task 1 (hash_calculate:BLAKE3) worker 1
+Worker 1 (machine 1) processing stage 2 output task 1 (hash_calculate:BLAKE3)
+Worker 0 (machine 2) completed stage 3 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 3 APP task 0 (application:) worker 0
+APPLICATION TIME: Worker 0 (machine 2) stage 3 application with average service time 2.232422 seconds, size factor 1.000000, interarrival time 2.000000 seconds; samples 50; running queue estimator...
+Worker 1 (machine 1) completed stage 2 output task 1 (hash_calculate:BLAKE3)
+[ENQUEUE] Stage 3 IN task 0 (hash_verify:BLAKE3) worker 1
+Worker 1 (machine 2) processing stage 3 input task 0 (hash_verify:BLAKE3)
+Worker 0 (machine 2) stage 3 application estimated total time 120.501183 seconds for 50 objects (average per object: 2.410024 seconds)
+Worker 0 (machine 2) completed stage 3 application with average service time 2.232422 seconds and simulated total time 120.501183 seconds
+[ENQUEUE] Stage 3 OUT task 0 (compress:LZ4) worker 0
+Worker 0 (machine 2) processing stage 3 output task 0 (compress:LZ4)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 0 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 1 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 2 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 3 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 4 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 5 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 6 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 7 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 8 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 9 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 10 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 11 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 12 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 13 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 14 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 15 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 16 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 17 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 18 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 19 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 20 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 21 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 22 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 23 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 24 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 25 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 26 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 27 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 28 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 29 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 30 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 31 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 32 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 33 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 34 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 35 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 36 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 37 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 38 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 39 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 40 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 41 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 42 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 43 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 44 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 45 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 46 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 47 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 48 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 0 (machine 2) compressed object 49 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+------Worker 0 (machine 2) completed compression stage with average time 0.38 seconds
+Worker 0 (machine 2) completed stage 3 output task 0 (compress:LZ4)
+[ENQUEUE] Stage 3 OUT task 1 (encrypt:RS) worker 0
+Worker 0 (machine 2) processing stage 3 output task 1 (encrypt:RS)
+Worker 1 (machine 2) completed stage 3 input task 0 (hash_verify:BLAKE3)
+[ENQUEUE] Stage 3 IN task 1 (unencrypt:RS) worker 1
+Worker 1 (machine 2) processing stage 3 input task 1 (unencrypt:RS)
+Worker 0 (machine 2) completed stage 3 output task 1 (encrypt:RS)
+[ENQUEUE] Stage 3 OUT task 2 (hash_calculate:SHA3_256) worker 0
+Worker 0 (machine 2) processing stage 3 output task 2 (hash_calculate:SHA3_256)
+Worker 1 (machine 2) completed stage 3 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 3 APP task 0 (application:) worker 1
+APPLICATION TIME: Worker 1 (machine 2) stage 3 application with average service time 2.232422 seconds, size factor 1.000000, interarrival time 2.000000 seconds; samples 50; running queue estimator...
+Worker 1 (machine 2) stage 3 application estimated total time 120.501183 seconds for 50 objects (average per object: 2.410024 seconds)
+Worker 1 (machine 2) completed stage 3 application with average service time 2.232422 seconds and simulated total time 120.501183 seconds
+[ENQUEUE] Stage 3 OUT task 0 (compress:LZ4) worker 1
+Worker 1 (machine 2) processing stage 3 output task 0 (compress:LZ4)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 0 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 1 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 2 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 3 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 4 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 5 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 6 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 7 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 8 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 9 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 10 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 11 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 12 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 13 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 14 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 15 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 16 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 17 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 18 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 19 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 20 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 21 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 22 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 23 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 24 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 25 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 26 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 27 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 28 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 29 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 30 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 31 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 32 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 33 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 34 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 35 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 36 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 37 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 38 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 39 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 40 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 41 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 42 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 43 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 44 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 45 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 46 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 47 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 48 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+CompressStageSizeAlgo: filesize = 28800000.000000, ratio = 61.438030
+****Worker 1 (machine 2) compressed object 49 from 27.47 MB to 0.447049 MB in 0.00 seconds (I/O time: 0.37 seconds)
+------Worker 1 (machine 2) completed compression stage with average time 0.38 seconds
+Worker 0 (machine 2) completed stage 3 output task 2 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 4 IN task 0 (hash_verify:SHA3_256) worker 0
+Worker 0 (machine 3) processing stage 4 input task 0 (hash_verify:SHA3_256)
+Worker 0 (machine 3) completed stage 4 input task 0 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 4 IN task 1 (unencrypt:RS) worker 0
+Worker 0 (machine 3) processing stage 4 input task 1 (unencrypt:RS)
+Worker 1 (machine 2) completed stage 3 output task 0 (compress:LZ4)
+[ENQUEUE] Stage 3 OUT task 1 (encrypt:RS) worker 1
+Worker 1 (machine 2) processing stage 3 output task 1 (encrypt:RS)
+Worker 1 (machine 2) completed stage 3 output task 1 (encrypt:RS)
+[ENQUEUE] Stage 3 OUT task 2 (hash_calculate:SHA3_256) worker 1
+Worker 1 (machine 2) processing stage 3 output task 2 (hash_calculate:SHA3_256)
+Worker 0 (machine 3) completed stage 4 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 4 IN task 2 (uncompress:LZ4) worker 0
+Worker 0 (machine 3) processing stage 4 input task 2 (uncompress:LZ4)
+****Worker 0 (machine 3) decompressing object 0 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 1 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 2 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 3 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 4 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 5 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 6 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 7 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 8 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 9 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 10 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 11 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 12 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 13 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 14 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 15 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 16 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 17 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 18 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 19 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 20 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 21 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 22 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 23 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 24 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 25 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 26 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 27 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 28 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 29 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 30 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 31 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 32 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 33 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 34 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 35 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 36 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 37 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 38 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 39 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 40 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 41 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 42 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 43 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 44 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 45 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 46 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 47 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 48 of size 0.45 MB with algorithm LZ4
+****Worker 0 (machine 3) decompressing object 49 of size 0.45 MB with algorithm LZ4
+Worker 0 - Decompress stage: avg service time = 0.187388 seconds
+Worker 1 (machine 2) completed stage 3 output task 2 (hash_calculate:SHA3_256)
+[ENQUEUE] Stage 4 IN task 0 (hash_verify:SHA3_256) worker 1
+Worker 1 (machine 3) processing stage 4 input task 0 (hash_verify:SHA3_256)
+Worker 0 (machine 3) completed stage 4 input task 2 (uncompress:LZ4)
+[ENQUEUE] Stage 4 APP task 0 (application:) worker 0
+APPLICATION TIME: Worker 0 (machine 3) stage 4 application with average service time 2.292969 seconds, size factor 0.600000, interarrival time 2.000000 seconds; samples 50; running queue estimator...
+Worker 0 (machine 3) stage 4 application estimated total time 123.751595 seconds for 50 objects (average per object: 2.475032 seconds)
+Worker 0 (machine 3) completed stage 4 application with average service time 2.292969 seconds and simulated total time 123.751595 seconds
+[ENQUEUE] Stage 4 OUT task 0 (hash_calculate:SHA256) worker 0
+Worker 0 (machine 3) processing stage 4 output task 0 (hash_calculate:SHA256)
+Worker 1 (machine 3) completed stage 4 input task 0 (hash_verify:SHA3_256)
+[ENQUEUE] Stage 4 IN task 1 (unencrypt:RS) worker 1
+Worker 1 (machine 3) processing stage 4 input task 1 (unencrypt:RS)
+Worker 1 (machine 3) completed stage 4 input task 1 (unencrypt:RS)
+[ENQUEUE] Stage 4 IN task 2 (uncompress:LZ4) worker 1
+Worker 1 (machine 3) processing stage 4 input task 2 (uncompress:LZ4)
+****Worker 1 (machine 3) decompressing object 0 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 1 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 2 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 3 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 4 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 5 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 6 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 7 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 8 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 9 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 10 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 11 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 12 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 13 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 14 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 15 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 16 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 17 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 18 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 19 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 20 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 21 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 22 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 23 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 24 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 25 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 26 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 27 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 28 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 29 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 30 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 31 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 32 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 33 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 34 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 35 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 36 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 37 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 38 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 39 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 40 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 41 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 42 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 43 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 44 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 45 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 46 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 47 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 48 of size 0.45 MB with algorithm LZ4
+****Worker 1 (machine 3) decompressing object 49 of size 0.45 MB with algorithm LZ4
+Worker 1 - Decompress stage: avg service time = 0.187388 seconds
+Worker 0 (machine 3) completed stage 4 output task 0 (hash_calculate:SHA256)
+Worker 1 (machine 3) completed stage 4 input task 2 (uncompress:LZ4)
+[ENQUEUE] Stage 4 APP task 0 (application:) worker 1
+APPLICATION TIME: Worker 1 (machine 3) stage 4 application with average service time 2.292969 seconds, size factor 0.600000, interarrival time 2.000000 seconds; samples 50; running queue estimator...
+Worker 1 (machine 3) stage 4 application estimated total time 123.751595 seconds for 50 objects (average per object: 2.475032 seconds)
+Worker 1 (machine 3) completed stage 4 application with average service time 2.292969 seconds and simulated total time 123.751595 seconds
+[ENQUEUE] Stage 4 OUT task 0 (hash_calculate:SHA256) worker 1
+Worker 1 (machine 3) processing stage 4 output task 0 (hash_calculate:SHA256)
+Worker 1 (machine 3) completed stage 4 output task 0 (hash_calculate:SHA256)
+
+Shutting down NFR managers...
+
+=== Manager Metrics ===
+Stage 1 APP task 0 (application): jobs=2 wall_time=0.365539 s avg_wall=0.182769 s simulated_time=451.498413 s avg_simulated=225.749207 s
+Stage 1 OUT task 0 (hash_calculate:SHA256): jobs=2 wall_time=0.109760 s avg_wall=0.054880 s simulated_time=145.838654 s avg_simulated=72.919327 s
+Stage 1 OUT task 1 (compress:ZLIB): jobs=2 wall_time=0.123871 s avg_wall=0.061935 s simulated_time=145.838654 s avg_simulated=72.919327 s
+Stage 1 COMBINED: jobs=6 wall_time=0.599170 s avg_wall=0.099862 s simulated_time=743.175721 s avg_simulated=123.862620 s
+Stage 2 IN task 0 (uncompress:ZLIB): jobs=2 wall_time=0.116004 s avg_wall=0.058002 s simulated_time=145.838654 s avg_simulated=72.919327 s
+Stage 2 IN task 1 (hash_verify:SHA256): jobs=2 wall_time=0.124114 s avg_wall=0.062057 s simulated_time=145.838654 s avg_simulated=72.919327 s
+Stage 2 APP task 0 (application): jobs=2 wall_time=0.126036 s avg_wall=0.063018 s simulated_time=150.350770 s avg_simulated=75.175385 s
+Stage 2 OUT task 0 (encrypt:RS): jobs=2 wall_time=0.125241 s avg_wall=0.062621 s simulated_time=145.838654 s avg_simulated=72.919327 s
+Stage 2 OUT task 1 (hash_calculate:BLAKE3): jobs=2 wall_time=0.123287 s avg_wall=0.061643 s simulated_time=145.838666 s avg_simulated=72.919333 s
+Stage 2 COMBINED: jobs=10 wall_time=0.614682 s avg_wall=0.061468 s simulated_time=733.705398 s avg_simulated=73.370540 s
+Stage 3 IN task 0 (hash_verify:BLAKE3): jobs=2 wall_time=0.124223 s avg_wall=0.062111 s simulated_time=145.838642 s avg_simulated=72.919321 s
+Stage 3 IN task 1 (unencrypt:RS): jobs=2 wall_time=0.131716 s avg_wall=0.065858 s simulated_time=145.838678 s avg_simulated=72.919339 s
+Stage 3 APP task 0 (application): jobs=2 wall_time=0.117046 s avg_wall=0.058523 s simulated_time=241.002366 s avg_simulated=120.501183 s
+Stage 3 OUT task 0 (compress:LZ4): jobs=2 wall_time=0.122273 s avg_wall=0.061137 s simulated_time=145.838618 s avg_simulated=72.919309 s
+Stage 3 OUT task 1 (encrypt:RS): jobs=2 wall_time=0.118559 s avg_wall=0.059279 s simulated_time=145.838690 s avg_simulated=72.919345 s
+Stage 3 OUT task 2 (hash_calculate:SHA3_256): jobs=2 wall_time=0.119349 s avg_wall=0.059674 s simulated_time=145.838642 s avg_simulated=72.919321 s
+Stage 3 COMBINED: jobs=12 wall_time=0.733167 s avg_wall=0.061097 s simulated_time=970.195636 s avg_simulated=80.849636 s
+Stage 4 IN task 0 (hash_verify:SHA3_256): jobs=2 wall_time=0.134993 s avg_wall=0.067497 s simulated_time=145.838690 s avg_simulated=72.919345 s
+Stage 4 IN task 1 (unencrypt:RS): jobs=2 wall_time=0.125896 s avg_wall=0.062948 s simulated_time=145.838642 s avg_simulated=72.919321 s
+Stage 4 IN task 2 (uncompress:LZ4): jobs=2 wall_time=0.121175 s avg_wall=0.060587 s simulated_time=145.838642 s avg_simulated=72.919321 s
+Stage 4 APP task 0 (application): jobs=2 wall_time=0.130645 s avg_wall=0.065323 s simulated_time=247.503190 s avg_simulated=123.751595 s
+Stage 4 OUT task 0 (hash_calculate:SHA256): jobs=2 wall_time=0.145260 s avg_wall=0.072630 s simulated_time=145.838642 s avg_simulated=72.919321 s
+Stage 4 COMBINED: jobs=10 wall_time=0.657969 s avg_wall=0.065797 s simulated_time=830.857806 s avg_simulated=83.085781 s
+
+=== Link Metrics ===
+Link m0->m1 transfers=2 bytes=15407000.000000 total_time=0.166933 s
+Link m1->m2 transfers=2 bytes=2880000000.000000 total_time=54.971641 s
+Link m2->m3 transfers=2 bytes=46876500.000000 total_time=0.934098 s
+
+=== Stage Execution Times ===
+Stage	Name	Workers	Objects	InputStage(s)	Application(s)	OutputStage(s)	Total(s)
+1	stage1	2	100	0.000000	225.749207	145.838654	371.587861
+2	stage2	2	100	145.838654	75.175385	145.838660	366.852699
+3	stage3	2	100	145.838660	120.501183	218.757975	485.097818
+4	stage4	2	100	218.757987	123.751595	72.919321	415.428903

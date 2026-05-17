@@ -1,0 +1,37 @@
+Interpolation validation mode: leave-one-out
+
+Dataset	Operation	Group	Samples	MAE(s)	RMSE(s)	MAPE(%)
+cost-efficiency	compress	cost-efficiency:compress	25	27.070436	127.848841	184.54
+cost-efficiency	decompress	cost-efficiency:decompress	25	0.770810	3.120192	142.46
+integrity	hash	integrity:hash	20	0.324288	0.857806	194.23
+reliability	decode	reliability:decode	15	0.052974	0.115518	199.00
+reliability	encode	reliability:encode	15	0.397271	0.901044	201.68
+
+OVERALL	all	overall	100	7.092706	63.945574	180.70
+
+Detailed groups:
+Dataset	Operation	Group	Samples	MAE(s)	RMSE(s)	MAPE(%)
+cost-efficiency	compress	BZ2	5	129.184713	285.665085	212.16
+cost-efficiency	compress	LZ4	5	0.046695	0.103188	193.69
+cost-efficiency	compress	LZMA	5	4.846297	10.720355	185.16
+cost-efficiency	compress	ZLIB	5	1.208464	2.670706	204.33
+cost-efficiency	compress	ZSTD	5	0.066010	0.144739	127.39
+cost-efficiency	decompress	BZ2	5	3.131772	6.909225	194.40
+cost-efficiency	decompress	LZ4	5	0.105101	0.232045	91.36
+cost-efficiency	decompress	LZMA	5	0.374354	0.827170	147.06
+cost-efficiency	decompress	ZLIB	5	0.198654	0.439314	227.99
+cost-efficiency	decompress	ZSTD	5	0.044170	0.097712	51.49
+integrity	hash	BLAKE3	5	0.424421	0.939364	197.48
+integrity	hash	HMAC_SHA256	5	0.124297	0.275183	190.32
+integrity	hash	SHA256	5	0.124304	0.275195	192.52
+integrity	hash	SHA3_256	5	0.624129	1.381833	196.60
+reliability	decode	RS k=10 m=4	5	0.053027	0.114701	221.81
+reliability	decode	RS k=4 m=2	5	0.052996	0.116414	191.69
+reliability	decode	RS k=8 m=4	5	0.052898	0.115430	183.48
+reliability	encode	RS k=10 m=4	5	0.461040	1.019061	201.02
+reliability	encode	RS k=4 m=2	5	0.266848	0.589010	204.36
+reliability	encode	RS k=8 m=4	5	0.463927	1.024805	199.67
+
+Detailed results written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/interpolation/toge/detailed.csv
+Summary written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/interpolation/toge/summary.csv
+Plots written to /home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/paper_evaluation/interpolation/toge/plots

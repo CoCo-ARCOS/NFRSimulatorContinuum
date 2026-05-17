@@ -331,6 +331,7 @@ static void init_stage_definition(struct config *configuration, int index, int s
     stage_def->stage = stage;
     stage_def->b_fs = configuration ? configuration->b_fs : 0.0;
     stage_def->application_mean_service_time = configuration ? configuration->application_mean_service_time : 0.0;
+    stage_def->application_size_factor = 1.0;
     if (name && name[0] != '\0')
     {
         strncpy(stage_def->name, name, sizeof(stage_def->name) - 1);
@@ -389,6 +390,22 @@ static void parse_stage_application_time(cJSON *stage, struct stage_definition *
     cJSON *app_time = first_number_item(stage, keys, sizeof(keys) / sizeof(keys[0]));
     if (app_time && stage_def)
         stage_def->application_mean_service_time = app_time->valuedouble;
+}
+
+static void parse_stage_application_size_factor(cJSON *stage, struct stage_definition *stage_def)
+{
+    static const char *keys[] = {
+        "application_size_factor",
+        "application_transformation_factor",
+        "application_output_size_factor",
+        "application_data_size_factor"
+    };
+
+    cJSON *factor = first_number_item(stage, keys, sizeof(keys) / sizeof(keys[0]));
+    if (!stage_def)
+        return;
+
+    stage_def->application_size_factor = (factor && factor->valuedouble > 0.0) ? factor->valuedouble : 1.0;
 }
 
 static int stage_has_application(const struct stage_definition *stage_def)
@@ -546,6 +563,15 @@ static int stage_machine_id(int stage)
     return -1;
 }
 
+static int machine_service_profile_index(int machine_id)
+{
+    if (!global_config)
+        return 0;
+    if (machine_id < 0 || machine_id >= global_config->machines_number)
+        return 0;
+    return global_config->machines[machine_id].service_profile_index;
+}
+
 static void set_worker_task_context(struct worker *w, const struct nfr_manager *m)
 {
     if (!w || !m)
@@ -565,8 +591,8 @@ static void set_worker_task_context(struct worker *w, const struct nfr_manager *
     w->b_fs = stage_filesystem_bandwidth(m->stage);
 
     int mid = stage_machine_id(m->stage);
-    if (mid >= 0)
-        w->machine_id = mid;
+    w->machine_id = mid;
+    w->service_profile_index = machine_service_profile_index(mid);
 }
 
 static void advance_to_next_stage_or_finish(int current_stage, struct worker *w);
@@ -675,8 +701,8 @@ static void advance_to_next_stage_or_finish(int current_stage, struct worker *w)
         //usleep((useconds_t)(net_t * 1e6));
     }
 
-    if (to_mid >= 0)
-        w->machine_id = to_mid;
+    w->machine_id = to_mid;
+    w->service_profile_index = machine_service_profile_index(to_mid);
     w->stage_owner = next_stage;
 
     if (enqueue_stage_start(next_stage, w) != 0)
@@ -1258,6 +1284,7 @@ struct config *read_config(const char *file_name)
     strcpy(configuration->compression_algo, "");
     strcpy(configuration->hashing_algo, "");
     strcpy(configuration->ida_algo, "");
+    configuration->real_values_dir[0] = '\0';
 
     workers = cJSON_GetObjectItemCaseSensitive(json, "workers");
     if (cJSON_IsNumber(workers))
@@ -1328,6 +1355,13 @@ struct config *read_config(const char *file_name)
         configuration->ida_m = 2; // Default
     }
 
+    cJSON *real_values_dir = cJSON_GetObjectItemCaseSensitive(json, "real_values_dir");
+    if (cJSON_IsString(real_values_dir) && real_values_dir->valuestring != NULL)
+    {
+        strncpy(configuration->real_values_dir, real_values_dir->valuestring, sizeof(configuration->real_values_dir) - 1);
+        configuration->real_values_dir[sizeof(configuration->real_values_dir) - 1] = '\0';
+    }
+
     cJSON *bfs = cJSON_GetObjectItemCaseSensitive(json, "b_fs");
     if (cJSON_IsNumber(bfs)) {
         /* configuration file provides b_fs in MB/s — convert to bytes/sec */
@@ -1393,6 +1427,7 @@ struct config *read_config(const char *file_name)
                     init_stage_definition(configuration, si, parsed_stage, stage_name);
                     parse_stage_filesystem_bandwidth(stage, &configuration->stage_definitions[si]);
                     parse_stage_application_time(stage, &configuration->stage_definitions[si]);
+                    parse_stage_application_size_factor(stage, &configuration->stage_definitions[si]);
 
                     cJSON *output_reqs = cJSON_GetObjectItemCaseSensitive(stage, "output_requirements");
                     if (!cJSON_IsArray(output_reqs))
@@ -1427,11 +1462,28 @@ struct config *read_config(const char *file_name)
                 if (m_idx >= MAX_MACHINES) break;
                 cJSON *mname = cJSON_GetObjectItemCaseSensitive(m, "name");
                 cJSON *mstages = cJSON_GetObjectItemCaseSensitive(m, "stages");
+                cJSON *mprofile = cJSON_GetObjectItemCaseSensitive(m, "hardware_profile");
+                cJSON *mprofile_alt = cJSON_GetObjectItemCaseSensitive(m, "profile");
+                cJSON *mvalues = cJSON_GetObjectItemCaseSensitive(m, "real_values_dir");
                 if (cJSON_IsString(mname) && mname->valuestring) {
                     strncpy(configuration->machines[m_idx].name, mname->valuestring, sizeof(configuration->machines[m_idx].name)-1);
                     configuration->machines[m_idx].name[sizeof(configuration->machines[m_idx].name)-1] = '\0';
                 } else {
                     snprintf(configuration->machines[m_idx].name, sizeof(configuration->machines[m_idx].name), "machine%d", m_idx);
+                }
+                configuration->machines[m_idx].hardware_profile[0] = '\0';
+                configuration->machines[m_idx].real_values_dir[0] = '\0';
+                configuration->machines[m_idx].service_profile_index = 0;
+                if (cJSON_IsString(mprofile) && mprofile->valuestring) {
+                    strncpy(configuration->machines[m_idx].hardware_profile, mprofile->valuestring, sizeof(configuration->machines[m_idx].hardware_profile) - 1);
+                    configuration->machines[m_idx].hardware_profile[sizeof(configuration->machines[m_idx].hardware_profile) - 1] = '\0';
+                } else if (cJSON_IsString(mprofile_alt) && mprofile_alt->valuestring) {
+                    strncpy(configuration->machines[m_idx].hardware_profile, mprofile_alt->valuestring, sizeof(configuration->machines[m_idx].hardware_profile) - 1);
+                    configuration->machines[m_idx].hardware_profile[sizeof(configuration->machines[m_idx].hardware_profile) - 1] = '\0';
+                }
+                if (cJSON_IsString(mvalues) && mvalues->valuestring) {
+                    strncpy(configuration->machines[m_idx].real_values_dir, mvalues->valuestring, sizeof(configuration->machines[m_idx].real_values_dir) - 1);
+                    configuration->machines[m_idx].real_values_dir[sizeof(configuration->machines[m_idx].real_values_dir) - 1] = '\0';
                 }
                 configuration->machines[m_idx].stages_number = 0;
                 if (cJSON_IsArray(mstages)) {
@@ -1802,6 +1854,7 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
             arrayWorkers[i].stage_owner = 1;
 
         arrayWorkers[i].machine_id = stage_machine_id(arrayWorkers[i].stage_owner);
+        arrayWorkers[i].service_profile_index = machine_service_profile_index(arrayWorkers[i].machine_id);
     }
 
     /* Initialize NFR managers for every task in each configured stage.
@@ -1921,6 +1974,7 @@ void deployThread_stages(struct config *configuration, struct worker *arrayWorke
         {
             arrayWorkers[i].stage_owner = stageNumber;
             arrayWorkers[i].machine_id = stage_machine_id(stageNumber);
+            arrayWorkers[i].service_profile_index = machine_service_profile_index(arrayWorkers[i].machine_id);
 
             if (nfr_initialized)
             {
@@ -1989,6 +2043,7 @@ void *sendWorkstage(void *threadarg)
 void serviceTime(struct worker *my_data)
 {
     int is_input = my_data->pipeline_is_input ? 1 : 0;
+    set_service_time_profile(my_data ? my_data->service_profile_index : 0);
     printf("Worker %d (machine %d) processing stage %d %s task %d (%s:%s)\n",
            my_data->id,
            my_data->machine_id,
@@ -2134,6 +2189,20 @@ static void apply_queue_total_to_nfr_times(struct worker *my_data, int task_type
     }
 }
 
+static void apply_queue_total_to_application_times(struct worker *my_data, const double *raw_times, double raw_total, double queued_total)
+{
+    if (!my_data || my_data->sizeWorker <= 0 || raw_total <= 0.0 || queued_total < 0.0)
+        return;
+
+    for (int j = 0; j < my_data->sizeWorker; ++j)
+    {
+        double raw_time = raw_times ? raw_times[j] : raw_total / (double)my_data->sizeWorker;
+        double queued_time = queued_total * (raw_time / raw_total);
+        double delta = queued_time - raw_time;
+        my_data->trace[j].service_time_app += (float)delta;
+    }
+}
+
 static int run_queue_estimator(const char *container_prefix, int worker_id, double mean_interarrival, double mean_service, int samples, const char *result_file, double *total_time)
 {
     char line[256];
@@ -2218,35 +2287,71 @@ static double application_time(struct worker *my_data)
 
     struct stage_definition *stage_def = global_stage_definition(my_data->stage);
     double avg_service_time = stage_def ? stage_def->application_mean_service_time : 0.0;
+    double size_factor = stage_def ? stage_def->application_size_factor : 1.0;
     if (avg_service_time <= 0.0)
         return 0.0;
+    if (size_factor <= 0.0)
+        size_factor = 1.0;
 
     char result_file[128];
     snprintf(result_file, sizeof(result_file), "w%d_stage%d_application.txt", my_data->id, my_data->stage);
 
     double total_time = 0.0;
+    double raw_total = 0.0;
+    double *raw_times = calloc(my_data->sizeWorker, sizeof(double));
 
-    printf("APPLICATION TIME: Worker %d (machine %d) stage %d application with average service time %f seconds, interarrival time %f seconds; samples %d; running queue estimator...\n",
+    for (int j = 0; j < my_data->sizeWorker; ++j)
+    {
+        double t_read = 0.0, t_write = 0.0;
+        long unsigned size_before = my_data->trace[j].size;
+        long unsigned size_after = (long unsigned)((double)size_before * size_factor + 0.5);
+        double raw_time;
+
+        if (size_after == 0)
+            size_after = 1;
+
+        if (my_data->b_fs > 0.0)
+        {
+            t_read = (double)size_before / my_data->b_fs;
+            t_write = (double)size_after / my_data->b_fs;
+        }
+
+        raw_time = avg_service_time + t_read + t_write;
+        my_data->trace[j].service_time_app += (float)raw_time;
+        my_data->trace[j].size = size_after;
+        raw_total += raw_time;
+        if (raw_times)
+            raw_times[j] = raw_time;
+    }
+    refresh_worker_storage(my_data);
+
+    double avg_total_service_time = raw_total / (double)my_data->sizeWorker;
+
+    printf("APPLICATION TIME: Worker %d (machine %d) stage %d application with average service time %f seconds, size factor %f, interarrival time %f seconds; samples %d; running queue estimator...\n",
            my_data->id,
            my_data->machine_id,
            my_data->stage,
-           avg_service_time,
+           avg_total_service_time,
+           size_factor,
            my_data->trace[0].mean_interarrival,
            my_data->sizeWorker);
     if (run_queue_estimator("application_agent",
                             my_data->id,
                             my_data->trace[0].mean_interarrival,
-                            avg_service_time,
+                            avg_total_service_time,
                             my_data->sizeWorker,
                             result_file,
                             &total_time) != 0)
     {
-        total_time = avg_service_time * my_data->sizeWorker;
+        total_time = raw_total;
         printf("Warning: application queue estimator failed for worker %d stage %d; using %f seconds fallback\n",
                my_data->id,
                my_data->stage,
                total_time);
     }
+
+    apply_queue_total_to_application_times(my_data, raw_times, raw_total, total_time);
+    free(raw_times);
 
     double per_object_time = total_time / (double)my_data->sizeWorker;
     printf("Worker %d (machine %d) stage %d application estimated total time %f seconds for %d objects (average per object: %f seconds)\n",
@@ -2256,14 +2361,12 @@ static double application_time(struct worker *my_data)
            total_time,
            my_data->sizeWorker,
            per_object_time);
-    for (int j = 0; j < my_data->sizeWorker; ++j)
-        my_data->trace[j].service_time_app += (float)per_object_time;
 
     printf("Worker %d (machine %d) completed stage %d application with average service time %f seconds and simulated total time %f seconds\n",
            my_data->id,
            my_data->machine_id,
            my_data->stage,
-           avg_service_time,
+           avg_total_service_time,
            total_time);
 
     return total_time;
