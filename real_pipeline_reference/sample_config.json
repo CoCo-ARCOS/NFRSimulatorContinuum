@@ -1,0 +1,78 @@
+{
+  "source_simulator_config": "proxy_dd/config_distributed_example.json",
+  "input_dir": "generated_input",
+  "work_dir": "work",
+  "output_dir": "output",
+  "results_dir": "results",
+  "generate_input": {
+    "files": 100,
+    "size_mb": 10.0,
+    "seed": 42,
+    "mode": "compressible"
+  },
+  "ida_k": 8,
+  "ida_m": 4,
+  "aes_key_bits": 256,
+  "stages": [
+    {
+      "name": "stage1",
+      "application_size_factor": 0.8,
+      "input_requirements": [],
+      "output_requirements": [
+        {
+          "type": "hash",
+          "algorithm": "SHA256"
+        },
+        {
+          "type": "compress",
+          "algorithm": "ZLIB"
+        }
+      ]
+    },
+    {
+      "name": "stage2",
+      "application_size_factor": 1.2,
+      "input_requirements": [],
+      "output_requirements": [
+        {
+          "type": "cipher",
+          "algorithm": "RS"
+        },
+        {
+          "type": "hash",
+          "algorithm": "BLAKE3"
+        }
+      ]
+    },
+    {
+      "name": "stage3",
+      "application_size_factor": 1.0,
+      "input_requirements": [],
+      "output_requirements": [
+        {
+          "type": "compress",
+          "algorithm": "LZ4"
+        },
+        {
+          "type": "cipher",
+          "algorithm": "RS"
+        },
+        {
+          "type": "hash",
+          "algorithm": "SHA3_256"
+        }
+      ]
+    },
+    {
+      "name": "stage4",
+      "application_size_factor": 0.6,
+      "input_requirements": [],
+      "output_requirements": [
+        {
+          "type": "hash",
+          "algorithm": "SHA256"
+        }
+      ]
+    }
+  ]
+}

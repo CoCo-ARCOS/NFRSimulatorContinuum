@@ -1,0 +1,2 @@
+stage,stage_name,workers,objects,input_stage_seconds,input_compression_seconds,input_hash_seconds,input_crypto_seconds,application_seconds,output_stage_seconds,output_compression_seconds,output_hash_seconds,output_crypto_seconds,total_seconds,output_requirement_1,output_requirement_1_seconds
+1,stage1,1,10,0.000000,0.000000,0.000000,0.000000,0.000000,1.828260,1.828260,0.000000,0.000000,1.828260,compress:LZ4,1.828260

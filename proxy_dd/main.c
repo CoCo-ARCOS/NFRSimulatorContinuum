@@ -1,4 +1,5 @@
 #include "proxy.h"
+#include <libgen.h>
 
 static void requirement_label(const struct nfr_requirement *req, char *buffer, size_t buffer_size)
 {
@@ -49,7 +50,7 @@ int main(int argc, char const *argv[]){
 
 
 	if (argc < 2) {
-		fprintf(stderr, "Usage: %s <config_file.json>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <config_file.json> [service_time_model]\n", argv[0]);
 		return 1;
 	}
 
@@ -57,11 +58,23 @@ int main(int argc, char const *argv[]){
 
 
     configuration = read_config(filename);
+	if (argc >= 3) {
+		strncpy(configuration->service_time_model, argv[2], sizeof(configuration->service_time_model) - 1);
+		configuration->service_time_model[sizeof(configuration->service_time_model) - 1] = '\0';
+	}
 
     snprintf(agent_container_prefix, sizeof(agent_container_prefix), "%s_agent", configuration->agent_type);
 
     // Load dynamic service times from CSV files based on configuration
-    load_service_times(configuration);
+    {
+        char runtime_path[1024];
+        char *runtime_dir;
+
+        strncpy(runtime_path, argv[0], sizeof(runtime_path) - 1);
+        runtime_path[sizeof(runtime_path) - 1] = '\0';
+        runtime_dir = dirname(runtime_path);
+        load_service_times_with_base(configuration, runtime_dir ? runtime_dir : ".");
+    }
 
 	print_interpolation_points();
 
@@ -70,7 +83,9 @@ int main(int argc, char const *argv[]){
 
 
 	makeContainers( configuration );
-	traceGenerator ( traceData , configuration->traces_number ) ;
+	if (!has_inline_traces()) {
+		traceGenerator(traceData, configuration->traces_number);
+	}
 	arrayWorkers = assignation(configuration, traceData);
 
 

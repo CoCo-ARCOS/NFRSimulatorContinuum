@@ -1,13 +1,28 @@
 {
   "workers": 8,
-  "traces_number": 2,
-  "traces_fileName": "traces.cfg",
+  "traces_number": 1,
+  "traces": [
+    {
+      "MUESTRAS": 100,
+      "inter_arrival": 0.18,
+      "DISTRIBUTION": 3,
+      "mean": 15.0,
+      "stddev": 0.6,
+      "SIZE": 10485760,
+      "stddevS": 0.5,
+      "Concurrency": 1
+    }
+  ],
   "agent_type": "output",
   "stages": [
     {
       "name": "stage1",
       "b_fs": 100,
+      "b_fs_read": 100,
+      "b_fs_write": 100,
+      "inter_arrival": 0.18,
       "application_mean_service_time": 4,
+      "application_size_factor": 0.8,
       "input_requirements": [],
       "output_requirements": [
         { "type": "hash", "algorithm": "SHA256" },
@@ -17,7 +32,11 @@
     {
       "name": "stage2",
       "b_fs": 250,
+      "b_fs_read": 250,
+      "b_fs_write": 250,
+      "inter_arrival": 0.18,
       "application_mean_service_time": 1.0,
+      "application_size_factor": 1.2,
       "output_requirements": [
         { "type": "cipher", "algorithm": "RS" },
         { "type": "hash", "algorithm": "BLAKE3" }
@@ -26,7 +45,11 @@
     {
       "name": "stage3",
       "b_fs": 75,
+      "b_fs_read": 75,
+      "b_fs_write": 75,
+      "inter_arrival": 0.18,
       "application_mean_service_time": 1.5,
+      "application_size_factor": 1.0,
       "output_requirements": [
         { "type": "compress", "algorithm": "LZ4" },
         { "type": "cipher", "algorithm": "RS" },
@@ -36,7 +59,11 @@
     {
       "name": "stage4",
       "b_fs": 150,
+      "b_fs_read": 150,
+      "b_fs_write": 150,
+      "inter_arrival": 0.18,
       "application_mean_service_time": 2.0,
+      "application_size_factor": 0.6,
       "output_requirements": [
         { "type": "hash", "algorithm": "SHA256" }
       ]
@@ -48,11 +75,13 @@
   "ida_k": 8,
   "ida_m": 4,
   "b_fs": 100,
+  "b_fs_read": 100,
+  "b_fs_write": 100,
   "machines": [
-    { "name": "m0", "stages": ["stage1"] },
-    { "name": "m1", "stages": ["stage2"] },
-    { "name": "m2", "stages": ["stage3"] },
-    { "name": "m3", "stages": ["stage4"] }
+    { "name": "m0", "stages": ["stage1"], "hardware_profile": "dantelap" },
+    { "name": "m1", "stages": ["stage2"], "hardware_profile": "dantelap" },
+    { "name": "m2", "stages": ["stage3"], "hardware_profile": "dantelap" },
+    { "name": "m3", "stages": ["stage4"], "hardware_profile": "dantelap" }
   ],
   "links": [
     { "from": "m0", "to": "m1", "b_net": 100, "latency_ms": 10 },
