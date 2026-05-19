@@ -364,6 +364,8 @@ def apply_hash_output(data: bytes, metadata, algorithm: str, config, stage_temp_
     digest = hash_digest(raw_data_from_disk, algorithm, config["hmac_key"])
     compute = time.perf_counter() - start
     metadata.setdefault("hashes", {})[algorithm] = digest
+    if temp_orig.exists():
+        temp_orig.unlink()
     return data, io_write + io_read + compute, compute
 
 
@@ -380,6 +382,8 @@ def apply_hash_input(data: bytes, metadata, algorithm: str, config, stage_temp_d
         "actual": digest,
         "match": (expected == digest) if expected is not None else None,
     }
+    if temp_orig.exists():
+        temp_orig.unlink()
     return data, io_write + io_read + compute, compute
 
 
@@ -397,6 +401,10 @@ def apply_compress_output(data: bytes, metadata, algorithm: str, stage_temp_dir:
         {"algorithm": algorithm, "original_size": len(data)}
     )
     total = io_write_orig + io_read_orig + compute + io_write_comp + io_read_comp
+    if temp_orig.exists():
+        temp_orig.unlink()
+    if temp_comp.exists():
+        temp_comp.unlink()
     return compressed_from_disk, total, compute
 
 
@@ -411,6 +419,8 @@ def apply_compress_input(data: bytes, metadata, algorithm: str, stage_temp_dir: 
     if stack:
         stack.pop()
     total = io_write_comp + io_read_comp + compute
+    if temp_comp.exists():
+        temp_comp.unlink()
     return decompressed, total, compute
 
 
@@ -426,6 +436,10 @@ def apply_cipher_output(data: bytes, metadata, algorithm: str, config, stage_tem
     encrypted_from_disk, io_read_enc = measure_read(temp_enc)
     metadata.setdefault("cipher_stack", []).append(cipher_metadata)
     total = io_write_orig + io_read_orig + compute + io_write_enc + io_read_enc
+    if temp_orig.exists():
+        temp_orig.unlink()
+    if temp_enc.exists():
+        temp_enc.unlink()
     return encrypted_from_disk, total, compute
 
 
@@ -445,6 +459,8 @@ def apply_cipher_input(data: bytes, metadata, algorithm: str, stage_temp_dir: Pa
     decrypted = decrypt_payload(encrypted_from_disk, cipher_metadata)
     compute = time.perf_counter() - start
     total = io_write_enc + io_read_enc + compute
+    if temp_enc.exists():
+        temp_enc.unlink()
     return decrypted, total, compute
 
 
@@ -499,6 +515,10 @@ def apply_application(data: bytes, size_factor: float, stage_temp_dir: Path, sta
     compute = time.perf_counter() - compute_start
     io_write_out = measure_write(temp_output, transformed)
     output_from_disk, io_read_out = measure_read(temp_output)
+    if temp_input.exists():
+        temp_input.unlink()
+    if temp_output.exists():
+        temp_output.unlink()
     return output_from_disk, {
         "application_read_seconds": io_write_in + io_read_in,
         "application_compute_seconds": compute,
@@ -702,8 +722,9 @@ def process_stage_object(
 
     stage_dir = work_dir / stage_name
     ensure_dir(stage_dir)
-    write_bytes(data_path(work_dir, stage_name, file_name), current_data)
-    save_metadata(metadata_path(work_dir, stage_name, file_name), metadata)
+    # Avoid overloading filesystem with intermediary objects
+    # write_bytes(data_path(work_dir, stage_name, file_name), current_data)
+    # save_metadata(metadata_path(work_dir, stage_name, file_name), metadata)
 
     file_row = {
         "file": file_name,
@@ -972,8 +993,9 @@ def run_pipeline(config, base_dir: Path, workers_override=None, run_only=None):
                 timeline_rows.append(result["timeline_row"])
             objects = next_objects
 
-        for obj in objects:
-            write_bytes(output_dir / obj["file_name"], obj["data"])
+        # Avoid writing final simulated objects to disk during large scale benchmarks
+        # for obj in objects:
+        #     write_bytes(output_dir / obj["file_name"], obj["data"])
 
     stage_totals = list(stage_totals_map.values())
     queue_summaries = summarize_queue_metrics(timeline_rows)
