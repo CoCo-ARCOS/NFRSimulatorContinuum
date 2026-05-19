@@ -1,0 +1,61 @@
+{
+  "machine_id": "dantelap",
+  "machine_name": "DanteLap",
+  "hardware_profile": "personal_laptop_with_gpu",
+  "description": "Personal laptop with GPU",
+  "source_root": "/home/domizzi/Documents/GitHub/SimulatorContinuum/proxy_dd/results_different_machines",
+  "datasets": {
+    "cost-efficiency.csv": {
+      "source_files": [
+        "DanteLap/cost-efficiency/comp_stats.csv"
+      ],
+      "rows": 25,
+      "sizes_mb": [
+        "1",
+        "10",
+        "50",
+        "100",
+        "1000"
+      ]
+    },
+    "integrity.csv": {
+      "source_files": [
+        "DanteLap/security/integ_stats.csv"
+      ],
+      "rows": 20,
+      "sizes_mb": [
+        "1",
+        "10",
+        "50",
+        "100",
+        "1000"
+      ]
+    },
+    "confidentiality.csv": {
+      "source_files": [
+        "DanteLap/security/conf_stats.csv"
+      ],
+      "rows": 15,
+      "sizes_mb": [
+        "1",
+        "10",
+        "50",
+        "100",
+        "1000"
+      ]
+    },
+    "reliability.csv": {
+      "source_files": [
+        "DanteLap/reliability/erasure_stats.csv"
+      ],
+      "rows": 15,
+      "sizes_mb": [
+        "1",
+        "10",
+        "50",
+        "100",
+        "1000"
+      ]
+    }
+  }
+}

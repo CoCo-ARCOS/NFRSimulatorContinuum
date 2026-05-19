@@ -71,8 +71,13 @@ struct stage_definition
 	int input_explicit;
 	struct nfr_requirement output_requirements[MAX_PIPELINE_TASKS];
 	int output_count;
-	double b_fs; /* filesystem bandwidth bytes/sec for this stage */
+	double mean_interarrival; /* optional per-stage mean interarrival in seconds */
+	int burst_arrival_mode; /* when set, bypass queue estimator and use raw per-worker totals */
+	double b_fs; /* legacy symmetric filesystem bandwidth bytes/sec for this stage */
+	double b_fs_read; /* filesystem read bandwidth bytes/sec for this stage */
+	double b_fs_write; /* filesystem write bandwidth bytes/sec for this stage */
 	double application_mean_service_time; /* average application execution time in seconds */
+	double application_size_factor; /* multiplicative change in object size caused by the application */
 };
 
 struct machine_node
@@ -80,6 +85,9 @@ struct machine_node
 	char name[64];
 	int stages[10];
 	int stages_number;
+	char hardware_profile[64];
+	char real_values_dir[512];
+	int service_profile_index;
 };
 
 struct link_node
@@ -105,6 +113,7 @@ struct worker
 	int stage;
 	int stage_owner;		 /* Current stage this worker batch is assigned to (1..10). */
 	int machine_id;			 /* Assigned machine index, -1 if local/not set */
+	int service_profile_index; /* Loaded interpolation profile for this worker's active machine. */
 	char agent_type[16];	 /**< "output" or "input" */
 	int pipeline_is_input;	 /**< Current pipeline: 1=input/acquisition, 0=output/delivery. */
 	int task_id;			 /**< Current task index inside the active pipeline. */
@@ -113,7 +122,9 @@ struct worker
 	char task_algorithm[32]; /**< Algorithm selected for the current task. */
 	struct traces *trace;
 	float service_time;
-	double b_fs; /* filesystem bandwidth bytes/sec for this worker */
+	double b_fs; /* legacy symmetric filesystem bandwidth bytes/sec for this worker */
+	double b_fs_read; /* filesystem read bandwidth bytes/sec for this worker */
+	double b_fs_write; /* filesystem write bandwidth bytes/sec for this worker */
 	double stage_input_time[MAX_STAGES];
 	double stage_output_time[MAX_STAGES];
 	double stage_application_time[MAX_STAGES];
@@ -147,9 +158,14 @@ struct config
 	char compression_algo[32];							   /**< Compression algorithm.*/
 	char hashing_algo[32];								   /**< Hashing algorithm.*/
 	char ida_algo[32];									   /**< IDA algorithm.*/
+	char service_time_model[32];							   /**< Service-time model: linear or log-log. */
 	int ida_k;											   /**< IDA k_datos.*/
 	int ida_m;											   /**< IDA m_paridad.*/
-	double b_fs;										   /**< Theoretical filesystem bandwidth (bytes/sec). Configured in MB/s and converted at startup. */
+	int aes_key_bits;								   /**< AES key size in bits for confidentiality.*/
+	char real_values_dir[512];							   /**< Default service-time dataset directory. */
+	double b_fs;										   /**< Legacy symmetric filesystem bandwidth (bytes/sec). */
+	double b_fs_read;									   /**< Filesystem read bandwidth (bytes/sec). */
+	double b_fs_write;									   /**< Filesystem write bandwidth (bytes/sec). */
 	double application_mean_service_time;				   /**< Average application execution time in seconds. */
 	struct machine_node machines[MAX_MACHINES];			   /**< Optional distributed machines */
 	int machines_number;
@@ -167,6 +183,8 @@ void error(const char *s);
 struct config *read_config(const char *file_name);
 
 struct traceConfig *read_configTrace(int numberTrace, char *fileName);
+
+int has_inline_traces(void);
 
 void execute_command(char *command);
 

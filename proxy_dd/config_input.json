@@ -38,7 +38,9 @@
   "compression_algo": "ZLIB",
   "hashing_algo": "SHA256",
   "ida_algo": "RS",
+  "service_time_model": "log-log",
   "ida_k": 8,
   "ida_m": 4,
+  "aes_key_bits": 256,
   "b_fs": 600
 }

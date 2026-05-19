@@ -1,0 +1,218 @@
+{
+  "workers": 8,
+  "traces_number": 1,
+  "traces": [
+    {
+      "MUESTRAS": 100,
+      "inter_arrival": 0.195975,
+      "DISTRIBUTION": 3,
+      "mean": 15.0,
+      "stddev": 0.6,
+      "SIZE": 10485760,
+      "stddevS": 0.5,
+      "Concurrency": 1
+    }
+  ],
+  "agent_type": "output",
+  "stages": [
+    {
+      "name": "stage1",
+      "b_fs": 20.319319,
+      "b_fs_read": 100,
+      "b_fs_write": 100,
+      "inter_arrival": 0.195975,
+      "application_mean_service_time": 1.165037,
+      "application_size_factor": 0.8,
+      "input_requirements": [],
+      "output_requirements": [
+        {
+          "type": "hash",
+          "algorithm": "SHA256"
+        },
+        {
+          "type": "compress",
+          "algorithm": "ZLIB"
+        }
+      ]
+    },
+    {
+      "name": "stage2",
+      "b_fs": 161.510348,
+      "b_fs_read": 234.4585,
+      "b_fs_write": 88.562196,
+      "inter_arrival": 0.182461,
+      "application_mean_service_time": 1.008869,
+      "application_size_factor": 1.2,
+      "output_requirements": [
+        {
+          "type": "cipher",
+          "algorithm": "RS"
+        },
+        {
+          "type": "hash",
+          "algorithm": "BLAKE3"
+        }
+      ]
+    },
+    {
+      "name": "stage3",
+      "b_fs": 56.611335,
+      "b_fs_read": 87.036885,
+      "b_fs_write": 26.185786,
+      "inter_arrival": 0.154967,
+      "application_mean_service_time": 1.09465,
+      "application_size_factor": 1.0,
+      "output_requirements": [
+        {
+          "type": "compress",
+          "algorithm": "LZ4"
+        },
+        {
+          "type": "cipher",
+          "algorithm": "RS"
+        },
+        {
+          "type": "hash",
+          "algorithm": "SHA3_256"
+        }
+      ]
+    },
+    {
+      "name": "stage4",
+      "b_fs": 120.145191,
+      "b_fs_read": 78.812825,
+      "b_fs_write": 161.477557,
+      "inter_arrival": 0.182096,
+      "application_mean_service_time": 1.077077,
+      "application_size_factor": 0.6,
+      "output_requirements": [
+        {
+          "type": "hash",
+          "algorithm": "SHA256"
+        }
+      ]
+    }
+  ],
+  "compression_algo": "ZLIB",
+  "hashing_algo": "SHA256",
+  "ida_algo": "RS",
+  "ida_k": 8,
+  "ida_m": 4,
+  "b_fs": 100,
+  "b_fs_read": 100,
+  "b_fs_write": 100,
+  "machines": [
+    {
+      "name": "m0",
+      "stages": [
+        "stage1"
+      ],
+      "hardware_profile": "dantelap"
+    },
+    {
+      "name": "m1",
+      "stages": [
+        "stage2"
+      ],
+      "hardware_profile": "dantelap"
+    },
+    {
+      "name": "m2",
+      "stages": [
+        "stage3"
+      ],
+      "hardware_profile": "dantelap"
+    },
+    {
+      "name": "m3",
+      "stages": [
+        "stage4"
+      ],
+      "hardware_profile": "dantelap"
+    }
+  ],
+  "links": [
+    {
+      "from": "m0",
+      "to": "m1",
+      "b_net": 100,
+      "latency_ms": 10
+    },
+    {
+      "from": "m1",
+      "to": "m2",
+      "b_net": 50,
+      "latency_ms": 20
+    },
+    {
+      "from": "m2",
+      "to": "m3",
+      "b_net": 50,
+      "latency_ms": 20
+    }
+  ],
+  "_calibration": {
+    "application_mode": "total",
+    "source_arrival_strategy": "throughput",
+    "source_interarrival_note": "stage1 burst approximated with stage1 throughput spacing",
+    "derived_stage_application_mean_service_time": {
+      "stage1": 1.1650374501211627,
+      "stage2": 1.0088687938913063,
+      "stage3": 1.094649731170066,
+      "stage4": 1.0770772060836316
+    },
+    "derived_stage_interarrival_seconds": {
+      "stage1": 0.0,
+      "stage2": 0.1824612185050912,
+      "stage3": 0.15496704449499088,
+      "stage4": 0.1820955492423511
+    },
+    "derived_source_interarrival_seconds": 0.19597503442011657,
+    "b_fs_mode": "split_io",
+    "derived_b_fs": {
+      "stage1": {
+        "old_b_fs": 100.0,
+        "real_io_seconds": 20.70756895795057,
+        "sim_io_seconds": 4.207637,
+        "scale_sim_over_real": 0.2031931903037077,
+        "new_b_fs": 20.31931903037077
+      },
+      "stage2": {
+        "old_b_fs_read": 250.0,
+        "old_b_fs_write": 250.0,
+        "real_input_seconds": 3.7306282378121978,
+        "sim_input_seconds": 3.49871,
+        "real_output_seconds": 10.157790709839901,
+        "sim_output_seconds": 3.598385,
+        "scale_sim_over_real_read": 0.9378339992547194,
+        "scale_sim_over_real_write": 0.35424878330228116,
+        "new_b_fs_read": 234.45849981367985,
+        "new_b_fs_write": 88.56219582557029
+      },
+      "stage3": {
+        "old_b_fs_read": 75.0,
+        "old_b_fs_write": 75.0,
+        "real_input_seconds": 5.588020553987008,
+        "sim_input_seconds": 6.484852,
+        "real_output_seconds": 15.960021958118887,
+        "sim_output_seconds": 5.572343,
+        "scale_sim_over_real_read": 1.1604917944285496,
+        "scale_sim_over_real_write": 0.34914381788587334,
+        "new_b_fs_read": 87.03688458214121,
+        "new_b_fs_write": 26.1857863414405
+      },
+      "stage4": {
+        "old_b_fs_read": 150.0,
+        "old_b_fs_write": 150.0,
+        "real_input_seconds": 9.988345833742642,
+        "sim_input_seconds": 5.248065,
+        "real_output_seconds": 1.625013751006918,
+        "sim_output_seconds": 1.749355,
+        "scale_sim_over_real_read": 0.5254188318421035,
+        "scale_sim_over_real_write": 1.0765170441887248,
+        "new_b_fs_read": 78.81282477631552,
+        "new_b_fs_write": 161.47755662830872
+      }
+    }
+  }
+}

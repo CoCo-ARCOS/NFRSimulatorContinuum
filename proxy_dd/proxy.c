@@ -137,6 +137,46 @@ static double stage_filesystem_bandwidth(int stage)
     return global_config ? global_config->b_fs : 0.0;
 }
 
+static double stage_filesystem_read_bandwidth(int stage)
+{
+    struct stage_definition *stage_def = global_stage_definition(stage);
+    if (stage_def && stage_def->b_fs_read > 0.0)
+        return stage_def->b_fs_read;
+    if (stage_def && stage_def->b_fs > 0.0)
+        return stage_def->b_fs;
+    if (global_config && global_config->b_fs_read > 0.0)
+        return global_config->b_fs_read;
+    return global_config ? global_config->b_fs : 0.0;
+}
+
+static double stage_filesystem_write_bandwidth(int stage)
+{
+    struct stage_definition *stage_def = global_stage_definition(stage);
+    if (stage_def && stage_def->b_fs_write > 0.0)
+        return stage_def->b_fs_write;
+    if (stage_def && stage_def->b_fs > 0.0)
+        return stage_def->b_fs;
+    if (global_config && global_config->b_fs_write > 0.0)
+        return global_config->b_fs_write;
+    return global_config ? global_config->b_fs : 0.0;
+}
+
+static double stage_mean_interarrival_seconds(int stage, const struct worker *w)
+{
+    struct stage_definition *stage_def = global_stage_definition(stage);
+    if (stage_def && stage_def->mean_interarrival > 0.0)
+        return stage_def->mean_interarrival;
+    if (w && w->sizeWorker > 0)
+        return w->trace[0].mean_interarrival;
+    return 0.0;
+}
+
+static int stage_uses_burst_arrivals(int stage)
+{
+    struct stage_definition *stage_def = global_stage_definition(stage);
+    return stage_def ? stage_def->burst_arrival_mode : 0;
+}
+
 static double worker_recorded_time(struct worker *w)
 {
     double total = 0.0;
@@ -329,8 +369,13 @@ static void init_stage_definition(struct config *configuration, int index, int s
     struct stage_definition *stage_def = &configuration->stage_definitions[index];
     memset(stage_def, 0, sizeof(*stage_def));
     stage_def->stage = stage;
+    stage_def->mean_interarrival = 0.0;
+    stage_def->burst_arrival_mode = 0;
     stage_def->b_fs = configuration ? configuration->b_fs : 0.0;
+    stage_def->b_fs_read = configuration ? configuration->b_fs_read : stage_def->b_fs;
+    stage_def->b_fs_write = configuration ? configuration->b_fs_write : stage_def->b_fs;
     stage_def->application_mean_service_time = configuration ? configuration->application_mean_service_time : 0.0;
+    stage_def->application_size_factor = 1.0;
     if (name && name[0] != '\0')
     {
         strncpy(stage_def->name, name, sizeof(stage_def->name) - 1);
@@ -367,6 +412,8 @@ static void parse_stage_filesystem_bandwidth(cJSON *stage, struct stage_definiti
     {
         /* Stage-level b_fs follows the global config convention: MB/s. */
         stage_def->b_fs = bfs->valuedouble * 1048576.0;
+        stage_def->b_fs_read = stage_def->b_fs;
+        stage_def->b_fs_write = stage_def->b_fs;
         return;
     }
 
@@ -374,7 +421,69 @@ static void parse_stage_filesystem_bandwidth(cJSON *stage, struct stage_definiti
     if (!cJSON_IsNumber(bfs_bytes))
         bfs_bytes = cJSON_GetObjectItemCaseSensitive(stage, "b_fs_bytes_per_sec");
     if (cJSON_IsNumber(bfs_bytes))
+    {
         stage_def->b_fs = bfs_bytes->valuedouble;
+        stage_def->b_fs_read = stage_def->b_fs;
+        stage_def->b_fs_write = stage_def->b_fs;
+    }
+
+    cJSON *bfs_read = cJSON_GetObjectItemCaseSensitive(stage, "b_fs_read");
+    if (cJSON_IsNumber(bfs_read))
+        stage_def->b_fs_read = bfs_read->valuedouble * 1048576.0;
+    cJSON *bfs_write = cJSON_GetObjectItemCaseSensitive(stage, "b_fs_write");
+    if (cJSON_IsNumber(bfs_write))
+        stage_def->b_fs_write = bfs_write->valuedouble * 1048576.0;
+
+    cJSON *bfs_read_bytes = cJSON_GetObjectItemCaseSensitive(stage, "b_fs_read_bytes");
+    if (!cJSON_IsNumber(bfs_read_bytes))
+        bfs_read_bytes = cJSON_GetObjectItemCaseSensitive(stage, "b_fs_read_bytes_per_sec");
+    if (cJSON_IsNumber(bfs_read_bytes))
+        stage_def->b_fs_read = bfs_read_bytes->valuedouble;
+
+    cJSON *bfs_write_bytes = cJSON_GetObjectItemCaseSensitive(stage, "b_fs_write_bytes");
+    if (!cJSON_IsNumber(bfs_write_bytes))
+        bfs_write_bytes = cJSON_GetObjectItemCaseSensitive(stage, "b_fs_write_bytes_per_sec");
+    if (cJSON_IsNumber(bfs_write_bytes))
+        stage_def->b_fs_write = bfs_write_bytes->valuedouble;
+
+    if (stage_def->b_fs_read <= 0.0)
+        stage_def->b_fs_read = stage_def->b_fs;
+    if (stage_def->b_fs_write <= 0.0)
+        stage_def->b_fs_write = stage_def->b_fs;
+}
+
+static void parse_stage_mean_interarrival(cJSON *stage, struct stage_definition *stage_def)
+{
+    static const char *keys[] = {
+        "inter_arrival",
+        "mean_interarrival",
+        "stage_interarrival",
+        "stage_mean_interarrival"
+    };
+
+    cJSON *interarrival = first_number_item(stage, keys, sizeof(keys) / sizeof(keys[0]));
+    if (stage_def && interarrival && interarrival->valuedouble > 0.0)
+        stage_def->mean_interarrival = interarrival->valuedouble;
+}
+
+static void parse_stage_arrival_mode(cJSON *stage, struct stage_definition *stage_def)
+{
+    if (!stage || !stage_def)
+        return;
+
+    cJSON *mode = cJSON_GetObjectItemCaseSensitive(stage, "arrival_model");
+    if (!cJSON_IsString(mode))
+        mode = cJSON_GetObjectItemCaseSensitive(stage, "queue_arrival_model");
+    if (cJSON_IsString(mode) && mode->valuestring)
+    {
+        if (strcmp(mode->valuestring, "burst") == 0)
+            stage_def->burst_arrival_mode = 1;
+        return;
+    }
+
+    cJSON *burst = cJSON_GetObjectItemCaseSensitive(stage, "burst_arrival");
+    if (cJSON_IsBool(burst))
+        stage_def->burst_arrival_mode = cJSON_IsTrue(burst) ? 1 : 0;
 }
 
 static void parse_stage_application_time(cJSON *stage, struct stage_definition *stage_def)
@@ -389,6 +498,22 @@ static void parse_stage_application_time(cJSON *stage, struct stage_definition *
     cJSON *app_time = first_number_item(stage, keys, sizeof(keys) / sizeof(keys[0]));
     if (app_time && stage_def)
         stage_def->application_mean_service_time = app_time->valuedouble;
+}
+
+static void parse_stage_application_size_factor(cJSON *stage, struct stage_definition *stage_def)
+{
+    static const char *keys[] = {
+        "application_size_factor",
+        "application_transformation_factor",
+        "application_output_size_factor",
+        "application_data_size_factor"
+    };
+
+    cJSON *factor = first_number_item(stage, keys, sizeof(keys) / sizeof(keys[0]));
+    if (!stage_def)
+        return;
+
+    stage_def->application_size_factor = (factor && factor->valuedouble > 0.0) ? factor->valuedouble : 1.0;
 }
 
 static int stage_has_application(const struct stage_definition *stage_def)
@@ -546,6 +671,15 @@ static int stage_machine_id(int stage)
     return -1;
 }
 
+static int machine_service_profile_index(int machine_id)
+{
+    if (!global_config)
+        return 0;
+    if (machine_id < 0 || machine_id >= global_config->machines_number)
+        return 0;
+    return global_config->machines[machine_id].service_profile_index;
+}
+
 static void set_worker_task_context(struct worker *w, const struct nfr_manager *m)
 {
     if (!w || !m)
@@ -563,10 +697,12 @@ static void set_worker_task_context(struct worker *w, const struct nfr_manager *
     strncpy(w->agent_type, m->is_application ? "application" : (m->is_input ? "input" : "output"), sizeof(w->agent_type) - 1);
     w->agent_type[sizeof(w->agent_type) - 1] = '\0';
     w->b_fs = stage_filesystem_bandwidth(m->stage);
+    w->b_fs_read = stage_filesystem_read_bandwidth(m->stage);
+    w->b_fs_write = stage_filesystem_write_bandwidth(m->stage);
 
     int mid = stage_machine_id(m->stage);
-    if (mid >= 0)
-        w->machine_id = mid;
+    w->machine_id = mid;
+    w->service_profile_index = machine_service_profile_index(mid);
 }
 
 static void advance_to_next_stage_or_finish(int current_stage, struct worker *w);
@@ -675,8 +811,8 @@ static void advance_to_next_stage_or_finish(int current_stage, struct worker *w)
         //usleep((useconds_t)(net_t * 1e6));
     }
 
-    if (to_mid >= 0)
-        w->machine_id = to_mid;
+    w->machine_id = to_mid;
+    w->service_profile_index = machine_service_profile_index(to_mid);
     w->stage_owner = next_stage;
 
     if (enqueue_stage_start(next_stage, w) != 0)
@@ -690,6 +826,8 @@ static int enqueue_stage_start(int stage, struct worker *w)
         return -1;
 
     w->b_fs = stage_def->b_fs;
+    w->b_fs_read = stage_def->b_fs_read;
+    w->b_fs_write = stage_def->b_fs_write;
     record_worker_stage_input_size(w, stage);
 
     if (stage_def->input_count > 0)
@@ -1213,6 +1351,11 @@ void error(const char *s)
  * @brief Function that read the JSON config file.
  */
 char agent_container_prefix[32] = "output_agent";
+/* Optional inline trace first-line provided via config JSON (overrides traces.cfg) */
+static char *global_trace_first_line = NULL;
+/* Optional structured traces provided via config JSON (preferred). */
+static struct traceConfig *global_trace_array = NULL;
+static int global_trace_array_count = 0;
 
 struct config *read_config(const char *file_name)
 {
@@ -1258,6 +1401,8 @@ struct config *read_config(const char *file_name)
     strcpy(configuration->compression_algo, "");
     strcpy(configuration->hashing_algo, "");
     strcpy(configuration->ida_algo, "");
+    strcpy(configuration->service_time_model, "linear");
+    configuration->real_values_dir[0] = '\0';
 
     workers = cJSON_GetObjectItemCaseSensitive(json, "workers");
     if (cJSON_IsNumber(workers))
@@ -1275,6 +1420,61 @@ struct config *read_config(const char *file_name)
     if (cJSON_IsString(traces_fileName) && (traces_fileName->valuestring != NULL))
     {
         strcpy(configuration->traces_fileName, traces_fileName->valuestring);
+    }
+
+    /* New: allow providing the first line of traces.cfg inline in the config JSON
+       as a string with the same space-separated fields used in traces.cfg.
+       Example: "trace_first_line": "10000 5000.0 3 15 0.6 30 0.5 1" */
+    cJSON *trace_first = cJSON_GetObjectItemCaseSensitive(json, "trace_first_line");
+    if (cJSON_IsString(trace_first) && trace_first->valuestring) {
+        /* store a copy for read_configTrace to consume */
+        if (global_trace_first_line) free(global_trace_first_line);
+        global_trace_first_line = strdup(trace_first->valuestring);
+    }
+
+    /* New: allow providing structured trace configuration in JSON as an array:
+       "traces": [ { "MUESTRAS": 100, "inter_arrival": 2.0, "DISTRIBUTION": 3, "mean": 15, "stddev": 0.6, "SIZE": 30000000, "stddevS": 0.5, "Concurrency": 1 }, ... ]
+       This is preferred over the single-line string. */
+    cJSON *traces_json = cJSON_GetObjectItemCaseSensitive(json, "traces");
+    if (cJSON_IsArray(traces_json)) {
+        int count = cJSON_GetArraySize(traces_json);
+        if (count > 0) {
+            if (global_trace_array) { free(global_trace_array); global_trace_array = NULL; global_trace_array_count = 0; }
+            int use_count = (configuration->traces_number > 0) ? configuration->traces_number : count;
+            global_trace_array = malloc(sizeof(struct traceConfig) * use_count);
+            if (global_trace_array) {
+                cJSON *t = NULL;
+                int idx = 0;
+                cJSON_ArrayForEach(t, traces_json) {
+                    if (idx >= use_count) break;
+                    cJSON *muestras = cJSON_GetObjectItemCaseSensitive(t, "MUESTRAS");
+                    if (!muestras) muestras = cJSON_GetObjectItemCaseSensitive(t, "samples");
+                    cJSON *inter = cJSON_GetObjectItemCaseSensitive(t, "inter_arrival");
+                    cJSON *dist = cJSON_GetObjectItemCaseSensitive(t, "DISTRIBUTION");
+                    cJSON *mean = cJSON_GetObjectItemCaseSensitive(t, "mean");
+                    cJSON *stddev = cJSON_GetObjectItemCaseSensitive(t, "stddev");
+                    cJSON *size = cJSON_GetObjectItemCaseSensitive(t, "SIZE");
+                    cJSON *stddevs = cJSON_GetObjectItemCaseSensitive(t, "stddevS");
+                    cJSON *conc = cJSON_GetObjectItemCaseSensitive(t, "Concurrency");
+
+                    global_trace_array[idx].MUESTRAS = cJSON_IsNumber(muestras) ? (long long unsigned)muestras->valuedouble : 1;
+                    global_trace_array[idx].inter_arrival = cJSON_IsNumber(inter) ? inter->valuedouble : 0.0f;
+                    global_trace_array[idx].DISTRIBUTION = cJSON_IsNumber(dist) ? (long long unsigned)dist->valuedouble : 0;
+                    global_trace_array[idx].mean = cJSON_IsNumber(mean) ? mean->valuedouble : 0.0f;
+                    global_trace_array[idx].stddev = cJSON_IsNumber(stddev) ? stddev->valuedouble : 0.0f;
+                    global_trace_array[idx].SIZE = cJSON_IsNumber(size) ? size->valuedouble : 0.0f;
+                    global_trace_array[idx].stddevS = cJSON_IsNumber(stddevs) ? stddevs->valuedouble : 0.0f;
+                    global_trace_array[idx].Concurrency = cJSON_IsNumber(conc) ? (long long unsigned)conc->valuedouble : 1;
+                    idx++;
+                }
+                /* set actual filled count and discard array if nothing parsed */
+                global_trace_array_count = idx;
+                if (global_trace_array_count == 0) {
+                    free(global_trace_array);
+                    global_trace_array = NULL;
+                }
+            }
+        }
     }
 
     agent_type = cJSON_GetObjectItemCaseSensitive(json, "agent_type");
@@ -1308,6 +1508,17 @@ struct config *read_config(const char *file_name)
         strcpy(configuration->ida_algo, id_algo->valuestring);
     }
 
+    cJSON *service_time_model = cJSON_GetObjectItemCaseSensitive(json, "service_time_model");
+    if (!cJSON_IsString(service_time_model))
+        service_time_model = cJSON_GetObjectItemCaseSensitive(json, "interpolation_model");
+    if (!cJSON_IsString(service_time_model))
+        service_time_model = cJSON_GetObjectItemCaseSensitive(json, "modeling_model");
+    if (cJSON_IsString(service_time_model) && service_time_model->valuestring != NULL)
+    {
+        strncpy(configuration->service_time_model, service_time_model->valuestring, sizeof(configuration->service_time_model) - 1);
+        configuration->service_time_model[sizeof(configuration->service_time_model) - 1] = '\0';
+    }
+
     cJSON *id_k = cJSON_GetObjectItemCaseSensitive(json, "ida_k");
     if (cJSON_IsNumber(id_k))
     {
@@ -1328,6 +1539,22 @@ struct config *read_config(const char *file_name)
         configuration->ida_m = 2; // Default
     }
 
+    configuration->aes_key_bits = 256; // Default AES key size.
+    cJSON *aes_key_bits = cJSON_GetObjectItemCaseSensitive(json, "aes_key_bits");
+    if (!cJSON_IsNumber(aes_key_bits))
+        aes_key_bits = cJSON_GetObjectItemCaseSensitive(json, "key_bits");
+    if (cJSON_IsNumber(aes_key_bits))
+    {
+        configuration->aes_key_bits = aes_key_bits->valueint;
+    }
+
+    cJSON *real_values_dir = cJSON_GetObjectItemCaseSensitive(json, "real_values_dir");
+    if (cJSON_IsString(real_values_dir) && real_values_dir->valuestring != NULL)
+    {
+        strncpy(configuration->real_values_dir, real_values_dir->valuestring, sizeof(configuration->real_values_dir) - 1);
+        configuration->real_values_dir[sizeof(configuration->real_values_dir) - 1] = '\0';
+    }
+
     cJSON *bfs = cJSON_GetObjectItemCaseSensitive(json, "b_fs");
     if (cJSON_IsNumber(bfs)) {
         /* configuration file provides b_fs in MB/s — convert to bytes/sec */
@@ -1335,6 +1562,27 @@ struct config *read_config(const char *file_name)
     } else {
         configuration->b_fs = 100.0 * 1048576.0; // Default 100 MB/s
     }
+    configuration->b_fs_read = configuration->b_fs;
+    configuration->b_fs_write = configuration->b_fs;
+
+    cJSON *bfs_read = cJSON_GetObjectItemCaseSensitive(json, "b_fs_read");
+    if (cJSON_IsNumber(bfs_read))
+        configuration->b_fs_read = bfs_read->valuedouble * 1048576.0;
+    cJSON *bfs_write = cJSON_GetObjectItemCaseSensitive(json, "b_fs_write");
+    if (cJSON_IsNumber(bfs_write))
+        configuration->b_fs_write = bfs_write->valuedouble * 1048576.0;
+
+    cJSON *bfs_read_bytes = cJSON_GetObjectItemCaseSensitive(json, "b_fs_read_bytes");
+    if (!cJSON_IsNumber(bfs_read_bytes))
+        bfs_read_bytes = cJSON_GetObjectItemCaseSensitive(json, "b_fs_read_bytes_per_sec");
+    if (cJSON_IsNumber(bfs_read_bytes))
+        configuration->b_fs_read = bfs_read_bytes->valuedouble;
+
+    cJSON *bfs_write_bytes = cJSON_GetObjectItemCaseSensitive(json, "b_fs_write_bytes");
+    if (!cJSON_IsNumber(bfs_write_bytes))
+        bfs_write_bytes = cJSON_GetObjectItemCaseSensitive(json, "b_fs_write_bytes_per_sec");
+    if (cJSON_IsNumber(bfs_write_bytes))
+        configuration->b_fs_write = bfs_write_bytes->valuedouble;
 
     static const char *application_time_keys[] = {
         "application_mean_service_time",
@@ -1391,8 +1639,11 @@ struct config *read_config(const char *file_name)
                     int si = configuration->stages_number;
                     configuration->stages[configuration->stages_number++] = parsed_stage;
                     init_stage_definition(configuration, si, parsed_stage, stage_name);
+                    parse_stage_arrival_mode(stage, &configuration->stage_definitions[si]);
+                    parse_stage_mean_interarrival(stage, &configuration->stage_definitions[si]);
                     parse_stage_filesystem_bandwidth(stage, &configuration->stage_definitions[si]);
                     parse_stage_application_time(stage, &configuration->stage_definitions[si]);
+                    parse_stage_application_size_factor(stage, &configuration->stage_definitions[si]);
 
                     cJSON *output_reqs = cJSON_GetObjectItemCaseSensitive(stage, "output_requirements");
                     if (!cJSON_IsArray(output_reqs))
@@ -1427,11 +1678,28 @@ struct config *read_config(const char *file_name)
                 if (m_idx >= MAX_MACHINES) break;
                 cJSON *mname = cJSON_GetObjectItemCaseSensitive(m, "name");
                 cJSON *mstages = cJSON_GetObjectItemCaseSensitive(m, "stages");
+                cJSON *mprofile = cJSON_GetObjectItemCaseSensitive(m, "hardware_profile");
+                cJSON *mprofile_alt = cJSON_GetObjectItemCaseSensitive(m, "profile");
+                cJSON *mvalues = cJSON_GetObjectItemCaseSensitive(m, "real_values_dir");
                 if (cJSON_IsString(mname) && mname->valuestring) {
                     strncpy(configuration->machines[m_idx].name, mname->valuestring, sizeof(configuration->machines[m_idx].name)-1);
                     configuration->machines[m_idx].name[sizeof(configuration->machines[m_idx].name)-1] = '\0';
                 } else {
                     snprintf(configuration->machines[m_idx].name, sizeof(configuration->machines[m_idx].name), "machine%d", m_idx);
+                }
+                configuration->machines[m_idx].hardware_profile[0] = '\0';
+                configuration->machines[m_idx].real_values_dir[0] = '\0';
+                configuration->machines[m_idx].service_profile_index = 0;
+                if (cJSON_IsString(mprofile) && mprofile->valuestring) {
+                    strncpy(configuration->machines[m_idx].hardware_profile, mprofile->valuestring, sizeof(configuration->machines[m_idx].hardware_profile) - 1);
+                    configuration->machines[m_idx].hardware_profile[sizeof(configuration->machines[m_idx].hardware_profile) - 1] = '\0';
+                } else if (cJSON_IsString(mprofile_alt) && mprofile_alt->valuestring) {
+                    strncpy(configuration->machines[m_idx].hardware_profile, mprofile_alt->valuestring, sizeof(configuration->machines[m_idx].hardware_profile) - 1);
+                    configuration->machines[m_idx].hardware_profile[sizeof(configuration->machines[m_idx].hardware_profile) - 1] = '\0';
+                }
+                if (cJSON_IsString(mvalues) && mvalues->valuestring) {
+                    strncpy(configuration->machines[m_idx].real_values_dir, mvalues->valuestring, sizeof(configuration->machines[m_idx].real_values_dir) - 1);
+                    configuration->machines[m_idx].real_values_dir[sizeof(configuration->machines[m_idx].real_values_dir) - 1] = '\0';
                 }
                 configuration->machines[m_idx].stages_number = 0;
                 if (cJSON_IsArray(mstages)) {
@@ -1498,77 +1766,124 @@ struct traceConfig *read_configTrace(int numberTrace, char *fileName)
         error("Memory allocation failed for traceData");
 
     linenum = 0;
-    file = fopen(fileName, "r"); //< Read file
-    if (!file)
-        error("Error opening trace configuration file");
-    cont = 0;
-    i = 1;
+    /* If an inline first-line was provided in the JSON config, use it instead of reading a traces file. */
+    if (global_trace_first_line != NULL && strlen(global_trace_first_line) > 0) {
+        /* parse tokens from the provided string and replicate into all trace entries */
+        char *copy = strdup(global_trace_first_line);
+        char *tok = NULL;
+        char *saveptr = NULL;
+        int fields[8];
+        double ffields[8];
+        int parsed = 0;
 
-    while (fgets(line, 256, file) != NULL)
-    {
-        linenum++;
-        if (line[0] == '#')
-            continue;
+        tok = strtok_r(copy, " ", &saveptr);
+        while (tok != NULL && parsed < 8) {
+            /* store as both int and double to ease assignment */
+            ffields[parsed] = atof(tok);
+            fields[parsed] = atoi(tok);
+            parsed++;
+            tok = strtok_r(NULL, " ", &saveptr);
+        }
 
-        delimitador = " ";
-        token = strtok(line, delimitador);
+        for (cont = 0; cont < numberTrace; ++cont) {
+            traceData[cont].MUESTRAS = (parsed >= 1) ? fields[0] : 0;
+            traceData[cont].inter_arrival = (parsed >= 2) ? ffields[1] : 0.0;
+            traceData[cont].DISTRIBUTION = (parsed >= 3) ? fields[2] : 0;
+            traceData[cont].mean = (parsed >= 4) ? ffields[3] : 0.0;
+            traceData[cont].stddev = (parsed >= 5) ? ffields[4] : 0.0;
+            traceData[cont].SIZE = (parsed >= 6) ? ffields[5] : 0.0;
+            traceData[cont].stddevS = (parsed >= 7) ? ffields[6] : 0.0;
+            traceData[cont].Concurrency = (parsed >= 8) ? fields[7] : 0;
+            traceData[cont].MUESTRAS = traceData[cont].MUESTRAS > 0 ? traceData[cont].MUESTRAS : 1;
+        }
+        free(copy);
+    } else if (global_trace_array != NULL && global_trace_array_count > 0) {
+        /* Use structured traces provided via JSON */
+        for (cont = 0; cont < numberTrace; ++cont) {
+            int src = cont < global_trace_array_count ? cont : 0;
+            traceData[cont].MUESTRAS = global_trace_array[src].MUESTRAS;
+            traceData[cont].inter_arrival = global_trace_array[src].inter_arrival;
+            traceData[cont].DISTRIBUTION = global_trace_array[src].DISTRIBUTION;
+            traceData[cont].mean = global_trace_array[src].mean;
+            traceData[cont].stddev = global_trace_array[src].stddev;
+            traceData[cont].SIZE = global_trace_array[src].SIZE;
+            traceData[cont].stddevS = global_trace_array[src].stddevS;
+            traceData[cont].Concurrency = global_trace_array[src].Concurrency;
+            traceData[cont].MUESTRAS = traceData[cont].MUESTRAS > 0 ? traceData[cont].MUESTRAS : 1;
+        }
+    } else {
+        file = fopen(fileName, "r"); //< Read file
+        if (!file)
+            error("Error opening trace configuration file");
+        cont = 0;
+        i = 1;
 
-        if (token != NULL)
+        while (fgets(line, 256, file) != NULL)
         {
-            while (token != NULL)
+            linenum++;
+            if (line[0] == '#')
+                continue;
+
+            delimitador = " ";
+            token = strtok(line, delimitador);
+
+            if (token != NULL)
             {
-                switch (i)
+                while (token != NULL)
                 {
+                    switch (i)
+                    {
 
-                case 1:
-                    strcpy(value, token);
-                    traceData[cont].MUESTRAS = atoi(value);
-                    break;
-                case 2:
-                    strcpy(value, token);
-                    traceData[cont].inter_arrival = atof(value);
-                    break;
-                case 3:
-                    strcpy(value, token);
-                    traceData[cont].DISTRIBUTION = atoi(value);
-                    break;
-                case 4:
-                    strcpy(value, token);
-                    traceData[cont].mean = atof(value);
-                    break;
-                case 5:
-                    strcpy(value, token);
-                    traceData[cont].stddev = atof(value);
-                    break;
-                case 6:
-                    strcpy(value, token);
-                    traceData[cont].SIZE = atof(value);
-                    break;
-                case 7:
-                    strcpy(value, token);
-                    traceData[cont].stddevS = atof(value);
-                    break;
-                case 8:
-                    strcpy(value, token);
-                    traceData[cont].Concurrency = atoi(value);
-                    break;
-                }
+                    case 1:
+                        strcpy(value, token);
+                        traceData[cont].MUESTRAS = atoi(value);
+                        break;
+                    case 2:
+                        strcpy(value, token);
+                        traceData[cont].inter_arrival = atof(value);
+                        break;
+                    case 3:
+                        strcpy(value, token);
+                        traceData[cont].DISTRIBUTION = atoi(value);
+                        break;
+                    case 4:
+                        strcpy(value, token);
+                        traceData[cont].mean = atof(value);
+                        break;
+                    case 5:
+                        strcpy(value, token);
+                        traceData[cont].stddev = atof(value);
+                        break;
+                    case 6:
+                        strcpy(value, token);
+                        traceData[cont].SIZE = atof(value);
+                        break;
+                    case 7:
+                        strcpy(value, token);
+                        traceData[cont].stddevS = atof(value);
+                        break;
+                    case 8:
+                        strcpy(value, token);
+                        traceData[cont].Concurrency = atoi(value);
+                        break;
+                    }
 
-                token = strtok(NULL, delimitador);
+                    token = strtok(NULL, delimitador);
 
-                i++;
+                    i++;
 
-                if (i > 8)
-                {
-                    i = 1;
+                    if (i > 8)
+                    {
+                        i = 1;
+                    }
                 }
             }
+            cont++;
+            if (cont >= numberTrace)
+                break;
         }
-        cont++;
-        if (cont >= numberTrace)
-            break;
+        fclose(file);
     }
-    fclose(file);
     return traceData;
 }
 
@@ -1682,6 +1997,11 @@ void traceGenerator(struct traceConfig *traceData, int numberTraces)
     }
 }
 
+int has_inline_traces(void)
+{
+    return ((global_trace_array != NULL && global_trace_array_count > 0) || (global_trace_first_line != NULL));
+}
+
 void execute_command(char *command)
 {
     FILE *fp;
@@ -1750,6 +2070,8 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
         arrayWorkers[i].task_name[0] = '\0';
         arrayWorkers[i].task_algorithm[0] = '\0';
         arrayWorkers[i].b_fs = configuration->b_fs;
+        arrayWorkers[i].b_fs_read = configuration->b_fs_read;
+        arrayWorkers[i].b_fs_write = configuration->b_fs_write;
         for (int si = 0; si < MAX_STAGES; ++si)
         {
             arrayWorkers[i].stage_input_time[si] = 0.0;
@@ -1802,6 +2124,7 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
             arrayWorkers[i].stage_owner = 1;
 
         arrayWorkers[i].machine_id = stage_machine_id(arrayWorkers[i].stage_owner);
+        arrayWorkers[i].service_profile_index = machine_service_profile_index(arrayWorkers[i].machine_id);
     }
 
     /* Initialize NFR managers for every task in each configured stage.
@@ -1835,69 +2158,74 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
 
     srand(time(NULL));
 
-    pwd = getenv("PWD");
-    baseName = "%s/traces/trace0.txt";
-
-    fileName = malloc(sizeof(char) + strlen(baseName) + strlen(pwd) + 50);
-    sprintf(fileName, baseName, pwd);
-
+    /* Generate traces in-memory from traceData (no external trace files). */
     traces = malloc(sizeof(struct traces) * traceData[0].MUESTRAS);
-
-    fp = fopen(fileName, "r");
-    if (fp == NULL)
-    {
-        printf("Error opening trace file %s\n", fileName);
+    if (!traces) {
+        printf("Error allocating traces array\n");
         exit(1);
     }
 
+    /* helper: normal RNG via Box-Muller */
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+    auto_generate:
     i = 0;
-    while (fgets(line, sizeof(line), fp) != NULL && i < traceData[0].MUESTRAS)
+    while (i < traceData[0].MUESTRAS)
     {
-        if (sscanf(line, "%llu %llu", &interarrival, &size) == 2)
-        {
-            traces[i].traceName = "object";
-            traces[i].size = size;
-            traces[i].size_restore_top = 0;
-            for (int rs = 0; rs < MAX_SIZE_RESTORE_STACK; ++rs)
-                traces[i].size_restore_stack[rs] = 0.0;
-            traces[i].mean_interarrival = traceData[0].inter_arrival; // use configured mean
-            traces[i].service_time_c = 0.0f;
-            traces[i].service_time_h = 0.0f;
-            traces[i].service_time_idx = 0.0f;
-            traces[i].service_time_ida = 0.0f;
-            traces[i].service_time_io = 0.0f;
-            traces[i].service_time_app = 0.0f;
-            traces[i].MUESTRAS = 1;
-
-            position1 = rand() % configuration->workers;
-            position2 = rand() % configuration->workers;
-
-            if (configuration->workers == 1)
-                position = position1;
-            else
-            {
-                while (position1 == position2)
-                    position2 = rand() % configuration->workers;
-
-                if (arrayWorkers[position1].sizeStorage > arrayWorkers[position2].sizeStorage)
-                    position = position2;
-                else
-                    position = position1;
-            }
-
-            arrayWorkers[position].sizeStorage += traces[i].size;
-            arrayWorkers[position].input_workload_size += (long)traces[i].size;
-            arrayWorkers[position].output_workload_size += (long)traces[i].size;
-            arrayWorkers[position].sizeWorker++;
-            arrayWorkers[position].trace[contar[position]] = traces[i];
-            contar[position]++;
-
-            i++;
+        double base_size = traceData[0].SIZE;
+        double stds = traceData[0].stddevS;
+        double size_val = base_size;
+        if (stds > 0.0) {
+            double u1 = ((double)rand() + 1.0) / ((double)RAND_MAX + 2.0);
+            double u2 = ((double)rand() + 1.0) / ((double)RAND_MAX + 2.0);
+            double z0 = sqrt(-2.0 * log(u1)) * cos(2.0 * M_PI * u2);
+            size_val = base_size + z0 * stds;
+            if (size_val < 0.0) size_val = base_size;
         }
+
+        printf("Generated trace %d: size=%f\n", i, size_val);
+
+        traces[i].traceName = "object";
+        traces[i].size = (long long unsigned)(size_val);
+        traces[i].size_restore_top = 0;
+        for (int rs = 0; rs < MAX_SIZE_RESTORE_STACK; ++rs)
+            traces[i].size_restore_stack[rs] = 0.0;
+        traces[i].mean_interarrival = traceData[0].inter_arrival; /* use configured mean */
+        traces[i].service_time_c = 0.0f;
+        traces[i].service_time_h = 0.0f;
+        traces[i].service_time_idx = 0.0f;
+        traces[i].service_time_ida = 0.0f;
+        traces[i].service_time_io = 0.0f;
+        traces[i].service_time_app = 0.0f;
+        traces[i].MUESTRAS = 1;
+
+        position1 = rand() % configuration->workers;
+        position2 = rand() % configuration->workers;
+
+        if (configuration->workers == 1)
+            position = position1;
+        else
+        {
+            while (position1 == position2)
+                position2 = rand() % configuration->workers;
+
+            if (arrayWorkers[position1].sizeStorage > arrayWorkers[position2].sizeStorage)
+                position = position2;
+            else
+                position = position1;
+        }
+
+        arrayWorkers[position].sizeStorage += traces[i].size;
+        arrayWorkers[position].input_workload_size += (long)traces[i].size;
+        arrayWorkers[position].output_workload_size += (long)traces[i].size;
+        arrayWorkers[position].sizeWorker++;
+        arrayWorkers[position].trace[contar[position]] = traces[i];
+        contar[position]++;
+
+        i++;
     }
-    fclose(fp);
     free(contar);
-    free(fileName);
     free(traces);
 
     return arrayWorkers;
@@ -1921,6 +2249,7 @@ void deployThread_stages(struct config *configuration, struct worker *arrayWorke
         {
             arrayWorkers[i].stage_owner = stageNumber;
             arrayWorkers[i].machine_id = stage_machine_id(stageNumber);
+            arrayWorkers[i].service_profile_index = machine_service_profile_index(arrayWorkers[i].machine_id);
 
             if (nfr_initialized)
             {
@@ -1940,6 +2269,8 @@ void deployThread_stages(struct config *configuration, struct worker *arrayWorke
                 /* fallback to direct thread if manager not available */
                 arrayWorkers[i].stage = stageNumber;
                 arrayWorkers[i].b_fs = stage_filesystem_bandwidth(stageNumber);
+                arrayWorkers[i].b_fs_read = stage_filesystem_read_bandwidth(stageNumber);
+                arrayWorkers[i].b_fs_write = stage_filesystem_write_bandwidth(stageNumber);
                 arrayWorkers[i].pipeline_is_input = 1;
                 arrayWorkers[i].task_id = 0;
                 arrayWorkers[i].task_type = req ? req->type : NFR_NONE;
@@ -1989,6 +2320,7 @@ void *sendWorkstage(void *threadarg)
 void serviceTime(struct worker *my_data)
 {
     int is_input = my_data->pipeline_is_input ? 1 : 0;
+    set_service_time_profile(my_data ? my_data->service_profile_index : 0);
     printf("Worker %d (machine %d) processing stage %d %s task %d (%s:%s)\n",
            my_data->id,
            my_data->machine_id,
@@ -2081,13 +2413,25 @@ static int record_queue_result(struct worker *my_data, int result_stage, double 
     if (!my_data || my_data->sizeWorker <= 0)
         return -1;
 
+    if (stage_uses_burst_arrivals(my_data->stage))
+    {
+        if (total_time)
+            *total_time = st_avg * (double)my_data->sizeWorker;
+        printf("Burst-arrival mode: bypassing queue estimator for worker %d stage %d task %s; raw total %f seconds\n",
+               my_data->id,
+               my_data->stage,
+               my_data->task_name,
+               total_time ? *total_time : st_avg * (double)my_data->sizeWorker);
+        return 0;
+    }
+
     const char *prefix = agent_prefix_for_worker(my_data);
     char result_file[128];
     snprintf(result_file, sizeof(result_file), "w%d_stage%d.txt", my_data->id, result_stage);
 
     if (run_queue_estimator(prefix,
                             my_data->id,
-                            my_data->trace[0].mean_interarrival,
+                            stage_mean_interarrival_seconds(my_data->stage, my_data),
                             st_avg,
                             my_data->sizeWorker,
                             result_file,
@@ -2134,6 +2478,20 @@ static void apply_queue_total_to_nfr_times(struct worker *my_data, int task_type
     }
 }
 
+static void apply_queue_total_to_application_times(struct worker *my_data, const double *raw_times, double raw_total, double queued_total)
+{
+    if (!my_data || my_data->sizeWorker <= 0 || raw_total <= 0.0 || queued_total < 0.0)
+        return;
+
+    for (int j = 0; j < my_data->sizeWorker; ++j)
+    {
+        double raw_time = raw_times ? raw_times[j] : raw_total / (double)my_data->sizeWorker;
+        double queued_time = queued_total * (raw_time / raw_total);
+        double delta = queued_time - raw_time;
+        my_data->trace[j].service_time_app += (float)delta;
+    }
+}
+
 static int run_queue_estimator(const char *container_prefix, int worker_id, double mean_interarrival, double mean_service, int samples, const char *result_file, double *total_time)
 {
     char line[256];
@@ -2170,6 +2528,13 @@ static int run_queue_estimator(const char *container_prefix, int worker_id, doub
              mean_interarrival,
              mean_service,
              samples);
+
+    printf("Running queue estimator for worker %d - %s with mean interarrival %f seconds, mean service %f seconds, samples %d\n",
+           worker_id,
+           container_prefix,
+           mean_interarrival,
+           mean_service,
+           samples);
 
     FILE *fp = popen(command, "r");
     free(command);
@@ -2218,35 +2583,83 @@ static double application_time(struct worker *my_data)
 
     struct stage_definition *stage_def = global_stage_definition(my_data->stage);
     double avg_service_time = stage_def ? stage_def->application_mean_service_time : 0.0;
+    double size_factor = stage_def ? stage_def->application_size_factor : 1.0;
     if (avg_service_time <= 0.0)
         return 0.0;
+    if (size_factor <= 0.0)
+        size_factor = 1.0;
 
     char result_file[128];
     snprintf(result_file, sizeof(result_file), "w%d_stage%d_application.txt", my_data->id, my_data->stage);
 
     double total_time = 0.0;
+    double raw_total = 0.0;
+    double *raw_times = calloc(my_data->sizeWorker, sizeof(double));
+    double mean_interarrival = stage_mean_interarrival_seconds(my_data->stage, my_data);
 
-    printf("APPLICATION TIME: Worker %d (machine %d) stage %d application with average service time %f seconds, interarrival time %f seconds; samples %d; running queue estimator...\n",
+    for (int j = 0; j < my_data->sizeWorker; ++j)
+    {
+        double t_read = 0.0, t_write = 0.0;
+        long unsigned size_before = my_data->trace[j].size;
+        long unsigned size_after = (long unsigned)((double)size_before * size_factor + 0.5);
+        double raw_time;
+
+        if (size_after == 0)
+            size_after = 1;
+
+        if (my_data->b_fs_read > 0.0)
+        {
+            t_read = (double)size_before / my_data->b_fs_read;
+        }
+        if (my_data->b_fs_write > 0.0)
+        {
+            t_write = (double)size_after / my_data->b_fs_write;
+        }
+
+        raw_time = avg_service_time + t_read + t_write;
+        my_data->trace[j].service_time_app += (float)raw_time;
+        my_data->trace[j].size = size_after;
+        raw_total += raw_time;
+        if (raw_times)
+            raw_times[j] = raw_time;
+    }
+    refresh_worker_storage(my_data);
+
+    double avg_total_service_time = raw_total / (double)my_data->sizeWorker;
+
+    printf("APPLICATION TIME: Worker %d (machine %d) stage %d application with average service time %f seconds, size factor %f, interarrival time %f seconds; samples %d; running queue estimator...\n",
            my_data->id,
            my_data->machine_id,
            my_data->stage,
-           avg_service_time,
-           my_data->trace[0].mean_interarrival,
+           avg_total_service_time,
+           size_factor,
+           mean_interarrival,
            my_data->sizeWorker);
-    if (run_queue_estimator("application_agent",
-                            my_data->id,
-                            my_data->trace[0].mean_interarrival,
-                            avg_service_time,
-                            my_data->sizeWorker,
-                            result_file,
-                            &total_time) != 0)
+    if (stage_uses_burst_arrivals(my_data->stage))
     {
-        total_time = avg_service_time * my_data->sizeWorker;
+        total_time = raw_total;
+        printf("Burst-arrival mode: bypassing application queue estimator for worker %d stage %d; raw total %f seconds\n",
+               my_data->id,
+               my_data->stage,
+               total_time);
+    }
+    else if (run_queue_estimator("application_agent",
+                                 my_data->id,
+                                 mean_interarrival,
+                                 avg_total_service_time,
+                                 my_data->sizeWorker,
+                                 result_file,
+                                 &total_time) != 0)
+    {
+        total_time = raw_total;
         printf("Warning: application queue estimator failed for worker %d stage %d; using %f seconds fallback\n",
                my_data->id,
                my_data->stage,
                total_time);
     }
+
+    apply_queue_total_to_application_times(my_data, raw_times, raw_total, total_time);
+    free(raw_times);
 
     double per_object_time = total_time / (double)my_data->sizeWorker;
     printf("Worker %d (machine %d) stage %d application estimated total time %f seconds for %d objects (average per object: %f seconds)\n",
@@ -2256,14 +2669,12 @@ static double application_time(struct worker *my_data)
            total_time,
            my_data->sizeWorker,
            per_object_time);
-    for (int j = 0; j < my_data->sizeWorker; ++j)
-        my_data->trace[j].service_time_app += (float)per_object_time;
 
     printf("Worker %d (machine %d) completed stage %d application with average service time %f seconds and simulated total time %f seconds\n",
            my_data->id,
            my_data->machine_id,
            my_data->stage,
-           avg_service_time,
+           avg_total_service_time,
            total_time);
 
     return total_time;
@@ -2284,15 +2695,17 @@ void compress_time(struct worker *my_data)
         {
             double t_read = 0.0, t_write = 0.0;
             long unsigned size_before = my_data->trace[j].size;
-            if (my_data->b_fs > 0.0)
-                t_read = (double)size_before / my_data->b_fs;
+            printf("AAAAAAAAAAAAAAAA Worker %d (machine %d) compressing object %d of size %.2f MB with algorithm %s\n",
+                   my_data->id, my_data->machine_id, j, (double)size_before / 1048576.0, my_data->task_algorithm);
+            if (my_data->b_fs_read > 0.0)
+                t_read = (double)size_before / my_data->b_fs_read;
 
             float comp_time = compressStageAlgo((double)size_before, my_data->task_algorithm);
             if (comp_time <= 0.0f)
                 comp_time = compressStage((double)size_before);
             long unsigned new_size = (long unsigned)compressStageSizeAlgo((double)size_before, my_data->task_algorithm);
-            if (my_data->b_fs > 0.0)
-                t_write = (double)new_size / my_data->b_fs;
+            if (my_data->b_fs_write > 0.0)
+                t_write = (double)new_size / my_data->b_fs_write;
 
             double raw_time = comp_time + t_read + t_write;
             my_data->trace[j].service_time_c += (float)raw_time;
@@ -2335,14 +2748,14 @@ static void hash_task_time(struct worker *my_data, int result_stage)
         {
             double t_read = 0.0, t_write = 0.0;
             long unsigned size_before = my_data->trace[j].size;
-            if (my_data->b_fs > 0.0)
-                t_read = (double)size_before / my_data->b_fs;
+            if (my_data->b_fs_read > 0.0)
+                t_read = (double)size_before / my_data->b_fs_read;
 
             float hash_time = hashingStageAlgo((double)size_before, my_data->task_algorithm);
             if (hash_time <= 0.0f)
                 hash_time = hashingStage((double)size_before);
-            if (my_data->b_fs > 0.0)
-                t_write = (double)size_before / my_data->b_fs;
+            if (my_data->b_fs_write > 0.0)
+                t_write = (double)size_before / my_data->b_fs_write;
 
             double raw_time = hash_time + t_read + t_write;
             my_data->trace[j].service_time_h += (float)raw_time;
@@ -2383,10 +2796,13 @@ static void crypto_task_time(struct worker *my_data, int is_decrypt)
         {
             double t_read = 0.0, t_write = 0.0;
             long unsigned size_before = my_data->trace[j].size;
-            if (my_data->b_fs > 0.0)
+            if (my_data->b_fs_read > 0.0)
             {
-                t_read = (double)size_before / my_data->b_fs;
-                t_write = (double)size_before / my_data->b_fs;
+                t_read = (double)size_before / my_data->b_fs_read;
+            }
+            if (my_data->b_fs_write > 0.0)
+            {
+                t_write = (double)size_before / my_data->b_fs_write;
             }
 
             float crypto_time = is_decrypt ? IDADecodeStageAlgo((double)size_before, my_data->task_algorithm) : IDAStageAlgo((double)size_before, my_data->task_algorithm);
@@ -2440,10 +2856,10 @@ void indexing_time(struct worker *my_data)
         double io_total = 0.0;
         for (j = 0; j < my_data->sizeWorker; ++j)
         {
-            if (my_data->b_fs > 0.0)
+            if (my_data->b_fs_read > 0.0)
             {
-                double t_read = (double)my_data->trace[j].size / my_data->b_fs;
-                double t_write = (double)my_data->trace[j].size / my_data->b_fs; /* metadata write approx same size */
+                double t_read = (double)my_data->trace[j].size / my_data->b_fs_read;
+                double t_write = my_data->b_fs_write > 0.0 ? (double)my_data->trace[j].size / my_data->b_fs_write : 0.0; /* metadata write approx same size */
                 io_total += (t_read + t_write);
             }
         }
@@ -2456,7 +2872,7 @@ void indexing_time(struct worker *my_data)
             "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage3.txt'",
             agent_container_prefix,
             my_data->id,
-            my_data->trace[0].mean_interarrival,
+            stage_mean_interarrival_seconds(my_data->stage, my_data),
             st_avg,
             my_data->sizeWorker,
             path,
@@ -2491,13 +2907,13 @@ void IDA_time(struct worker *my_data)
         {
             double t_read = 0.0, t_write = 0.0;
             long unsigned size_before = my_data->trace[j].size;
-            if (my_data->b_fs > 0.0)
-                t_read = (double)size_before / my_data->b_fs;
+            if (my_data->b_fs_read > 0.0)
+                t_read = (double)size_before / my_data->b_fs_read;
 
             float ida_time = IDAStage((double)size_before);
             long unsigned new_size = (long unsigned)IDAStageSize((double)size_before);
-            if (my_data->b_fs > 0.0)
-                t_write = (double)new_size / my_data->b_fs;
+            if (my_data->b_fs_write > 0.0)
+                t_write = (double)new_size / my_data->b_fs_write;
 
             my_data->trace[j].service_time_ida = ida_time + (float)(t_read + t_write);
             my_data->trace[j].size = new_size;
@@ -2511,7 +2927,7 @@ void IDA_time(struct worker *my_data)
             "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage4.txt'",
             agent_container_prefix,
             my_data->id,
-            my_data->trace[0].mean_interarrival,
+            stage_mean_interarrival_seconds(my_data->stage, my_data),
             st_avg,
             my_data->sizeWorker,
             path,
@@ -2543,8 +2959,8 @@ void IDA_reconstruct_time(struct worker *my_data)
         {
             double t_read = 0.0, t_write = 0.0;
             long unsigned size_before = my_data->trace[j].size;
-            if (my_data->b_fs > 0.0)
-                t_read = (double)size_before / my_data->b_fs;
+            if (my_data->b_fs_read > 0.0)
+                t_read = (double)size_before / my_data->b_fs_read;
 
             float dec_time = compressStage((double)size_before);
             /* Restore size using existing logic */
@@ -2553,8 +2969,8 @@ void IDA_reconstruct_time(struct worker *my_data)
             if (compressed > 0)
                 new_size = (long unsigned)((double)my_data->trace[j].size * my_data->trace[j].size / (double)compressed);
 
-            if (my_data->b_fs > 0.0)
-                t_write = (double)new_size / my_data->b_fs;
+            if (my_data->b_fs_write > 0.0)
+                t_write = (double)new_size / my_data->b_fs_write;
 
             my_data->trace[j].service_time_c = dec_time + (float)(t_read + t_write);
             my_data->trace[j].size = new_size;
@@ -2568,7 +2984,7 @@ void IDA_reconstruct_time(struct worker *my_data)
             "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage4.txt'",
             agent_container_prefix,
             my_data->id,
-            my_data->trace[0].mean_interarrival,
+            stage_mean_interarrival_seconds(my_data->stage, my_data),
             st_avg,
             my_data->sizeWorker,
             path,
@@ -2597,8 +3013,8 @@ void decompress_time(struct worker *my_data)
         {
             double t_read = 0.0, t_write = 0.0;
             long unsigned size_before = my_data->trace[j].size;
-            if (my_data->b_fs > 0.0)
-                t_read = (double)size_before / my_data->b_fs;
+            if (my_data->b_fs_read > 0.0)
+                t_read = (double)size_before / my_data->b_fs_read;
 
             float dec_time = decompressStageAlgo((double)size_before, my_data->task_algorithm);
             if (dec_time <= 0.0f)
@@ -2619,8 +3035,8 @@ void decompress_time(struct worker *my_data)
                 printf("Warning: decompressing object %d without a recorded compression size; using ratio fallback\n", j);
             }
 
-            if (my_data->b_fs > 0.0)
-                t_write = (double)new_size / my_data->b_fs;
+            if (my_data->b_fs_write > 0.0)
+                t_write = (double)new_size / my_data->b_fs_write;
 
             double raw_time = dec_time + t_read + t_write;
             my_data->trace[j].service_time_c += (float)raw_time;
@@ -2651,8 +3067,8 @@ void upload_time(struct worker *my_data)
     {
         double t_write = 0.0;
         long unsigned size_out = my_data->trace[j].size;
-        if (my_data->b_fs > 0.0)
-            t_write = (double)size_out / my_data->b_fs;
+        if (my_data->b_fs_write > 0.0)
+            t_write = (double)size_out / my_data->b_fs_write;
 
         my_data->trace[j].service_time_io = (float)t_write;
 
@@ -2662,7 +3078,7 @@ void upload_time(struct worker *my_data)
             "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage5.txt'",
             agent_container_prefix,
             my_data->id,
-            my_data->trace[j].mean_interarrival,
+            stage_mean_interarrival_seconds(my_data->stage, my_data),
             my_data->trace[j].service_time_io,
             my_data->trace[j].MUESTRAS,
             path,
