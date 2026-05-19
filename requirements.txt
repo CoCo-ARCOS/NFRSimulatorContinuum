@@ -1,0 +1,8 @@
+pandas
+seaborn
+matplotlib
+pycryptodome
+lz4
+zstandard
+zfec
+blake3
