@@ -188,8 +188,18 @@ static int load_profile_from_dir(ServiceProfile *profile, const struct config *c
     reset_service_profile(profile);
     strncpy(profile->source_dir, directory, sizeof(profile->source_dir) - 1);
     profile->source_dir[sizeof(profile->source_dir) - 1] = '\0';
+    char csv_path[PATH_MAX];
+
+    if (!profile || !configuration || !directory || directory[0] == '\0')
+        return -1;
+
+    reset_service_profile(profile);
+    strncpy(profile->source_dir, directory, sizeof(profile->source_dir) - 1);
+    profile->source_dir[sizeof(profile->source_dir) - 1] = '\0';
 
     // Load Cost-Efficiency (Compression)
+    build_path(csv_path, sizeof(csv_path), directory, "cost-efficiency.csv");
+    fp = fopen(csv_path, "r");
     build_path(csv_path, sizeof(csv_path), directory, "cost-efficiency.csv");
     fp = fopen(csv_path, "r");
     if (fp)
@@ -210,12 +220,19 @@ static int load_profile_from_dir(ServiceProfile *profile, const struct config *c
             char *decomp_token = trim_whitespace(strtok(NULL, ","));
 
             if (algo && time_token && profile->compress_table_size < MAX_INTERPOLATION_POINTS && profile->decompress_table_size < MAX_INTERPOLATION_POINTS)
+            if (algo && time_token && profile->compress_table_size < MAX_INTERPOLATION_POINTS && profile->decompress_table_size < MAX_INTERPOLATION_POINTS)
             {
                 float size_mb = atof(size_token);
                 float ratio = atof(ratio_str); // ignores 'x'
                 float comp_s = atof(time_token);
                 float decomp_s = decomp_token ? atof(decomp_token) : comp_s;
 
+                strncpy(profile->compress_table[profile->compress_table_size].algo, algo, sizeof(profile->compress_table[profile->compress_table_size].algo) - 1);
+                profile->compress_table[profile->compress_table_size].algo[sizeof(profile->compress_table[profile->compress_table_size].algo) - 1] = '\0';
+                profile->compress_table[profile->compress_table_size].size = size_mb * 1048576.0f; // convert MB to bytes
+                profile->compress_table[profile->compress_table_size].time = comp_s;
+                profile->compress_table[profile->compress_table_size].ratio = ratio;
+                profile->compress_table_size++;
                 strncpy(profile->compress_table[profile->compress_table_size].algo, algo, sizeof(profile->compress_table[profile->compress_table_size].algo) - 1);
                 profile->compress_table[profile->compress_table_size].algo[sizeof(profile->compress_table[profile->compress_table_size].algo) - 1] = '\0';
                 profile->compress_table[profile->compress_table_size].size = size_mb * 1048576.0f; // convert MB to bytes
@@ -229,6 +246,12 @@ static int load_profile_from_dir(ServiceProfile *profile, const struct config *c
                 profile->decompress_table[profile->decompress_table_size].time = decomp_s;
                 profile->decompress_table[profile->decompress_table_size].ratio = ratio;
                 profile->decompress_table_size++;
+                strncpy(profile->decompress_table[profile->decompress_table_size].algo, algo, sizeof(profile->decompress_table[profile->decompress_table_size].algo) - 1);
+                profile->decompress_table[profile->decompress_table_size].algo[sizeof(profile->decompress_table[profile->decompress_table_size].algo) - 1] = '\0';
+                profile->decompress_table[profile->decompress_table_size].size = size_mb * 1048576.0f;
+                profile->decompress_table[profile->decompress_table_size].time = decomp_s;
+                profile->decompress_table[profile->decompress_table_size].ratio = ratio;
+                profile->decompress_table_size++;
             }
         }
         fclose(fp);
@@ -236,9 +259,12 @@ static int load_profile_from_dir(ServiceProfile *profile, const struct config *c
     else
     {
         printf("Warning: Could not open %s\n", csv_path);
+        printf("Warning: Could not open %s\n", csv_path);
     }
 
     // Load Integrity (Hashing)
+    build_path(csv_path, sizeof(csv_path), directory, "integrity.csv");
+    fp = fopen(csv_path, "r");
     build_path(csv_path, sizeof(csv_path), directory, "integrity.csv");
     fp = fopen(csv_path, "r");
     if (fp)
@@ -252,10 +278,17 @@ static int load_profile_from_dir(ServiceProfile *profile, const struct config *c
             char *time_token = trim_whitespace(strtok(NULL, ","));
 
             if (algo && time_token && profile->hashing_table_size < MAX_INTERPOLATION_POINTS)
+            if (algo && time_token && profile->hashing_table_size < MAX_INTERPOLATION_POINTS)
             {
                 float size_mb = atof(size_token);
                 float time_s = atof(time_token);
 
+                strncpy(profile->hashing_table[profile->hashing_table_size].algo, algo, sizeof(profile->hashing_table[profile->hashing_table_size].algo) - 1);
+                profile->hashing_table[profile->hashing_table_size].algo[sizeof(profile->hashing_table[profile->hashing_table_size].algo) - 1] = '\0';
+                profile->hashing_table[profile->hashing_table_size].size = size_mb * 1048576.0f;
+                profile->hashing_table[profile->hashing_table_size].time = time_s;
+                profile->hashing_table[profile->hashing_table_size].ratio = 1.1f;
+                profile->hashing_table_size++;
                 strncpy(profile->hashing_table[profile->hashing_table_size].algo, algo, sizeof(profile->hashing_table[profile->hashing_table_size].algo) - 1);
                 profile->hashing_table[profile->hashing_table_size].algo[sizeof(profile->hashing_table[profile->hashing_table_size].algo) - 1] = '\0';
                 profile->hashing_table[profile->hashing_table_size].size = size_mb * 1048576.0f;
@@ -309,6 +342,8 @@ static int load_profile_from_dir(ServiceProfile *profile, const struct config *c
     // Load Reliability (IDA)
     build_path(csv_path, sizeof(csv_path), directory, "reliability.csv");
     fp = fopen(csv_path, "r");
+    build_path(csv_path, sizeof(csv_path), directory, "reliability.csv");
+    fp = fopen(csv_path, "r");
     if (fp)
     {
         fgets(line, sizeof(line), fp); // skip header
@@ -329,6 +364,7 @@ static int load_profile_from_dir(ServiceProfile *profile, const struct config *c
                 float enc_s = atof(time_token);
                 float dec_s = decode_token ? atof(decode_token) : enc_s;
 
+                if (k == configuration->ida_k && m == configuration->ida_m && profile->ida_table_size < MAX_INTERPOLATION_POINTS && profile->ida_decode_table_size < MAX_INTERPOLATION_POINTS)
                 if (k == configuration->ida_k && m == configuration->ida_m && profile->ida_table_size < MAX_INTERPOLATION_POINTS && profile->ida_decode_table_size < MAX_INTERPOLATION_POINTS)
                 {
                     append_crypto_points(profile, algo, size_mb, enc_s, dec_s, (float)(k + m) / k);
@@ -422,29 +458,43 @@ void print_interpolation_points()
     if (!profile)
         return;
 
+    ServiceProfile *profile = current_service_profile();
+    if (!profile)
+        return;
+
     // Print the interpolation points for debugging
     for (int i = 0; i < profile->compress_table_size; i++)
+    for (int i = 0; i < profile->compress_table_size; i++)
     {
+        printf("Compress Table: %s %f %f %f\n", profile->compress_table[i].algo, profile->compress_table[i].size, profile->compress_table[i].time, profile->compress_table[i].ratio);
         printf("Compress Table: %s %f %f %f\n", profile->compress_table[i].algo, profile->compress_table[i].size, profile->compress_table[i].time, profile->compress_table[i].ratio);
     }
 
     for (int i = 0; i < profile->decompress_table_size; i++)
+    for (int i = 0; i < profile->decompress_table_size; i++)
     {
+        printf("Decompress Table: %s %f %f %f\n", profile->decompress_table[i].algo, profile->decompress_table[i].size, profile->decompress_table[i].time, profile->decompress_table[i].ratio);
         printf("Decompress Table: %s %f %f %f\n", profile->decompress_table[i].algo, profile->decompress_table[i].size, profile->decompress_table[i].time, profile->decompress_table[i].ratio);
     }
 
     for (int i = 0; i < profile->hashing_table_size; i++)
+    for (int i = 0; i < profile->hashing_table_size; i++)
     {
+        printf("Hashing Table: %s %f %f %f\n", profile->hashing_table[i].algo, profile->hashing_table[i].size, profile->hashing_table[i].time, profile->hashing_table[i].ratio);
         printf("Hashing Table: %s %f %f %f\n", profile->hashing_table[i].algo, profile->hashing_table[i].size, profile->hashing_table[i].time, profile->hashing_table[i].ratio);
     }
 
     for (int i = 0; i < profile->ida_table_size; i++)
+    for (int i = 0; i < profile->ida_table_size; i++)
     {
+        printf("IDA Table: %s %f %f %f\n", profile->ida_table[i].algo, profile->ida_table[i].size, profile->ida_table[i].time, profile->ida_table[i].ratio);
         printf("IDA Table: %s %f %f %f\n", profile->ida_table[i].algo, profile->ida_table[i].size, profile->ida_table[i].time, profile->ida_table[i].ratio);
     }
 
     for (int i = 0; i < profile->ida_decode_table_size; i++)
+    for (int i = 0; i < profile->ida_decode_table_size; i++)
     {
+        printf("IDA Decode Table: %s %f %f %f\n", profile->ida_decode_table[i].algo, profile->ida_decode_table[i].size, profile->ida_decode_table[i].time, profile->ida_decode_table[i].ratio);
         printf("IDA Decode Table: %s %f %f %f\n", profile->ida_decode_table[i].algo, profile->ida_decode_table[i].size, profile->ida_decode_table[i].time, profile->ida_decode_table[i].ratio);
     }
 }
@@ -589,10 +639,18 @@ float compressStageAlgo(long unsigned filesize, const char *algo)
     if (!profile)
         return 0.0f;
     return do_interpolate_algo((float)filesize, profile->compress_table, profile->compress_table_size, 0, algo && algo[0] ? algo : default_compression_algo);
+    ServiceProfile *profile = current_service_profile();
+    if (!profile)
+        return 0.0f;
+    return do_interpolate_algo((float)filesize, profile->compress_table, profile->compress_table_size, 0, algo && algo[0] ? algo : default_compression_algo);
 }
 
 float decompressStageAlgo(long unsigned filesize, const char *algo)
 {
+    ServiceProfile *profile = current_service_profile();
+    if (!profile)
+        return 0.0f;
+    return do_interpolate_algo((float)filesize, profile->decompress_table, profile->decompress_table_size, 0, algo && algo[0] ? algo : default_compression_algo);
     ServiceProfile *profile = current_service_profile();
     if (!profile)
         return 0.0f;
@@ -606,6 +664,11 @@ double compressStageSize(double filesize)
 
 double compressStageSizeAlgo(double filesize, const char *algo)
 {
+    ServiceProfile *profile = current_service_profile();
+    float ratio;
+    if (!profile)
+        return filesize;
+    ratio = do_interpolate_algo((float)filesize, profile->compress_table, profile->compress_table_size, 1, algo && algo[0] ? algo : default_compression_algo);
     ServiceProfile *profile = current_service_profile();
     float ratio;
     if (!profile)
@@ -628,6 +691,10 @@ float hashingStageAlgo(double filesize, const char *algo)
     if (!profile)
         return 0.0f;
     return do_interpolate_algo((float)filesize, profile->hashing_table, profile->hashing_table_size, 0, algo && algo[0] ? algo : default_hashing_algo);
+    ServiceProfile *profile = current_service_profile();
+    if (!profile)
+        return 0.0f;
+    return do_interpolate_algo((float)filesize, profile->hashing_table, profile->hashing_table_size, 0, algo && algo[0] ? algo : default_hashing_algo);
 }
 
 double hashingStageSize(double filesize)
@@ -637,6 +704,11 @@ double hashingStageSize(double filesize)
 
 double hashingStageSizeAlgo(double filesize, const char *algo)
 {
+    ServiceProfile *profile = current_service_profile();
+    float ratio;
+    if (!profile)
+        return filesize;
+    ratio = do_interpolate_algo((float)filesize, profile->hashing_table, profile->hashing_table_size, 1, algo && algo[0] ? algo : default_hashing_algo);
     ServiceProfile *profile = current_service_profile();
     float ratio;
     if (!profile)
@@ -693,10 +765,18 @@ float IDAStageAlgo(double filesize, const char *algo)
     if (!profile)
         return 0.0f;
     return do_interpolate_algo((float)filesize, profile->ida_table, profile->ida_table_size, 0, algo && algo[0] ? algo : default_ida_algo);
+    ServiceProfile *profile = current_service_profile();
+    if (!profile)
+        return 0.0f;
+    return do_interpolate_algo((float)filesize, profile->ida_table, profile->ida_table_size, 0, algo && algo[0] ? algo : default_ida_algo);
 }
 
 float IDADecodeStageAlgo(double filesize, const char *algo)
 {
+    ServiceProfile *profile = current_service_profile();
+    if (!profile)
+        return 0.0f;
+    return do_interpolate_algo((float)filesize, profile->ida_decode_table, profile->ida_decode_table_size, 0, algo && algo[0] ? algo : default_ida_algo);
     ServiceProfile *profile = current_service_profile();
     if (!profile)
         return 0.0f;
@@ -715,9 +795,22 @@ double IDAStageSizeAlgo(double filesize, const char *algo)
     if (!profile)
         return filesize;
     ratio = do_interpolate_algo((float)filesize, profile->ida_table, profile->ida_table_size, 1, algo && algo[0] ? algo : default_ida_algo);
+    ServiceProfile *profile = current_service_profile();
+    float ratio;
+    if (!profile)
+        return filesize;
+    ratio = do_interpolate_algo((float)filesize, profile->ida_table, profile->ida_table_size, 1, algo && algo[0] ? algo : default_ida_algo);
     if (ratio <= 0.0f)
         ratio = 1.0f;
     return (double)(filesize * ratio);
+}
+
+void set_service_time_profile(int profile_index)
+{
+    if (profile_index >= 0 && profile_index < service_profiles_count)
+        active_service_profile = &service_profiles[profile_index];
+    else
+        active_service_profile = default_service_profile;
 }
 
 void set_service_time_profile(int profile_index)
