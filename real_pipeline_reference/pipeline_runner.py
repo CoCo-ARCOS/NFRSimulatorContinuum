@@ -841,46 +841,47 @@ def build_stage_totals_rows(stage_totals):
     max_output = max((len(stage_total["output_requirement_labels"]) for stage_total in stage_totals), default=0)
     rows = []
     for stage_total in stage_totals:
+        w = max(1, min(stage_total["workers"], stage_total["objects"]))
         row = {
             "stage": stage_total["stage"],
             "stage_name": stage_total["stage_name"],
             "workers": stage_total["workers"],
             "objects": stage_total["objects"],
-            "input_stage_seconds": stage_total["input_stage_seconds"],
-            "input_stage_compute_seconds": stage_total["input_stage_compute_seconds"],
-            "input_compression_seconds": stage_total["input_compression_seconds"],
-            "input_compression_compute_seconds": stage_total["input_compression_compute_seconds"],
-            "input_hash_seconds": stage_total["input_hash_seconds"],
-            "input_hash_compute_seconds": stage_total["input_hash_compute_seconds"],
-            "input_crypto_seconds": stage_total["input_crypto_seconds"],
-            "input_crypto_compute_seconds": stage_total["input_crypto_compute_seconds"],
-            "application_seconds": stage_total["application_seconds"],
-            "application_compute_seconds": stage_total["application_compute_seconds"],
-            "output_stage_seconds": stage_total["output_stage_seconds"],
-            "output_stage_compute_seconds": stage_total["output_stage_compute_seconds"],
-            "output_compression_seconds": stage_total["output_compression_seconds"],
-            "output_compression_compute_seconds": stage_total["output_compression_compute_seconds"],
-            "output_hash_seconds": stage_total["output_hash_seconds"],
-            "output_hash_compute_seconds": stage_total["output_hash_compute_seconds"],
-            "output_crypto_seconds": stage_total["output_crypto_seconds"],
-            "output_crypto_compute_seconds": stage_total["output_crypto_compute_seconds"],
-            "total_seconds": stage_total["total_seconds"],
-            "total_compute_seconds": stage_total["total_compute_seconds"],
+            "input_stage_seconds": stage_total["input_stage_seconds"] / w,
+            "input_stage_compute_seconds": stage_total["input_stage_compute_seconds"] / w,
+            "input_compression_seconds": stage_total["input_compression_seconds"] / w,
+            "input_compression_compute_seconds": stage_total["input_compression_compute_seconds"] / w,
+            "input_hash_seconds": stage_total["input_hash_seconds"] / w,
+            "input_hash_compute_seconds": stage_total["input_hash_compute_seconds"] / w,
+            "input_crypto_seconds": stage_total["input_crypto_seconds"] / w,
+            "input_crypto_compute_seconds": stage_total["input_crypto_compute_seconds"] / w,
+            "application_seconds": stage_total["application_seconds"] / w,
+            "application_compute_seconds": stage_total["application_compute_seconds"] / w,
+            "output_stage_seconds": stage_total["output_stage_seconds"] / w,
+            "output_stage_compute_seconds": stage_total["output_stage_compute_seconds"] / w,
+            "output_compression_seconds": stage_total["output_compression_seconds"] / w,
+            "output_compression_compute_seconds": stage_total["output_compression_compute_seconds"] / w,
+            "output_hash_seconds": stage_total["output_hash_seconds"] / w,
+            "output_hash_compute_seconds": stage_total["output_hash_compute_seconds"] / w,
+            "output_crypto_seconds": stage_total["output_crypto_seconds"] / w,
+            "output_crypto_compute_seconds": stage_total["output_crypto_compute_seconds"] / w,
+            "total_seconds": stage_total["total_seconds"] / w,
+            "total_compute_seconds": stage_total["total_compute_seconds"] / w,
         }
         for index in range(max_input):
             label = stage_total["input_requirement_labels"][index] if index < len(stage_total["input_requirement_labels"]) else ""
             value = stage_total["input_requirement_seconds"][index] if index < len(stage_total["input_requirement_seconds"]) else 0.0
             compute_value = stage_total["input_requirement_compute_seconds"][index] if index < len(stage_total["input_requirement_compute_seconds"]) else 0.0
             row[f"input_requirement_{index + 1}"] = label
-            row[f"input_requirement_{index + 1}_seconds"] = value
-            row[f"input_requirement_{index + 1}_compute_seconds"] = compute_value
+            row[f"input_requirement_{index + 1}_seconds"] = value / w
+            row[f"input_requirement_{index + 1}_compute_seconds"] = compute_value / w
         for index in range(max_output):
             label = stage_total["output_requirement_labels"][index] if index < len(stage_total["output_requirement_labels"]) else ""
             value = stage_total["output_requirement_seconds"][index] if index < len(stage_total["output_requirement_seconds"]) else 0.0
             compute_value = stage_total["output_requirement_compute_seconds"][index] if index < len(stage_total["output_requirement_compute_seconds"]) else 0.0
             row[f"output_requirement_{index + 1}"] = label
-            row[f"output_requirement_{index + 1}_seconds"] = value
-            row[f"output_requirement_{index + 1}_compute_seconds"] = compute_value
+            row[f"output_requirement_{index + 1}_seconds"] = value / w
+            row[f"output_requirement_{index + 1}_compute_seconds"] = compute_value / w
         rows.append(row)
     return rows, max_input, max_output
 

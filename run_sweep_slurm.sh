@@ -41,6 +41,9 @@ elif [ -d ".venv" ]; then
     source .venv/bin/activate
 else
     echo "Warning: No venv found. Proceeding with system python."
+    virtualenv venv
+    source venv/bin/activate
+    pip3 install -r requirements.txt
 fi
 
 # 2. Directory Preparation
