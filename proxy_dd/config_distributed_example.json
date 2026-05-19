@@ -23,6 +23,7 @@
       "inter_arrival": 0.18,
       "application_mean_service_time": 4,
       "application_size_factor": 0.8,
+      "application_size_factor": 0.8,
       "input_requirements": [],
       "output_requirements": [
         { "type": "hash", "algorithm": "SHA256" },
@@ -37,6 +38,7 @@
       "inter_arrival": 0.18,
       "application_mean_service_time": 1.0,
       "application_size_factor": 1.2,
+      "application_size_factor": 1.2,
       "output_requirements": [
         { "type": "cipher", "algorithm": "RS" },
         { "type": "hash", "algorithm": "BLAKE3" }
@@ -49,6 +51,7 @@
       "b_fs_write": 75,
       "inter_arrival": 0.18,
       "application_mean_service_time": 1.5,
+      "application_size_factor": 1.0,
       "application_size_factor": 1.0,
       "output_requirements": [
         { "type": "compress", "algorithm": "LZ4" },
@@ -63,6 +66,7 @@
       "b_fs_write": 150,
       "inter_arrival": 0.18,
       "application_mean_service_time": 2.0,
+      "application_size_factor": 0.6,
       "application_size_factor": 0.6,
       "output_requirements": [
         { "type": "hash", "algorithm": "SHA256" }

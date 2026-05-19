@@ -1,0 +1,53 @@
+Requirement already satisfied: pycryptodome>=3.18.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 2)) (3.23.0)
+Requirement already satisfied: ascon in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 5)) (0.0.9)
+Requirement already satisfied: zfec>=1.5.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 8)) (1.6.0.0)
+Requirement already satisfied: lz4>=4.3.2 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 11)) (4.4.5)
+Requirement already satisfied: zstandard>=0.21.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 14)) (0.25.0)
+Requirement already satisfied: blake3>=0.3.3 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 18)) (1.0.8)
+Requirement already satisfied: typing-extensions>=4.6.0 in ./venv/lib64/python3.11/site-packages (from blake3>=0.3.3->-r requirements.txt (line 18)) (4.15.0)
+Trabajo iniciado en: Mon May 11 13:31:09 CEST 2026
+Nodo de ejecución: 
+========================================
+ Starting NFR Benchmarks
+ Sizes: 1 10 50 100 1000 MB
+ Objects: 31
+========================================
+
+[1/4] Running cost-efficiency (compression) benchmarks...
+
+============================================================================================================================================
+                                              Benchmark de Algoritmos de Compresión (con I/O)                                               
+============================================================================================================================================
+Algoritmo  | MB orig.   | Ratio    | Comp. (s)    | I/O W (s)    | I/O R (s)    | Descomp. (s)
+--------------------------------------------------------------------------------------------------------------------------------------------
+ZLIB       | 1          | 148.86x | 0.004977     | 0.000328     | 0.000123     | 0.000815    
+ZLIB       | 10         | 154.49x | 0.049854     | 0.003478     | 0.000988     | 0.007301    
+ZLIB       | 50         | 158.47x | 0.247550     | 0.018020     | 0.008613     | 0.042042    
+ZLIB       | 100        | 158.75x | 0.494861     | 0.035750     | 0.016212     | 0.082179    
+ZLIB       | 1000       | 159.01x | 4.951058     | 0.355308     | 0.148965     | 0.807274    
+BZ2        | 1          | 1191.56x | 0.176892     | 0.000375     | 0.000141     | 0.006886    
+BZ2        | 10         | 1878.50x | 1.804572     | 0.003725     | 0.000850     | 0.062745    
+BZ2        | 50         | 1917.59x | 9.117980     | 0.018213     | 0.008578     | 0.352270    
+BZ2        | 100        | 1930.23x | 18.123627    | 0.036147     | 0.016684     | 0.664623    
+BZ2        | 1000       | 1937.27x | 180.202396   | 0.356122     | 0.154381     | 6.168340    
+LZMA       | 1          | 2545.09x | 0.016608     | 0.000353     | 0.000142     | 0.001119    
+LZMA       | 10         | 5851.43x | 0.153056     | 0.003545     | 0.000980     | 0.010607    
+LZMA       | 50         | 6643.28x | 0.744190     | 0.018338     | 0.008603     | 0.058970    
+LZMA       | 100        | 6758.03x | 1.473361     | 0.036313     | 0.016764     | 0.117513    
+LZMA       | 1000       | 6862.95x | 14.977528    | 0.357119     | 0.152191     | 1.146054    
+LZ4        | 1          | 60.91x | 0.000101     | 0.000331     | 0.000158     | 0.000152    
+LZ4        | 10         | 61.39x | 0.000984     | 0.003570     | 0.000889     | 0.001479    
+LZ4        | 50         | 61.50x | 0.005454     | 0.018591     | 0.008926     | 0.026174    
+LZ4        | 100        | 61.73x | 0.010741     | 0.036678     | 0.016871     | 0.050524    
+LZ4        | 1000       | 61.66x | 0.102079     | 0.357068     | 0.154524     | 0.474801    
+ZSTD       | 1          | 104.13x | 0.000304     | 0.000340     | 0.000143     | 0.000190    
+ZSTD       | 10         | 535.21x | 0.001766     | 0.003513     | 0.000927     | 0.000729    
+ZSTD       | 50         | 2237.49x | 0.008652     | 0.018277     | 0.008499     | 0.006230    
+ZSTD       | 100        | 3714.14x | 0.017485     | 0.036127     | 0.016429     | 0.011386    
+ZSTD       | 1000       | 9147.32x | 0.172863     | 0.355780     | 0.161600     | 0.101464    
+
+[OK] Datos crudos: cost-efficiency/comp_raw.csv
+[OK] Estadísticas: cost-efficiency/comp_stats.csv
+Cost-efficiency benchmarks completed.
+
+[2/4] Running security (confidentiality) benchmarks...

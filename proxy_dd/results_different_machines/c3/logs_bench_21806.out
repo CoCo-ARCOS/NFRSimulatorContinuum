@@ -1,0 +1,127 @@
+Requirement already satisfied: pycryptodome>=3.18.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 2)) (3.23.0)
+Requirement already satisfied: ascon in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 5)) (0.0.9)
+Requirement already satisfied: zfec>=1.5.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 8)) (1.6.0.0)
+Requirement already satisfied: lz4>=4.3.2 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 11)) (4.4.5)
+Requirement already satisfied: zstandard>=0.21.0 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 14)) (0.25.0)
+Requirement already satisfied: blake3>=0.3.3 in ./venv/lib64/python3.11/site-packages (from -r requirements.txt (line 18)) (1.0.8)
+Requirement already satisfied: typing-extensions>=4.6.0 in ./venv/lib64/python3.11/site-packages (from blake3>=0.3.3->-r requirements.txt (line 18)) (4.15.0)
+Trabajo iniciado en: mié may 13 15:05:00 CEST 2026
+Nodo de ejecución: 
+========================================
+ Starting NFR Benchmarks
+ Sizes: 1 10 50 100 MB
+ Objects: 31
+========================================
+
+[2/4] Running security (confidentiality) benchmarks...
+
+=============================================================================================================================
+                              Cryptographic Algorithm Benchmark (Encryption + Decryption + I/O)                              
+=============================================================================================================================
+Objects per config: 31
+Algorithm    | Size (MB)  | Key (bits) | Enc (s)      | Dec (s)      | I/O W (s)    | I/O R (s)   
+-----------------------------------------------------------------------------------------------------------------------------
+AES          | 1          | 128        | 0.001720     | 0.001831     | 0.000337     | 0.000132    
+AES          | 1          | 256        | 0.001984     | 0.002092     | 0.000332     | 0.000111    
+AES          | 10         | 128        | 0.017905     | 0.018537     | 0.003748     | 0.001078    
+AES          | 10         | 256        | 0.020580     | 0.021504     | 0.003741     | 0.000947    
+AES          | 50         | 128        | 0.107885     | 0.107558     | 0.019053     | 0.009587    
+AES          | 50         | 256        | 0.121492     | 0.121385     | 0.019144     | 0.009726    
+AES          | 100        | 128        | 0.213493     | 0.216600     | 0.038482     | 0.018558    
+AES          | 100        | 256        | 0.241195     | 0.245583     | 0.038445     | 0.018534    
+CHACHA20     | 1          | 256        | 0.002406     | 0.002387     | 0.000335     | 0.000091    
+CHACHA20     | 10         | 256        | 0.024689     | 0.024194     | 0.003824     | 0.001029    
+CHACHA20     | 50         | 256        | 0.140220     | 0.137469     | 0.018952     | 0.009649    
+CHACHA20     | 100        | 256        | 0.278454     | 0.273075     | 0.038574     | 0.018475    
+
+[OK] Raw data saved to: security/conf_raw.csv
+[OK] Aggregated statistics saved to: security/conf_stats.csv
+Confidentiality benchmarks completed.
+
+[3/4] Running security (integrity) benchmarks...
+
+===================================================================================================================
+                           Benchmark de Algoritmos de Integridad (Hashing & HMAC + I/O)                            
+===================================================================================================================
+Algoritmo       | Archivo    | Tiempo Medio (s)   | Velocidad (MB/s) | Std Dev (s)  | I/O W (s)    | I/O R (s)   
+-------------------------------------------------------------------------------------------------------------------
+SHA256          | 1       MB | 0.000586           | 1706.35         | 0.000005     | 0.000336     | 0.000105    
+SHA256          | 10      MB | 0.005875           | 1702.09         | 0.000088     | 0.003709     | 0.001104    
+SHA256          | 50      MB | 0.029237           | 1710.15         | 0.000164     | 0.019140     | 0.009764    
+SHA256          | 100     MB | 0.058390           | 1712.62         | 0.000140     | 0.038550     | 0.018594    
+SHA3_256        | 1       MB | 0.002164           | 462.11          | 0.000018     | 0.000341     | 0.000114    
+SHA3_256        | 10      MB | 0.021564           | 463.73          | 0.000079     | 0.003770     | 0.001013    
+SHA3_256        | 50      MB | 0.107898           | 463.40          | 0.000737     | 0.019263     | 0.009741    
+SHA3_256        | 100     MB | 0.216309           | 462.30          | 0.002446     | 0.038834     | 0.018637    
+BLAKE3          | 1       MB | 0.000233           | 4292.47         | 0.000042     | 0.000342     | 0.000113    
+BLAKE3          | 10      MB | 0.002231           | 4483.12         | 0.000021     | 0.003711     | 0.001001    
+BLAKE3          | 50      MB | 0.012055           | 4147.78         | 0.000164     | 0.019291     | 0.009773    
+BLAKE3          | 100     MB | 0.025080           | 3987.32         | 0.001703     | 0.038548     | 0.018537    
+HMAC_SHA256     | 1       MB | 0.000590           | 1694.75         | 0.000006     | 0.000339     | 0.000110    
+HMAC_SHA256     | 10      MB | 0.005874           | 1702.30         | 0.000079     | 0.003735     | 0.001018    
+HMAC_SHA256     | 50      MB | 0.029237           | 1710.16         | 0.000162     | 0.019193     | 0.009764    
+HMAC_SHA256     | 100     MB | 0.058444           | 1711.04         | 0.000154     | 0.038495     | 0.018640    
+
+[OK] Datos crudos guardados en: security/integ_raw.csv
+[OK] Estadísticas guardadas en: security/integ_stats.csv
+Integrity benchmarks completed.
+
+[4/4] Running reliability (erasure coding) benchmarks...
+
+============================================================================================================================================
+                                        Benchmark de Erasure Coding (ZFEC) con I/O y Decodificación                                         
+============================================================================================================================================
+Algoritmo  | Archivo (MB) | Config (K+M)  | Codif. (s)   | Decod. (s)   | I/O W (s)    | I/O R (s)   
+--------------------------------------------------------------------------------------------------------------------------------------------
+RS | 1            | 4+2           | 0.001154     | 0.000119     | 0.000333     | 0.000127    
+RS | 1            | 8+4           | 0.002175     | 0.000083     | 0.000328     | 0.000094    
+Error: Decoding verification failed for object 1
+Error: Decoding verification failed for object 2
+Error: Decoding verification failed for object 3
+Error: Decoding verification failed for object 4
+Error: Decoding verification failed for object 5
+Error: Decoding verification failed for object 6
+Error: Decoding verification failed for object 7
+Error: Decoding verification failed for object 8
+Error: Decoding verification failed for object 9
+Error: Decoding verification failed for object 10
+Error: Decoding verification failed for object 11
+Error: Decoding verification failed for object 12
+Error: Decoding verification failed for object 13
+Error: Decoding verification failed for object 14
+Error: Decoding verification failed for object 15
+Error: Decoding verification failed for object 16
+Error: Decoding verification failed for object 17
+Error: Decoding verification failed for object 18
+Error: Decoding verification failed for object 19
+Error: Decoding verification failed for object 20
+Error: Decoding verification failed for object 21
+Error: Decoding verification failed for object 22
+Error: Decoding verification failed for object 23
+Error: Decoding verification failed for object 24
+Error: Decoding verification failed for object 25
+Error: Decoding verification failed for object 26
+Error: Decoding verification failed for object 27
+Error: Decoding verification failed for object 28
+Error: Decoding verification failed for object 29
+Error: Decoding verification failed for object 30
+Error: Decoding verification failed for object 31
+RS | 1            | 10+4          | 0.002183     | 0.000079     | 0.000345     | 0.000088    
+RS | 10           | 4+2           | 0.011805     | 0.000952     | 0.003850     | 0.001202    
+RS | 10           | 8+4           | 0.022548     | 0.000919     | 0.003902     | 0.001250    
+RS | 10           | 10+4          | 0.022031     | 0.000936     | 0.003838     | 0.001068    
+RS | 50           | 4+2           | 0.059382     | 0.006511     | 0.019068     | 0.008556    
+RS | 50           | 8+4           | 0.112196     | 0.006948     | 0.019106     | 0.009213    
+RS | 50           | 10+4          | 0.110346     | 0.007221     | 0.019096     | 0.009619    
+RS | 100          | 4+2           | 0.117686     | 0.013251     | 0.038304     | 0.016840    
+RS | 100          | 8+4           | 0.222728     | 0.012467     | 0.038289     | 0.017432    
+RS | 100          | 10+4          | 0.220545     | 0.013298     | 0.038741     | 0.018539    
+
+[OK] Datos crudos guardados en: reliability/erasure_raw.csv
+[OK] Estadísticas guardadas en: reliability/erasure_stats.csv
+Reliability benchmarks completed.
+
+========================================
+ All benchmarks completed successfully!
+========================================
+Trabajo finalizado en: mié may 13 15:11:19 CEST 2026
