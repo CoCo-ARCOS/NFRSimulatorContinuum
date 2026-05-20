@@ -50,6 +50,8 @@ def parse_args():
             "storage_bandwidth",
             "hardware_profile",
             "nfr_pipeline",
+            "compression_tradeoff",
+            "pipeline_architectures",
         ],
         default=[
             "payload_size",
@@ -59,14 +61,9 @@ def parse_args():
             "storage_bandwidth",
             "hardware_profile",
             "nfr_pipeline",
+            "pipeline_architectures",
         ],
         help="Sensitivity factors to benchmark.",
-    )
-    parser.add_argument(
-        "--machine-datasets-root",
-        type=Path,
-        default=Path("results_different_machines/organized"),
-        help="Root directory containing organized machine datasets used by hardware-profile experiments.",
     )
     return parser.parse_args()
 
@@ -154,9 +151,7 @@ def scale_application_time(config: dict, multiplier: float):
                 stage["application_mean_service_time"] = float(stage["application_mean_service_time"]) * multiplier
 
 
-def set_hardware_profile(config: dict, profile: str, real_values_path=None):
-    if real_values_path is not None:
-        config["real_values_dir"] = str(real_values_path)
+def set_hardware_profile(config: dict, profile: str):
     machines = config.get("machines", [])
     if not isinstance(machines, list):
         return
@@ -284,6 +279,18 @@ def build_factor_scenarios(config: dict):
             {"label": "heavy", "mode": "heavy"},
             {"label": "maximal", "mode": "maximal"},
         ],
+        "pipeline_architectures": [
+            {"label": f"{group}_{size//1_000_000}MB", "payload_size": size, "mode": mode, "group": group}
+            for group, mode in [
+                ("1_Uncomp", "uncompressed"),
+                ("2_LZ4_Fast", "lz4_fast"),
+                ("3_ZLIB_Std", "zlib_standard"),
+                ("4_ZSTD_Mod", "zstd_modern"),
+                ("5_BZ2_Max", "bz2_max"),
+                ("6_ZSTD_Lgt", "zstd_light")
+            ]
+            for size in [10_000_000, 50_000_000, 100_000_000, 500_000_000, 1_000_000_000]
+        ],
     }
 
 
@@ -295,15 +302,8 @@ def run_sensitivity_benchmarks(args):
     simulator_path = (baseline_dir / args.simulator).resolve() if not args.simulator.is_absolute() else args.simulator.resolve()
 
     baseline_config = load_config_file(baseline_config_path)
-    machine_datasets_root = (baseline_dir / args.machine_datasets_root).resolve() if not args.machine_datasets_root.is_absolute() else args.machine_datasets_root.resolve()
-    if machine_datasets_root.exists():
-        try:
-            relative_root = machine_datasets_root.relative_to(baseline_dir)
-        except ValueError:
-            relative_root = machine_datasets_root
-    else:
-        relative_root = args.machine_datasets_root
     # Prefer structured 'traces' provided in the JSON; otherwise load legacy traces.cfg
+    traces_file_name = None
     if "traces" in baseline_config and isinstance(baseline_config["traces"], list):
         trace_rows = baseline_config["traces"]
     else:
@@ -326,7 +326,8 @@ def run_sensitivity_benchmarks(args):
         for item in group:
             value_label = item["label"]
             config_copy = json.loads(json.dumps(baseline_config))
-            config_copy["traces_fileName"] = str(Path(traces_file_name).name)
+            if traces_file_name:
+                config_copy["traces_fileName"] = str(Path(traces_file_name).name)
             runs = []
 
             for repeat in range(1, args.repeats + 1):
@@ -356,11 +357,39 @@ def run_sensitivity_benchmarks(args):
                 elif factor == "storage_bandwidth":
                     scale_stage_filesystem(config_copy, float(item["bandwidth"]))
                 elif factor == "hardware_profile":
-                    profile_root = relative_root if isinstance(relative_root, Path) else Path(relative_root)
-                    profile_values_dir = profile_root / item["profile"] / "real_values"
-                    set_hardware_profile(config_copy, item["profile"], real_values_path=profile_values_dir)
+                    set_hardware_profile(config_copy, item["profile"])
                 elif factor == "nfr_pipeline":
                     update_nfr_pipeline(config_copy, item["mode"])
+                elif factor == "pipeline_architectures":
+                    modified_rows = [dict(r) for r in trace_rows]
+                    modified_rows[0]["SIZE"] = float(item["payload_size"])
+                    config_copy["traces"] = modified_rows
+                    current_trace_rows = modified_rows
+                    if "stages" in config_copy and config_copy["stages"]:
+                        first_stage = config_copy["stages"][0]
+                        mode = item["mode"]
+                        
+                        if mode == "uncompressed":
+                            first_stage["application_size_factor"] = 1.0
+                            first_stage["output_requirements"] = [{"type": "hash", "algorithm": "SHA256"}, {"type": "cipher", "algorithm": "AES"}, {"type": "cipher", "algorithm": "RS"}]
+                        elif mode == "lz4_fast":
+                            first_stage["application_size_factor"] = 0.6
+                            first_stage["output_requirements"] = [{"type": "compress", "algorithm": "LZ4"}, {"type": "hash", "algorithm": "BLAKE3"}, {"type": "cipher", "algorithm": "AES"}, {"type": "cipher", "algorithm": "RS"}]
+                        elif mode == "zlib_standard":
+                            first_stage["application_size_factor"] = 0.4
+                            first_stage["output_requirements"] = [{"type": "compress", "algorithm": "ZLIB"}, {"type": "hash", "algorithm": "SHA256"}, {"type": "cipher", "algorithm": "AES"}, {"type": "cipher", "algorithm": "RS"}]
+                        elif mode == "zstd_modern":
+                            first_stage["application_size_factor"] = 0.3
+                            first_stage["output_requirements"] = [{"type": "compress", "algorithm": "ZSTD"}, {"type": "hash", "algorithm": "SHA256"}, {"type": "cipher", "algorithm": "AES"}, {"type": "cipher", "algorithm": "RS"}]
+                        elif mode == "bz2_max":
+                            first_stage["application_size_factor"] = 0.2
+                            first_stage["output_requirements"] = [{"type": "compress", "algorithm": "BZ2"}, {"type": "hash", "algorithm": "SHA3_256"}, {"type": "cipher", "algorithm": "AES"}, {"type": "cipher", "algorithm": "RS"}]
+                        elif mode == "zstd_light":
+                            first_stage["application_size_factor"] = 0.3
+                            first_stage["output_requirements"] = [{"type": "compress", "algorithm": "ZSTD"}, {"type": "cipher", "algorithm": "RS"}]
+                        
+                        for other_stage in config_copy["stages"][1:]:
+                            other_stage["output_requirements"] = []
 
                 # remove legacy traces_fileName to avoid file-based behavior
                 if "traces_fileName" in config_copy:
@@ -393,6 +422,8 @@ def run_sensitivity_benchmarks(args):
             averaged["factor"] = factor
             averaged["value_label"] = value_label
             averaged["value"] = item.get("payload_size") or item.get("MUESTRAS") or item.get("workers") or item.get("bandwidth") or item.get("profile") or item.get("multiplier") or item.get("mode")
+            averaged["mode"] = item.get("mode", "")
+            averaged["group"] = item.get("group", "")
             averaged["workers"] = runs[0]["workers"]
             averaged["repeat_count"] = len(runs)
             all_summary.append(averaged)
@@ -446,6 +477,29 @@ def plot_sensitivity_results(output_dir: Path, all_summary):
         grouped[row["factor"]].append(row)
 
     for factor, rows in grouped.items():
+        if factor == "pipeline_architectures":
+            groups = defaultdict(list)
+            for r in rows:
+                groups[r.get("group")].append(r)
+            
+            fig, ax = plt.subplots(figsize=(12, 7))
+            
+            for group, group_rows in sorted(groups.items()):
+                group_rows.sort(key=lambda r: float(r["value"]))
+                sizes = [float(r["value"])/1e6 for r in group_rows]
+                times = [r["pipeline_max_stage_seconds"] for r in group_rows]
+                ax.plot(sizes, times, marker="o", label=group.replace("_", " "))
+                
+            ax.set_title("Pipeline Architectures: Makespan vs Payload Size")
+            ax.set_xlabel("Payload Size (MB)")
+            ax.set_ylabel("Makespan (Seconds)")
+            ax.grid(True, linestyle="--", alpha=0.3)
+            ax.legend()
+            fig.tight_layout()
+            fig.savefig(output_dir / "sensitivity_pipeline_architectures.png", dpi=160)
+            plt.close(fig)
+            continue
+
         numeric_values = [row["value"] for row in rows if isinstance(row["value"], (int, float))]
         if numeric_values:
             rows_sorted = sorted(rows, key=lambda row: float(row["value"]))
