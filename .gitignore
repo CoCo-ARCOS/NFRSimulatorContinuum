@@ -33,3 +33,5 @@ proxy_dd_interpolation_only/paper_evaluation/*
 proxy_dd_interpolation_only/results_different_machines/c3/*.out
 proxy_dd_interpolation_only/results_different_machines/c3/*.err
 proxy_dd_interpolation_only/results_different_machines/toge/*.out
+proxy_dd/results/*
+proxy_dd/sensitivity_results/*
