@@ -50,6 +50,7 @@ def parse_args():
             "storage_bandwidth",
             "hardware_profile",
             "nfr_pipeline",
+            "compression_tradeoff",
         ],
         default=[
             "payload_size",
@@ -59,14 +60,9 @@ def parse_args():
             "storage_bandwidth",
             "hardware_profile",
             "nfr_pipeline",
+            "compression_tradeoff",
         ],
         help="Sensitivity factors to benchmark.",
-    )
-    parser.add_argument(
-        "--machine-datasets-root",
-        type=Path,
-        default=Path("results_different_machines/organized"),
-        help="Root directory containing organized machine datasets used by hardware-profile experiments.",
     )
     return parser.parse_args()
 
@@ -150,9 +146,7 @@ def scale_application_time(config: dict, multiplier: float):
                 stage["application_mean_service_time"] = float(stage["application_mean_service_time"]) * multiplier
 
 
-def set_hardware_profile(config: dict, profile: str, real_values_path=None):
-    if real_values_path is not None:
-        config["real_values_dir"] = str(real_values_path)
+def set_hardware_profile(config: dict, profile: str):
     machines = config.get("machines", [])
     if not isinstance(machines, list):
         return
@@ -280,6 +274,20 @@ def build_factor_scenarios(config: dict):
             {"label": "heavy", "mode": "heavy"},
             {"label": "maximal", "mode": "maximal"},
         ],
+        "compression_tradeoff": [
+            {"label": "Uncomp_10MB", "payload_size": 10_000_000, "mode": "uncompressed"},
+            {"label": "Comp_10MB", "payload_size": 10_000_000, "mode": "compressed"},
+            {"label": "Uncomp_50MB", "payload_size": 50_000_000, "mode": "uncompressed"},
+            {"label": "Comp_50MB", "payload_size": 50_000_000, "mode": "compressed"},
+            {"label": "Uncomp_100MB", "payload_size": 100_000_000, "mode": "uncompressed"},
+            {"label": "Comp_100MB", "payload_size": 100_000_000, "mode": "compressed"},
+            {"label": "Uncomp_250MB", "payload_size": 250_000_000, "mode": "uncompressed"},
+            {"label": "Comp_250MB", "payload_size": 250_000_000, "mode": "compressed"},
+            {"label": "Uncomp_500MB", "payload_size": 500_000_000, "mode": "uncompressed"},
+            {"label": "Comp_500MB", "payload_size": 500_000_000, "mode": "compressed"},
+            {"label": "Uncomp_1000MB", "payload_size": 1_000_000_000, "mode": "uncompressed"},
+            {"label": "Comp_1000MB", "payload_size": 1_000_000_000, "mode": "compressed"},
+        ],
     }
 
 
@@ -291,15 +299,8 @@ def run_sensitivity_benchmarks(args):
     simulator_path = (baseline_dir / args.simulator).resolve() if not args.simulator.is_absolute() else args.simulator.resolve()
 
     baseline_config = load_config_file(baseline_config_path)
-    machine_datasets_root = (baseline_dir / args.machine_datasets_root).resolve() if not args.machine_datasets_root.is_absolute() else args.machine_datasets_root.resolve()
-    if machine_datasets_root.exists():
-        try:
-            relative_root = machine_datasets_root.relative_to(baseline_dir)
-        except ValueError:
-            relative_root = machine_datasets_root
-    else:
-        relative_root = args.machine_datasets_root
     # Prefer structured 'traces' provided in the JSON; otherwise load legacy traces.cfg
+    traces_file_name = None
     if "traces" in baseline_config and isinstance(baseline_config["traces"], list):
         trace_rows = baseline_config["traces"]
     else:
@@ -322,7 +323,8 @@ def run_sensitivity_benchmarks(args):
         for item in group:
             value_label = item["label"]
             config_copy = json.loads(json.dumps(baseline_config))
-            config_copy["traces_fileName"] = str(Path(traces_file_name).name)
+            if traces_file_name:
+                config_copy["traces_fileName"] = str(Path(traces_file_name).name)
             runs = []
 
             for repeat in range(1, args.repeats + 1):
@@ -352,11 +354,33 @@ def run_sensitivity_benchmarks(args):
                 elif factor == "storage_bandwidth":
                     scale_stage_filesystem(config_copy, float(item["bandwidth"]))
                 elif factor == "hardware_profile":
-                    profile_root = relative_root if isinstance(relative_root, Path) else Path(relative_root)
-                    profile_values_dir = profile_root / item["profile"] / "real_values"
-                    set_hardware_profile(config_copy, item["profile"], real_values_path=profile_values_dir)
+                    set_hardware_profile(config_copy, item["profile"])
                 elif factor == "nfr_pipeline":
                     update_nfr_pipeline(config_copy, item["mode"])
+                elif factor == "compression_tradeoff":
+                    modified_rows = [dict(r) for r in trace_rows]
+                    modified_rows[0]["SIZE"] = float(item["payload_size"])
+                    config_copy["traces"] = modified_rows
+                    current_trace_rows = modified_rows
+                    if "stages" in config_copy and config_copy["stages"]:
+                        first_stage = config_copy["stages"][0]
+                        if item["mode"] == "compressed":
+                            first_stage["application_size_factor"] = 0.3
+                            first_stage["output_requirements"] = [
+                                {"type": "compress", "algorithm": "LZ4"},
+                                {"type": "hash", "algorithm": "SHA256"},
+                                {"type": "cipher", "algorithm": "AES"},
+                                {"type": "cipher", "algorithm": "RS"}
+                            ]
+                        else:
+                            first_stage["application_size_factor"] = 1.0
+                            first_stage["output_requirements"] = [
+                                {"type": "hash", "algorithm": "SHA256"},
+                                {"type": "cipher", "algorithm": "AES"},
+                                {"type": "cipher", "algorithm": "RS"}
+                            ]
+                        for other_stage in config_copy["stages"][1:]:
+                            other_stage["output_requirements"] = []
 
                 # remove legacy traces_fileName to avoid file-based behavior
                 if "traces_fileName" in config_copy:
@@ -389,6 +413,7 @@ def run_sensitivity_benchmarks(args):
             averaged["factor"] = factor
             averaged["value_label"] = value_label
             averaged["value"] = item.get("payload_size") or item.get("MUESTRAS") or item.get("workers") or item.get("bandwidth") or item.get("profile") or item.get("multiplier") or item.get("mode")
+            averaged["mode"] = item.get("mode", "")
             averaged["workers"] = runs[0]["workers"]
             averaged["repeat_count"] = len(runs)
             all_summary.append(averaged)
@@ -442,6 +467,29 @@ def plot_sensitivity_results(output_dir: Path, all_summary):
         grouped[row["factor"]].append(row)
 
     for factor, rows in grouped.items():
+        if factor == "compression_tradeoff":
+            uncomp_rows = [r for r in rows if r.get("mode") == "uncompressed"]
+            comp_rows = [r for r in rows if r.get("mode") == "compressed"]
+            uncomp_rows = sorted(uncomp_rows, key=lambda r: float(r["value"]))
+            comp_rows = sorted(comp_rows, key=lambda r: float(r["value"]))
+            
+            sizes = [float(r["value"])/1e6 for r in uncomp_rows]
+            uncomp_times = [r["pipeline_max_stage_seconds"] for r in uncomp_rows]
+            comp_times = [r["pipeline_max_stage_seconds"] for r in comp_rows]
+            
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.plot(sizes, uncomp_times, marker="o", label="Uncompressed (SHA+AES+RS)")
+            ax.plot(sizes, comp_times, marker="s", label="Compressed (LZ4+SHA+AES+RS)")
+            ax.set_title("Compression Trade-off: Makespan vs Payload Size")
+            ax.set_xlabel("Payload Size (MB)")
+            ax.set_ylabel("Makespan (Seconds)")
+            ax.grid(True, linestyle="--", alpha=0.3)
+            ax.legend()
+            fig.tight_layout()
+            fig.savefig(output_dir / "sensitivity_compression_tradeoff.png", dpi=160)
+            plt.close(fig)
+            continue
+
         numeric_values = [row["value"] for row in rows if isinstance(row["value"], (int, float))]
         if numeric_values:
             rows_sorted = sorted(rows, key=lambda row: float(row["value"]))
