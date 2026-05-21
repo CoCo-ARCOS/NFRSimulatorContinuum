@@ -1,5 +1,12 @@
 #include "proxy.h"
 #include <unistd.h>
+#include <strings.h>
+
+#define DEFAULT_CONTAINER_PLATFORM "docker"
+#define DEFAULT_QUEUE_DOCKER_IMAGE "single:queue"
+#define DEFAULT_QUEUE_APPTAINER_IMAGE "../stages/single_queue.sif"
+#define DEFAULT_TRACE_DOCKER_IMAGE "trace:generator"
+#define DEFAULT_TRACE_GENERATOR_BINARY "../TRACE_GENERATOR/main"
 
 /* NFR manager instances: one manager/worker pool per configured task in each stage pipeline. */
 static struct nfr_manager nfr_managers_in[10][INPUT_TASKS];
@@ -15,6 +22,11 @@ static long outstanding_jobs = 0;
 static pthread_mutex_t outstanding_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t outstanding_cond = PTHREAD_COND_INITIALIZER;
 
+static char active_container_platform[32] = DEFAULT_CONTAINER_PLATFORM;
+static char active_queue_container_image[512] = DEFAULT_QUEUE_DOCKER_IMAGE;
+static char active_trace_container_image[512] = DEFAULT_TRACE_DOCKER_IMAGE;
+static char active_trace_generator_binary[512] = DEFAULT_TRACE_GENERATOR_BINARY;
+
 static void inc_outstanding()
 {
     pthread_mutex_lock(&outstanding_lock);
@@ -29,6 +41,125 @@ static void dec_outstanding()
     if (outstanding_jobs == 0)
         pthread_cond_broadcast(&outstanding_cond);
     pthread_mutex_unlock(&outstanding_lock);
+}
+
+int is_container_platform_name(const char *value)
+{
+    return value &&
+           (strcasecmp(value, "docker") == 0 ||
+            strcasecmp(value, "apptainer") == 0 ||
+            strcasecmp(value, "singularity") == 0);
+}
+
+static int active_runtime_is_docker(void)
+{
+    return strcasecmp(active_container_platform, "docker") == 0;
+}
+
+static int active_runtime_is_apptainer(void)
+{
+    return strcasecmp(active_container_platform, "apptainer") == 0 ||
+           strcasecmp(active_container_platform, "singularity") == 0;
+}
+
+static const char *active_runtime_command(void)
+{
+    if (strcasecmp(active_container_platform, "singularity") == 0)
+        return "singularity";
+    if (active_runtime_is_apptainer())
+        return "apptainer";
+    return "docker";
+}
+
+static void copy_config_string(char *dst, size_t dst_size, const char *src)
+{
+    if (!dst || dst_size == 0)
+        return;
+
+    dst[0] = '\0';
+    if (!src)
+        return;
+
+    strncpy(dst, src, dst_size - 1);
+    dst[dst_size - 1] = '\0';
+}
+
+static char *shell_quote(const char *value)
+{
+    const char *text = value ? value : "";
+    size_t size = 3;
+
+    for (const char *p = text; *p; ++p)
+        size += (*p == '\'') ? 4 : 1;
+
+    char *quoted = malloc(size);
+    if (!quoted)
+        return NULL;
+
+    char *out = quoted;
+    *out++ = '\'';
+    for (const char *p = text; *p; ++p)
+    {
+        if (*p == '\'')
+        {
+            memcpy(out, "'\\''", 4);
+            out += 4;
+        }
+        else
+        {
+            *out++ = *p;
+        }
+    }
+    *out++ = '\'';
+    *out = '\0';
+    return quoted;
+}
+
+void configure_container_runtime(struct config *configuration)
+{
+    if (!configuration)
+        return;
+
+    if (!is_container_platform_name(configuration->container_platform))
+    {
+        if (configuration->container_platform[0] != '\0')
+            printf("Warning: unknown container_platform '%s'; using docker\n", configuration->container_platform);
+        copy_config_string(configuration->container_platform, sizeof(configuration->container_platform), DEFAULT_CONTAINER_PLATFORM);
+    }
+
+    copy_config_string(active_container_platform, sizeof(active_container_platform), configuration->container_platform);
+
+    if (active_runtime_is_apptainer() &&
+        (configuration->queue_container_image[0] == '\0' ||
+         strcmp(configuration->queue_container_image, DEFAULT_QUEUE_DOCKER_IMAGE) == 0))
+    {
+        copy_config_string(configuration->queue_container_image, sizeof(configuration->queue_container_image), DEFAULT_QUEUE_APPTAINER_IMAGE);
+    }
+    else if (active_runtime_is_docker() && configuration->queue_container_image[0] == '\0')
+    {
+        copy_config_string(configuration->queue_container_image, sizeof(configuration->queue_container_image), DEFAULT_QUEUE_DOCKER_IMAGE);
+    }
+
+    if (active_runtime_is_apptainer() &&
+        strcmp(configuration->trace_container_image, DEFAULT_TRACE_DOCKER_IMAGE) == 0)
+    {
+        configuration->trace_container_image[0] = '\0';
+    }
+    else if (active_runtime_is_docker() && configuration->trace_container_image[0] == '\0')
+    {
+        copy_config_string(configuration->trace_container_image, sizeof(configuration->trace_container_image), DEFAULT_TRACE_DOCKER_IMAGE);
+    }
+
+    if (configuration->trace_generator_binary[0] == '\0')
+        copy_config_string(configuration->trace_generator_binary, sizeof(configuration->trace_generator_binary), DEFAULT_TRACE_GENERATOR_BINARY);
+
+    copy_config_string(active_queue_container_image, sizeof(active_queue_container_image), configuration->queue_container_image);
+    copy_config_string(active_trace_container_image, sizeof(active_trace_container_image), configuration->trace_container_image);
+    copy_config_string(active_trace_generator_binary, sizeof(active_trace_generator_binary), configuration->trace_generator_binary);
+
+    printf("Container platform: %s; queue image: %s\n",
+           active_container_platform,
+           active_queue_container_image);
 }
 
 static const char *default_algorithm_for_type(const struct config *configuration, int type)
@@ -396,6 +527,21 @@ static cJSON *first_number_item(cJSON *object, const char **keys, int key_count)
     {
         cJSON *item = cJSON_GetObjectItemCaseSensitive(object, keys[i]);
         if (cJSON_IsNumber(item))
+            return item;
+    }
+
+    return NULL;
+}
+
+static cJSON *first_string_item(cJSON *object, const char **keys, int key_count)
+{
+    if (!object || !keys)
+        return NULL;
+
+    for (int i = 0; i < key_count; ++i)
+    {
+        cJSON *item = cJSON_GetObjectItemCaseSensitive(object, keys[i]);
+        if (cJSON_IsString(item) && item->valuestring)
             return item;
     }
 
@@ -1402,6 +1548,10 @@ struct config *read_config(const char *file_name)
     strcpy(configuration->hashing_algo, "");
     strcpy(configuration->ida_algo, "");
     strcpy(configuration->service_time_model, "linear");
+    strcpy(configuration->container_platform, DEFAULT_CONTAINER_PLATFORM);
+    strcpy(configuration->queue_container_image, DEFAULT_QUEUE_DOCKER_IMAGE);
+    strcpy(configuration->trace_container_image, DEFAULT_TRACE_DOCKER_IMAGE);
+    strcpy(configuration->trace_generator_binary, DEFAULT_TRACE_GENERATOR_BINARY);
     configuration->real_values_dir[0] = '\0';
 
     workers = cJSON_GetObjectItemCaseSensitive(json, "workers");
@@ -1517,6 +1667,56 @@ struct config *read_config(const char *file_name)
     {
         strncpy(configuration->service_time_model, service_time_model->valuestring, sizeof(configuration->service_time_model) - 1);
         configuration->service_time_model[sizeof(configuration->service_time_model) - 1] = '\0';
+    }
+
+    static const char *container_platform_keys[] = {
+        "container_platform",
+        "container_runtime",
+        "runtime"
+    };
+    cJSON *container_platform = first_string_item(json, container_platform_keys, sizeof(container_platform_keys) / sizeof(container_platform_keys[0]));
+    if (container_platform)
+    {
+        strncpy(configuration->container_platform, container_platform->valuestring, sizeof(configuration->container_platform) - 1);
+        configuration->container_platform[sizeof(configuration->container_platform) - 1] = '\0';
+    }
+
+    static const char *queue_image_keys[] = {
+        "queue_container_image",
+        "queue_image",
+        "single_queue_image",
+        "queue_sif",
+        "sif_path",
+        "apptainer_sif"
+    };
+    cJSON *queue_image = first_string_item(json, queue_image_keys, sizeof(queue_image_keys) / sizeof(queue_image_keys[0]));
+    if (queue_image)
+    {
+        strncpy(configuration->queue_container_image, queue_image->valuestring, sizeof(configuration->queue_container_image) - 1);
+        configuration->queue_container_image[sizeof(configuration->queue_container_image) - 1] = '\0';
+    }
+
+    static const char *trace_image_keys[] = {
+        "trace_container_image",
+        "trace_generator_image",
+        "trace_generator_sif"
+    };
+    cJSON *trace_image = first_string_item(json, trace_image_keys, sizeof(trace_image_keys) / sizeof(trace_image_keys[0]));
+    if (trace_image)
+    {
+        strncpy(configuration->trace_container_image, trace_image->valuestring, sizeof(configuration->trace_container_image) - 1);
+        configuration->trace_container_image[sizeof(configuration->trace_container_image) - 1] = '\0';
+    }
+
+    static const char *trace_binary_keys[] = {
+        "trace_generator_binary",
+        "trace_generator_executable"
+    };
+    cJSON *trace_binary = first_string_item(json, trace_binary_keys, sizeof(trace_binary_keys) / sizeof(trace_binary_keys[0]));
+    if (trace_binary)
+    {
+        strncpy(configuration->trace_generator_binary, trace_binary->valuestring, sizeof(configuration->trace_generator_binary) - 1);
+        configuration->trace_generator_binary[sizeof(configuration->trace_generator_binary) - 1] = '\0';
     }
 
     cJSON *id_k = cJSON_GetObjectItemCaseSensitive(json, "ida_k");
@@ -1887,24 +2087,137 @@ struct traceConfig *read_configTrace(int numberTrace, char *fileName)
     return traceData;
 }
 
+static char *build_queue_estimator_command(const char *container_prefix,
+                                           int worker_id,
+                                           double mean_interarrival,
+                                           double mean_service,
+                                           int samples)
+{
+    int command_size;
+    char *command;
+
+    if (active_runtime_is_apptainer())
+    {
+        char *image = shell_quote(active_queue_container_image);
+        if (!image)
+            return NULL;
+
+        command_size = snprintf(NULL, 0,
+                                "%s run %s %f %f %d",
+                                active_runtime_command(),
+                                image,
+                                mean_interarrival,
+                                mean_service,
+                                samples) + 1;
+        command = malloc(command_size);
+        if (command)
+        {
+            snprintf(command, command_size,
+                     "%s run %s %f %f %d",
+                     active_runtime_command(),
+                     image,
+                     mean_interarrival,
+                     mean_service,
+                     samples);
+        }
+        free(image);
+        return command;
+    }
+
+    command_size = snprintf(NULL, 0,
+                            "docker exec %s%d ./single %f %f %d",
+                            container_prefix,
+                            worker_id,
+                            mean_interarrival,
+                            mean_service,
+                            samples) + 1;
+    command = malloc(command_size);
+    if (!command)
+        return NULL;
+
+    snprintf(command, command_size,
+             "docker exec %s%d ./single %f %f %d",
+             container_prefix,
+             worker_id,
+             mean_interarrival,
+             mean_service,
+             samples);
+    return command;
+}
+
+static char *build_queue_estimator_redirect_command(const char *container_prefix,
+                                                    int worker_id,
+                                                    double mean_interarrival,
+                                                    double mean_service,
+                                                    int samples,
+                                                    const char *result_path)
+{
+    char *base = build_queue_estimator_command(container_prefix, worker_id, mean_interarrival, mean_service, samples);
+    char *quoted_result_path;
+    int command_size;
+    char *command;
+
+    if (!base)
+        return NULL;
+
+    quoted_result_path = shell_quote(result_path);
+    if (!quoted_result_path)
+    {
+        free(base);
+        return NULL;
+    }
+
+    command_size = snprintf(NULL, 0, "%s >> %s", base, quoted_result_path) + 1;
+    command = malloc(command_size);
+    if (command)
+        snprintf(command, command_size, "%s >> %s", base, quoted_result_path);
+
+    free(base);
+    free(quoted_result_path);
+    return command;
+}
+
 void makeTraceGenerator()
 {
     char *command, *pwd;
     int size;
 
-    pwd = getenv("PWD");
-    // Increased size slightly to accommodate the check logic
-    size = 500 + (strlen(pwd) * 2);
-    command = malloc(size * sizeof(char));
+    if (active_runtime_is_apptainer())
+    {
+        if (active_trace_container_image[0] != '\0')
+            printf("Using %s trace generator image %s\n", active_runtime_command(), active_trace_container_image);
+        else
+            printf("Using native trace generator %s\n", active_trace_generator_binary);
+        return;
+    }
 
-    // Check if container exists; if not, run it
+    pwd = getenv("PWD");
+    if (!pwd)
+        return;
+
+    char *quoted_image = shell_quote(active_trace_container_image);
+    if (!quoted_image)
+        return;
+
+    size = snprintf(NULL, 0,
+                    "docker ps -a --format '{{.Names}}' | grep -Eq '^trace_generator$' || "
+                    "docker run -i -d --name trace_generator -v '%s/traces/':'%s' %s",
+                    pwd, pwd, quoted_image) + 1;
+    command = malloc(size * sizeof(char));
+    if (!command)
+    {
+        free(quoted_image);
+        return;
+    }
+
     sprintf(
         command,
         "docker ps -a --format '{{.Names}}' | grep -Eq '^trace_generator$' || "
-        "docker run -i -d --name trace_generator -v '%s/traces/':'%s' trace:generator",
-        pwd, pwd);
+        "docker run -i -d --name trace_generator -v '%s/traces/':'%s' %s",
+        pwd, pwd, quoted_image);
 
     execute_command(command);
+    free(quoted_image);
     free(command);
 }
 
@@ -1913,28 +2226,56 @@ void makeAgents(int workers, const char *agent_type)
     char *command, *pwd;
     int i;
     const char *container_prefix = "output_agent";
+
+    if (active_runtime_is_apptainer())
+    {
+        printf("Apptainer selected: not starting long-running %s queue agents; %s runs %s per queue estimate\n",
+               agent_type ? agent_type : "worker",
+               active_runtime_command(),
+               active_queue_container_image);
+        return;
+    }
+
     if (strcmp(agent_type, "input") == 0)
         container_prefix = "input_agent";
     else if (strcmp(agent_type, "application") == 0)
         container_prefix = "application_agent";
 
     pwd = getenv("PWD");
+    if (!pwd)
+        return;
 
     for (i = 0; i < workers; ++i)
     {
-        // Allocated slightly more buffer for the shell logic
-        int size = 500 + (strlen(pwd) * 2);
+        char *quoted_image = shell_quote(active_queue_container_image);
+        if (!quoted_image)
+            return;
+
+        int size = snprintf(NULL, 0,
+                            "docker ps -a --format '{{.Names}}' | grep -Eq '^%s%d$' || "
+                            "docker run -i -d --name %s%d -v '%s/traces/':'%s' %s",
+                            container_prefix, i,
+                            container_prefix, i,
+                            pwd, pwd,
+                            quoted_image) + 1;
         command = malloc(size * sizeof(char));
+        if (!command)
+        {
+            free(quoted_image);
+            return;
+        }
 
         sprintf(
             command,
             "docker ps -a --format '{{.Names}}' | grep -Eq '^%s%d$' || "
-            "docker run -i -d --name %s%d -v '%s/traces/':'%s' single:queue",
+            "docker run -i -d --name %s%d -v '%s/traces/':'%s' %s",
             container_prefix, i,
             container_prefix, i,
-            pwd, pwd);
+            pwd, pwd,
+            quoted_image);
 
         execute_command(command);
+        free(quoted_image);
         free(command);
     }
 }
@@ -1954,7 +2295,8 @@ void makeContainers(struct config *configuration)
         }
     }
 
-    makeTraceGenerator();
+    if (!has_inline_traces())
+        makeTraceGenerator();
     makeAgents(configuration->workers, "input");
     if (needs_application_agents)
         makeAgents(configuration->workers, "application");
@@ -1965,34 +2307,144 @@ void traceGenerator(struct traceConfig *traceData, int numberTraces)
 {
     char *fileName, *command, *pwd;
     const char *baseName = "trace%lld.txt";
-    const char *baseCommand = "docker exec trace_generator ./main %lld %f %lld %f %f %f %f %lld > '%s/traces/%s'";
     int i;
 
     pwd = getenv("PWD");
+    if (!pwd)
+        return;
 
     for (i = 0; i < numberTraces; ++i)
     {
+        char result_path[1024];
+        char *quoted_result_path;
+        command = NULL;
 
         fileName = malloc(sizeof(char) + strlen(baseName) + 100);
         sprintf(fileName,
                 baseName, i);
+        snprintf(result_path, sizeof(result_path), "%s/traces/%s", pwd, fileName);
+        quoted_result_path = shell_quote(result_path);
+        if (!quoted_result_path)
+        {
+            free(fileName);
+            continue;
+        }
 
-        command = malloc(sizeof(char) + (strlen(baseCommand) + strlen(pwd) + strlen(fileName) + (14 * 8)));
-        sprintf(command,
-                baseCommand,
-                traceData[i].MUESTRAS,
-                traceData[i].inter_arrival,
-                traceData[i].DISTRIBUTION,
-                traceData[i].mean,
-                traceData[i].stddev,
-                traceData[i].SIZE,
-                traceData[i].stddevS,
-                traceData[i].Concurrency,
-                pwd, fileName);
+        if (active_runtime_is_apptainer())
+        {
+            char *runner = active_trace_container_image[0] != '\0'
+                               ? shell_quote(active_trace_container_image)
+                               : shell_quote(active_trace_generator_binary);
+            const char *command_template = active_trace_container_image[0] != '\0'
+                                               ? "%s run %s %lld %f %lld %f %f %f %f %lld > %s"
+                                               : "%s %lld %f %lld %f %f %f %f %lld > %s";
+            if (!runner)
+            {
+                free(quoted_result_path);
+                free(fileName);
+                continue;
+            }
 
-        execute_command(command);
+            if (active_trace_container_image[0] != '\0')
+            {
+                int command_size = snprintf(NULL, 0,
+                                            command_template,
+                                            active_runtime_command(),
+                                            runner,
+                                            traceData[i].MUESTRAS,
+                                            traceData[i].inter_arrival,
+                                            traceData[i].DISTRIBUTION,
+                                            traceData[i].mean,
+                                            traceData[i].stddev,
+                                            traceData[i].SIZE,
+                                            traceData[i].stddevS,
+                                            traceData[i].Concurrency,
+                                            quoted_result_path) + 1;
+                command = malloc(command_size);
+                if (command)
+                    snprintf(command,
+                             command_size,
+                             command_template,
+                             active_runtime_command(),
+                             runner,
+                             traceData[i].MUESTRAS,
+                             traceData[i].inter_arrival,
+                             traceData[i].DISTRIBUTION,
+                             traceData[i].mean,
+                             traceData[i].stddev,
+                             traceData[i].SIZE,
+                             traceData[i].stddevS,
+                             traceData[i].Concurrency,
+                             quoted_result_path);
+            }
+            else
+            {
+                int command_size = snprintf(NULL, 0,
+                                            command_template,
+                                            runner,
+                                            traceData[i].MUESTRAS,
+                                            traceData[i].inter_arrival,
+                                            traceData[i].DISTRIBUTION,
+                                            traceData[i].mean,
+                                            traceData[i].stddev,
+                                            traceData[i].SIZE,
+                                            traceData[i].stddevS,
+                                            traceData[i].Concurrency,
+                                            quoted_result_path) + 1;
+                command = malloc(command_size);
+                if (command)
+                    snprintf(command,
+                             command_size,
+                             command_template,
+                             runner,
+                             traceData[i].MUESTRAS,
+                             traceData[i].inter_arrival,
+                             traceData[i].DISTRIBUTION,
+                             traceData[i].mean,
+                             traceData[i].stddev,
+                             traceData[i].SIZE,
+                             traceData[i].stddevS,
+                             traceData[i].Concurrency,
+                             quoted_result_path);
+            }
+            free(runner);
+        }
+        else
+        {
+            int command_size = snprintf(NULL, 0,
+                                        "docker exec trace_generator ./main %lld %f %lld %f %f %f %f %lld > %s",
+                                        traceData[i].MUESTRAS,
+                                        traceData[i].inter_arrival,
+                                        traceData[i].DISTRIBUTION,
+                                        traceData[i].mean,
+                                        traceData[i].stddev,
+                                        traceData[i].SIZE,
+                                        traceData[i].stddevS,
+                                        traceData[i].Concurrency,
+                                        quoted_result_path) + 1;
+            command = malloc(command_size);
+            if (command)
+                snprintf(command,
+                         command_size,
+                         "docker exec trace_generator ./main %lld %f %lld %f %f %f %f %lld > %s",
+                         traceData[i].MUESTRAS,
+                         traceData[i].inter_arrival,
+                         traceData[i].DISTRIBUTION,
+                         traceData[i].mean,
+                         traceData[i].stddev,
+                         traceData[i].SIZE,
+                         traceData[i].stddevS,
+                         traceData[i].Concurrency,
+                         quoted_result_path);
+        }
 
-        free(command);
+        if (command)
+        {
+            execute_command(command);
+            free(command);
+        }
+
+        free(quoted_result_path);
         free(fileName);
     }
 }
@@ -2510,24 +2962,13 @@ static int run_queue_estimator(const char *container_prefix, int worker_id, doub
 
     mkdir("results", 0777);
 
-    int command_size = snprintf(NULL, 0,
-                                "docker exec %s%d ./single %f %f %d",
-                                container_prefix,
-                                worker_id,
-                                mean_interarrival,
-                                mean_service,
-                                samples) + 1;
-    char *command = malloc(command_size);
+    char *command = build_queue_estimator_command(container_prefix,
+                                                  worker_id,
+                                                  mean_interarrival,
+                                                  mean_service,
+                                                  samples);
     if (!command)
         return -1;
-
-    snprintf(command, command_size,
-             "docker exec %s%d ./single %f %f %d",
-             container_prefix,
-             worker_id,
-             mean_interarrival,
-             mean_service,
-             samples);
 
     printf("Running queue estimator for worker %d - %s with mean interarrival %f seconds, mean service %f seconds, samples %d\n",
            worker_id,
@@ -2866,25 +3307,25 @@ void indexing_time(struct worker *my_data)
 
         st_avg += (float)(io_total / my_data->sizeWorker);
 
-        command = malloc(sizeof(char) * strlen(path) + 200);
-        sprintf(
-            command,
-            "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage3.txt'",
-            agent_container_prefix,
-            my_data->id,
-            stage_mean_interarrival_seconds(my_data->stage, my_data),
-            st_avg,
-            my_data->sizeWorker,
-            path,
-            my_data->id);
+        char result_path[1024];
+        snprintf(result_path, sizeof(result_path), "%s/results/w%d_stage3.txt", path, my_data->id);
+        command = build_queue_estimator_redirect_command(agent_container_prefix,
+                                                         my_data->id,
+                                                         stage_mean_interarrival_seconds(my_data->stage, my_data),
+                                                         st_avg,
+                                                         my_data->sizeWorker,
+                                                         result_path);
 
         /* record per-worker total and per-object indexing times */
         my_data->service_time = st + (float)io_total;
         for (j = 0; j < my_data->sizeWorker; ++j) {
             my_data->trace[j].service_time_idx = st_avg; /* per-object average for indexing */
         }
-        execute_command(command);
-        free(command);
+        if (command)
+        {
+            execute_command(command);
+            free(command);
+        }
     }
 }
 
@@ -2921,20 +3362,20 @@ void IDA_time(struct worker *my_data)
         }
         st_avg = st_sum / my_data->sizeWorker;
 
-        command = malloc(sizeof(char) * strlen(path) + 200);
-        sprintf(
-            command,
-            "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage4.txt'",
-            agent_container_prefix,
-            my_data->id,
-            stage_mean_interarrival_seconds(my_data->stage, my_data),
-            st_avg,
-            my_data->sizeWorker,
-            path,
-            my_data->id);
+        char result_path[1024];
+        snprintf(result_path, sizeof(result_path), "%s/results/w%d_stage4.txt", path, my_data->id);
+        command = build_queue_estimator_redirect_command(agent_container_prefix,
+                                                         my_data->id,
+                                                         stage_mean_interarrival_seconds(my_data->stage, my_data),
+                                                         st_avg,
+                                                         my_data->sizeWorker,
+                                                         result_path);
 
-        execute_command(command);
-        free(command);
+        if (command)
+        {
+            execute_command(command);
+            free(command);
+        }
     }
 }
 
@@ -2978,20 +3419,20 @@ void IDA_reconstruct_time(struct worker *my_data)
         }
         st_avg = st_sum / my_data->sizeWorker;
 
-        command = malloc(sizeof(char) * strlen(path) + 200);
-        sprintf(
-            command,
-            "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage4.txt'",
-            agent_container_prefix,
-            my_data->id,
-            stage_mean_interarrival_seconds(my_data->stage, my_data),
-            st_avg,
-            my_data->sizeWorker,
-            path,
-            my_data->id);
+        char result_path[1024];
+        snprintf(result_path, sizeof(result_path), "%s/results/w%d_stage4.txt", path, my_data->id);
+        command = build_queue_estimator_redirect_command(agent_container_prefix,
+                                                         my_data->id,
+                                                         stage_mean_interarrival_seconds(my_data->stage, my_data),
+                                                         st_avg,
+                                                         my_data->sizeWorker,
+                                                         result_path);
 
-        execute_command(command);
-        free(command);
+        if (command)
+        {
+            execute_command(command);
+            free(command);
+        }
     }
 }
 
@@ -3072,20 +3513,20 @@ void upload_time(struct worker *my_data)
 
         my_data->trace[j].service_time_io = (float)t_write;
 
-        command = malloc(sizeof(char) * (strlen(path) + 256));
-        sprintf(
-            command,
-            "docker exec %s%d ./single %f %f %d >> '%s/results/w%d_stage5.txt'",
-            agent_container_prefix,
-            my_data->id,
-            stage_mean_interarrival_seconds(my_data->stage, my_data),
-            my_data->trace[j].service_time_io,
-            my_data->trace[j].MUESTRAS,
-            path,
-            my_data->id);
+        char result_path[1024];
+        snprintf(result_path, sizeof(result_path), "%s/results/w%d_stage5.txt", path, my_data->id);
+        command = build_queue_estimator_redirect_command(agent_container_prefix,
+                                                         my_data->id,
+                                                         stage_mean_interarrival_seconds(my_data->stage, my_data),
+                                                         my_data->trace[j].service_time_io,
+                                                         my_data->trace[j].MUESTRAS,
+                                                         result_path);
 
-        execute_command(command);
-        free(command);
+        if (command)
+        {
+            execute_command(command);
+            free(command);
+        }
     }
 }
 
