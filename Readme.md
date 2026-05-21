@@ -9,6 +9,12 @@ docker build -t single:queue ./stages
 docker build -t trace:generator ./TRACE_GENERATOR
 ```
 
+For Apptainer, build or provide the queue estimator SIF. The simulator defaults to:
+
+```bash
+../stages/single_queue.sif
+```
+
 ### Simulator execution
 
 Go to the ```proxy_dd``` directory, compile the code, and execute the main program:
@@ -16,7 +22,8 @@ Go to the ```proxy_dd``` directory, compile the code, and execute the main progr
 ```bash
 cd proxy_dd
 make
-./main
+./main config_distributed_example.json
+./main config_distributed_example.json apptainer ../stages/single_queue.sif
 ```
 
 #### Configurations
@@ -27,6 +34,8 @@ In ```proxy_dd``` directory, edit the file ```config.cfg``` specifying the follo
 * ```traces_number```: number of input traces for each worker.
 * ```traces_fileName```: configuration file containing the parameters of each trace.
 * ```service_time_model```: service-time model for benchmark tables. Use ```linear``` for the previous linear interpolation or ```log-log``` for a power-law fit in log-log space.
+* ```container_platform```: container runtime for the queue estimator. Use ```docker``` (default) or ```apptainer```.
+* ```queue_container_image```: Docker image or Apptainer SIF for the queue estimator. Defaults to ```single:queue``` with Docker and ```../stages/single_queue.sif``` with Apptainer.
 * ```application_mean_service_time```: per-stage average application execution time, in seconds, configured inside each stage and simulated between that stage's input and output pipelines with the ```single:queue``` estimator.
 
 ### Single Requirement Benchmarks

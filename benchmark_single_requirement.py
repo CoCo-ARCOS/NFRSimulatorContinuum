@@ -33,6 +33,21 @@ SERVICE_TIME_MODEL_ALIASES = {
     "powerlaw": "log-log",
 }
 
+CONTAINER_PLATFORM_ALIASES = {
+    "docker": "docker",
+    "apptainer": "apptainer",
+    "singularity": "singularity",
+}
+
+QUEUE_IMAGE_KEYS = (
+    "queue_container_image",
+    "queue_image",
+    "single_queue_image",
+    "queue_sif",
+    "sif_path",
+    "apptainer_sif",
+)
+
 REQ_TO_FAMILY = {
     "compress": "compression",
     "hash": "hash",
@@ -174,6 +189,15 @@ def parse_args():
         type=Path,
         default=Path("proxy_dd"),
         help="Simulator directory to use, e.g. proxy_dd or proxy_dd_interpolation_only.",
+    )
+    parser.add_argument(
+        "--container-platform",
+        choices=("docker", "apptainer", "singularity"),
+        help="Container runtime for the simulator queue estimator. Defaults to the base config value, then docker.",
+    )
+    parser.add_argument(
+        "--queue-container-image",
+        help="Queue estimator Docker image or Apptainer/Singularity SIF. Defaults to single:queue for Docker and ../stages/single_queue.sif for Apptainer.",
     )
     parser.add_argument(
         "--base-simulator-config",
@@ -347,6 +371,16 @@ def normalized_service_time_model(value):
     raise ValueError(f"Invalid service-time model `{value}`. Expected one of: {valid}")
 
 
+def normalized_container_platform(value):
+    if value in ("", None):
+        return None
+    key = str(value).strip().lower()
+    if key in CONTAINER_PLATFORM_ALIASES:
+        return CONTAINER_PLATFORM_ALIASES[key]
+    valid = ", ".join(sorted(CONTAINER_PLATFORM_ALIASES.values()))
+    raise ValueError(f"Invalid container platform `{value}`. Expected one of: {valid}")
+
+
 def base_service_time_model(base_config):
     for key in ("service_time_model", "interpolation_model", "modeling_model"):
         model = normalized_service_time_model(base_config.get(key))
@@ -357,6 +391,54 @@ def base_service_time_model(base_config):
 
 def resolve_service_time_model(args, base_config):
     return normalized_service_time_model(args.service_time_model) or base_service_time_model(base_config)
+
+
+def base_container_platform(base_config):
+    for key in ("container_platform", "container_runtime", "runtime"):
+        platform = normalized_container_platform(base_config.get(key))
+        if platform:
+            return platform
+    return "docker"
+
+
+def resolve_container_platform(args, base_config):
+    return normalized_container_platform(getattr(args, "container_platform", None)) or base_container_platform(base_config)
+
+
+def base_queue_container_image(base_config):
+    for key in QUEUE_IMAGE_KEYS:
+        image = base_config.get(key)
+        if image:
+            return str(image)
+    return None
+
+
+def resolve_container_image_path(args, image):
+    if not image or "://" in str(image):
+        return image
+
+    path = Path(str(image))
+    if path.is_absolute():
+        return str(path)
+
+    candidates = [
+        Path.cwd() / path,
+        args.simulator_dir.resolve() / path,
+        args.base_simulator_config.resolve().parent / path,
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate.resolve())
+    return str(image)
+
+
+def resolve_queue_container_image(args, base_config, container_platform):
+    image = getattr(args, "queue_container_image", None) or base_queue_container_image(base_config)
+    if not image:
+        image = "../stages/single_queue.sif" if container_platform in ("apptainer", "singularity") else "single:queue"
+    if container_platform in ("apptainer", "singularity"):
+        return resolve_container_image_path(args, image)
+    return str(image)
 
 
 def resolve_ida_k(args, base_config):
@@ -522,6 +604,8 @@ def requirement_spec(req_type: str, algorithm: str):
 def make_simulator_config(args, base_config):
     profile = getattr(args, "hardware_profile", None) or first_machine_profile(base_config)
     service_time_model = resolve_service_time_model(args, base_config)
+    container_platform = resolve_container_platform(args, base_config)
+    queue_container_image = resolve_queue_container_image(args, base_config, container_platform)
     ida_algo = args.algorithm if args.requirement_type == "cipher" else base_config.get("ida_algo", "RS")
     bandwidths = {
         "b_fs": 0.0,
@@ -576,6 +660,8 @@ def make_simulator_config(args, base_config):
         "hashing_algo": base_config.get("hashing_algo", "SHA256"),
         "ida_algo": ida_algo,
         "service_time_model": service_time_model,
+        "container_platform": container_platform,
+        "queue_container_image": queue_container_image,
         "ida_k": getattr(args, "ida_k", 8),
         "ida_m": getattr(args, "ida_m", 4),
         "aes_key_bits": args.aes_key_bits,
@@ -650,9 +736,17 @@ def run_simulator(args, simulator_config_path: Path, out_dir: Path):
     remove_results_dir(simulator_dir / "results")
     stdout_path = out_dir / "simulator_stdout.txt"
     stderr_path = out_dir / "simulator_stderr.txt"
+    command = [
+        str((simulator_dir / "main").resolve()),
+        str(simulator_config_path.resolve()),
+        args.service_time_model,
+        args.container_platform,
+    ]
+    if getattr(args, "queue_container_image", None):
+        command.append(args.queue_container_image)
     with stdout_path.open("w", encoding="utf-8") as out_fp, stderr_path.open("w", encoding="utf-8") as err_fp:
         subprocess.run(
-            [str((simulator_dir / "main").resolve()), str(simulator_config_path.resolve())],
+            command,
             cwd=simulator_dir,
             check=True,
             stdout=out_fp,
@@ -906,6 +1000,8 @@ def write_summary(benchmark_dir: Path, summary):
         "input_mode",
         "inter_arrival",
         "service_time_model",
+        "container_platform",
+        "queue_container_image",
         "ida_k",
         "ida_m",
         "metric",
@@ -930,6 +1026,8 @@ def write_summary(benchmark_dir: Path, summary):
                     "input_mode": summary.get("input_mode", ""),
                     "inter_arrival": summary.get("inter_arrival", ""),
                     "service_time_model": summary.get("service_time_model", ""),
+                    "container_platform": summary.get("container_platform", ""),
+                    "queue_container_image": summary.get("queue_container_image", ""),
                     "ida_k": summary.get("ida_k", ""),
                     "ida_m": summary.get("ida_m", ""),
                     "metric": metric,
@@ -956,6 +1054,8 @@ def write_summary(benchmark_dir: Path, summary):
         f"- input mode: `{summary.get('input_mode', '')}`",
         f"- inter-arrival: `{summary.get('inter_arrival', '')}`",
         f"- service-time model: `{summary.get('service_time_model', '')}`",
+        f"- container platform: `{summary.get('container_platform', '')}`",
+        f"- queue container image: `{summary.get('queue_container_image', '')}`",
         f"- calibrated stage: `{summary.get('real_to_simulator_calibration', {}).get('stage_name', '')}`",
         "- task read/write timing is excluded; simulator filesystem and queue timing are disabled",
         "",
@@ -995,6 +1095,7 @@ def benchmark_name(args):
         f"{str(args.inter_arrival).replace('.', 'p')}ia",
         f"{args.aes_key_bits}bits",
         slugify(args.service_time_model or "linear"),
+        slugify(getattr(args, "container_platform", "") or "docker"),
         args.input_mode,
     ])
     return "_".join(parts)
@@ -1003,6 +1104,8 @@ def benchmark_name(args):
 def run_single_benchmark(args, base_config, parent_out_dir=None):
     args = argparse.Namespace(**vars(args))
     args.service_time_model = resolve_service_time_model(args, base_config)
+    args.container_platform = resolve_container_platform(args, base_config)
+    args.queue_container_image = resolve_queue_container_image(args, base_config, args.container_platform)
     args.ida_k = resolve_ida_k(args, base_config)
     args.ida_m = resolve_ida_m(args, base_config)
     benchmark_dir = (parent_out_dir or args.out_dir.resolve()) / benchmark_name(args)
@@ -1032,6 +1135,8 @@ def run_single_benchmark(args, base_config, parent_out_dir=None):
     summary["inter_arrival"] = args.inter_arrival
     summary["aes_key_bits"] = args.aes_key_bits
     summary["service_time_model"] = args.service_time_model
+    summary["container_platform"] = args.container_platform
+    summary["queue_container_image"] = args.queue_container_image
     summary["ida_k"] = args.ida_k
     summary["ida_m"] = args.ida_m
     summary["real_to_simulator_calibration"] = calibration_info
@@ -1040,6 +1145,7 @@ def run_single_benchmark(args, base_config, parent_out_dir=None):
 
     print(f"Benchmark written to {benchmark_dir}")
     print(f"Requirement: {summary['requirement_label']}")
+    print(f"Container platform: {summary['container_platform']} ({summary['queue_container_image']})")
     for metric, values in summary["comparison"].items():
         print(
             f"{metric}: real={values['real']:.6f}s simulator={values['simulator']:.6f}s "
@@ -1075,6 +1181,8 @@ def build_sweep_cases(args, base_config):
     inter_arrival_values = parse_float_list(args.inter_arrival_list, args.inter_arrival, "--inter-arrival-list")
     aes_key_bits_values = parse_int_list(args.aes_key_bits_list, args.aes_key_bits, "--aes-key-bits-list")
     service_time_models = parse_service_time_models(args, base_config)
+    container_platform = resolve_container_platform(args, base_config)
+    queue_container_image = resolve_queue_container_image(args, base_config, container_platform)
     input_modes = parse_input_modes(args)
     ida_pairs = parse_ida_pairs(args, base_config)
 
@@ -1091,23 +1199,24 @@ def build_sweep_cases(args, base_config):
                                         for service_time_model in service_time_models:
                                             active_pairs = ida_pairs if algorithm == "RS" else [ida_pairs[0]]
                                             for ida_k, ida_m in active_pairs:
-                                                cases.append(
-                                                    make_case_args(
-                                                        args,
-                                                        requirement_type,
-                                                        algorithm,
-                                                        direction,
-                                                        objects,
-                                                        size_mb,
-                                                        workers,
-                                                        inter_arrival,
-                                                        input_mode,
-                                                        aes_key_bits,
-                                                        service_time_model,
-                                                        ida_k,
-                                                        ida_m,
-                                                    )
+                                                case_args = make_case_args(
+                                                    args,
+                                                    requirement_type,
+                                                    algorithm,
+                                                    direction,
+                                                    objects,
+                                                    size_mb,
+                                                    workers,
+                                                    inter_arrival,
+                                                    input_mode,
+                                                    aes_key_bits,
+                                                    service_time_model,
+                                                    ida_k,
+                                                    ida_m,
                                                 )
+                                                case_args.container_platform = container_platform
+                                                case_args.queue_container_image = queue_container_image
+                                                cases.append(case_args)
     return cases
 
 
@@ -1126,6 +1235,8 @@ def sweep_plan_rows(cases):
                 "inter_arrival": case_args.inter_arrival,
                 "aes_key_bits": case_args.aes_key_bits,
                 "service_time_model": case_args.service_time_model,
+                "container_platform": getattr(case_args, "container_platform", "") or "",
+                "queue_container_image": getattr(case_args, "queue_container_image", "") or "",
                 "input_mode": case_args.input_mode,
                 "ida_k": case_args.ida_k,
                 "ida_m": case_args.ida_m,
@@ -1150,6 +1261,8 @@ def flatten_summary_row(summary, benchmark_dir, status="ok", error=""):
         "inter_arrival": summary.get("inter_arrival", ""),
         "aes_key_bits": summary.get("aes_key_bits", ""),
         "service_time_model": summary.get("service_time_model", ""),
+        "container_platform": summary.get("container_platform", ""),
+        "queue_container_image": summary.get("queue_container_image", ""),
         "ida_k": summary.get("ida_k", ""),
         "ida_m": summary.get("ida_m", ""),
         "requirement_label": summary.get("requirement_label", ""),
@@ -1178,6 +1291,8 @@ def failed_summary_row(case_args, error, benchmark_dir=""):
         "inter_arrival": case_args.inter_arrival,
         "aes_key_bits": case_args.aes_key_bits,
         "service_time_model": case_args.service_time_model,
+        "container_platform": getattr(case_args, "container_platform", "") or "",
+        "queue_container_image": getattr(case_args, "queue_container_image", "") or "",
         "ida_k": case_args.ida_k,
         "ida_m": case_args.ida_m,
         "requirement_label": expected_requirement_label(case_args),
@@ -1217,15 +1332,15 @@ def write_sweep_outputs(sweep_dir: Path, plan_rows, result_rows):
         f"- completed: `{completed}`",
         f"- failed: `{failed}`",
         "",
-        "| Status | Requirement | Direction | Algorithm | K | M | Objects | Size MB | Workers | Model | Input Mode | Requirement APE (%) |",
-        "|---|---|---|---|---|---|---:|---:|---:|---|---|---:|",
+        "| Status | Requirement | Direction | Algorithm | K | M | Objects | Size MB | Workers | Model | Runtime | Input Mode | Requirement APE (%) |",
+        "|---|---|---|---|---|---|---:|---:|---:|---|---|---|---:|",
     ]
     for row in result_rows:
         ape = row.get("requirement_compute_seconds_ape_percent", "")
         ape_value = f"{float(ape):.2f}" if ape not in ("", None) else ""
         lines.append(
             "| {status} | {requirement_type} | {direction} | {algorithm} | {ida_k} | {ida_m} | {objects} | {size_mb} | "
-            "{workers} | {service_time_model} | {input_mode} | {ape} |".format(
+            "{workers} | {service_time_model} | {container_platform} | {input_mode} | {ape} |".format(
                 status=row.get("status", ""),
                 requirement_type=row.get("requirement_type", ""),
                 direction=row.get("direction", ""),
@@ -1236,6 +1351,7 @@ def write_sweep_outputs(sweep_dir: Path, plan_rows, result_rows):
                 size_mb=row.get("size_mb", ""),
                 workers=row.get("workers", ""),
                 service_time_model=row.get("service_time_model", ""),
+                container_platform=row.get("container_platform", ""),
                 input_mode=row.get("input_mode", ""),
                 ape=ape_value,
             )
@@ -1269,7 +1385,7 @@ def run_sweep(args, base_config):
         print(
             f"[{index}/{len(cases)}] {case_args.direction} {case_args.requirement_type}:{case_args.algorithm} "
             f"objects={case_args.objects} size_mb={case_args.size_mb} workers={case_args.workers} "
-            f"model={case_args.service_time_model} input_mode={case_args.input_mode}"
+            f"model={case_args.service_time_model} runtime={case_args.container_platform} input_mode={case_args.input_mode}"
         )
         if build_done:
             case_args.skip_build = True

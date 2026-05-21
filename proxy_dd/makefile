@@ -1,6 +1,7 @@
 CC = gcc
 THREAD = -lpthread
 LDLIBS = -lm
+CONTAINER_PLATFORM ?= docker
 
 all: main
 
@@ -23,10 +24,14 @@ clean:
 	rm -f *.o main
 
 remove_containers:
+ifeq ($(CONTAINER_PLATFORM),docker)
 	-docker rm -f output_agent0 output_agent1 output_agent2 \
 	            input_agent0  input_agent1  input_agent2 \
 	            application_agent0 application_agent1 application_agent2 \
 	            trace_generator 2>/dev/null || true
+else
+	@echo "No long-running containers are created for $(CONTAINER_PLATFORM)."
+endif
 
 delete_trace_results:
 	rm -f traces/* results/*

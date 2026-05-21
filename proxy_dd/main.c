@@ -50,7 +50,8 @@ int main(int argc, char const *argv[]){
 
 
 	if (argc < 2) {
-		fprintf(stderr, "Usage: %s <config_file.json> [service_time_model]\n", argv[0]);
+		fprintf(stderr, "Usage: %s <config_file.json> [service_time_model] [container_platform] [queue_container_image]\n", argv[0]);
+		fprintf(stderr, "       %s <config_file.json> [container_platform] [queue_container_image]\n", argv[0]);
 		return 1;
 	}
 
@@ -59,9 +60,27 @@ int main(int argc, char const *argv[]){
 
     configuration = read_config(filename);
 	if (argc >= 3) {
-		strncpy(configuration->service_time_model, argv[2], sizeof(configuration->service_time_model) - 1);
-		configuration->service_time_model[sizeof(configuration->service_time_model) - 1] = '\0';
+		if (is_container_platform_name(argv[2])) {
+			strncpy(configuration->container_platform, argv[2], sizeof(configuration->container_platform) - 1);
+			configuration->container_platform[sizeof(configuration->container_platform) - 1] = '\0';
+			if (argc >= 4) {
+				strncpy(configuration->queue_container_image, argv[3], sizeof(configuration->queue_container_image) - 1);
+				configuration->queue_container_image[sizeof(configuration->queue_container_image) - 1] = '\0';
+			}
+		} else {
+			strncpy(configuration->service_time_model, argv[2], sizeof(configuration->service_time_model) - 1);
+			configuration->service_time_model[sizeof(configuration->service_time_model) - 1] = '\0';
+			if (argc >= 4) {
+				strncpy(configuration->container_platform, argv[3], sizeof(configuration->container_platform) - 1);
+				configuration->container_platform[sizeof(configuration->container_platform) - 1] = '\0';
+			}
+			if (argc >= 5) {
+				strncpy(configuration->queue_container_image, argv[4], sizeof(configuration->queue_container_image) - 1);
+				configuration->queue_container_image[sizeof(configuration->queue_container_image) - 1] = '\0';
+			}
+		}
 	}
+	configure_container_runtime(configuration);
 
     snprintf(agent_container_prefix, sizeof(agent_container_prefix), "%s_agent", configuration->agent_type);
 

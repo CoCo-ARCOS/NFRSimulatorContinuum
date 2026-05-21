@@ -159,6 +159,10 @@ struct config
 	char hashing_algo[32];								   /**< Hashing algorithm.*/
 	char ida_algo[32];									   /**< IDA algorithm.*/
 	char service_time_model[32];							   /**< Service-time model: linear or log-log. */
+	char container_platform[32];							   /**< Container platform: docker or apptainer. */
+	char queue_container_image[512];						   /**< Queue estimator container image/SIF. */
+	char trace_container_image[512];						   /**< Trace generator container image/SIF. */
+	char trace_generator_binary[512];						   /**< Native trace generator fallback. */
 	int ida_k;											   /**< IDA k_datos.*/
 	int ida_m;											   /**< IDA m_paridad.*/
 	int aes_key_bits;								   /**< AES key size in bits for confidentiality.*/
@@ -187,6 +191,9 @@ struct traceConfig *read_configTrace(int numberTrace, char *fileName);
 int has_inline_traces(void);
 
 void execute_command(char *command);
+
+int is_container_platform_name(const char *value);
+void configure_container_runtime(struct config *configuration);
 
 void makeTraceGenerator();
 

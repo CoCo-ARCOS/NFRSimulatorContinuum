@@ -14,6 +14,8 @@ RUN_INTERPOLATION=1
 PROFILES=("c3" "dianalap" "toge")
 QUEUE_USE_SIMULATOR=0
 SIMULATOR_CONTAINER=""
+QUEUE_CONTAINER_PLATFORM="docker"
+QUEUE_SIMULATOR_IMAGE="../stages/single_queue.sif"
 SENSITIVITY_FACTORS=(
   payload_size
   devices
@@ -40,7 +42,9 @@ Options:
   --skip-interpolation          Skip interpolation validation.
   --skip-queueing               Skip queueing validation.
   --skip-sensitivity            Skip sensitivity analysis.
-  --use-queue-simulator NAME    Also compare MM1 against the queue-estimator container.
+  --use-queue-simulator [NAME]  Also compare MM1 against the queue estimator. NAME is the Docker container.
+  --queue-container-platform P  docker | apptainer | singularity. Default: docker
+  --queue-simulator-image FILE  Apptainer/Singularity SIF for the queue estimator.
   -h, --help                    Show this help.
 EOF
 }
@@ -93,7 +97,19 @@ while [[ $# -gt 0 ]]; do
       ;;
     --use-queue-simulator)
       QUEUE_USE_SIMULATOR=1
-      SIMULATOR_CONTAINER="$2"
+      if [[ $# -gt 1 && "$2" != --* ]]; then
+        SIMULATOR_CONTAINER="$2"
+        shift 2
+      else
+        shift
+      fi
+      ;;
+    --queue-container-platform)
+      QUEUE_CONTAINER_PLATFORM="$2"
+      shift 2
+      ;;
+    --queue-simulator-image)
+      QUEUE_SIMULATOR_IMAGE="$2"
       shift 2
       ;;
     -h|--help)
@@ -159,7 +175,12 @@ if [[ "$RUN_QUEUEING" -eq 1 ]]; then
       --plots-dir "$profile_out/plots"
     )
     if [[ "$QUEUE_USE_SIMULATOR" -eq 1 ]]; then
-      queue_cmd+=(--use-simulator --simulator-container "$SIMULATOR_CONTAINER")
+      queue_cmd+=(--use-simulator --container-platform "$QUEUE_CONTAINER_PLATFORM")
+      if [[ "$QUEUE_CONTAINER_PLATFORM" == "docker" ]]; then
+        queue_cmd+=(--simulator-container "$SIMULATOR_CONTAINER")
+      else
+        queue_cmd+=(--simulator-image "$QUEUE_SIMULATOR_IMAGE")
+      fi
     fi
     run_cmd "queueing_${profile}" "${queue_cmd[@]}"
   done

@@ -85,7 +85,18 @@ def parse_args():
     parser.add_argument(
         "--simulator-container",
         default=None,
-        help="Container name that exposes ./single, for example application_agent0.",
+        help="Docker container name that exposes ./single, for example application_agent0.",
+    )
+    parser.add_argument(
+        "--container-platform",
+        choices=("docker", "apptainer", "singularity"),
+        default="docker",
+        help="Container runtime used for --use-simulator. Docker uses --simulator-container; Apptainer/Singularity use --simulator-image.",
+    )
+    parser.add_argument(
+        "--simulator-image",
+        default="../stages/single_queue.sif",
+        help="Apptainer/Singularity SIF used by the queue estimator.",
     )
     parser.add_argument(
         "--simulator-samples",
@@ -296,21 +307,32 @@ def simulate_queue(model, lambda_rate, mu_rate, samples, warmup, seed, servers=1
     }
 
 
-def run_simulator_queue_estimator(container_name, lambda_rate, mu_rate, samples):
-    if not container_name:
-        raise ValueError("simulator container name is required")
-
+def run_simulator_queue_estimator(container_name, lambda_rate, mu_rate, samples, container_platform="docker", simulator_image=None):
     mean_interarrival = 1.0 / lambda_rate
     mean_service = 1.0 / mu_rate
-    command = [
-        "docker",
-        "exec",
-        container_name,
-        "./single",
-        f"{mean_interarrival}",
-        f"{mean_service}",
-        f"{samples}",
-    ]
+    if container_platform == "docker":
+        if not container_name:
+            raise ValueError("simulator container name is required for docker")
+        command = [
+            "docker",
+            "exec",
+            container_name,
+            "./single",
+            f"{mean_interarrival}",
+            f"{mean_service}",
+            f"{samples}",
+        ]
+    else:
+        if not simulator_image:
+            raise ValueError("simulator image/SIF is required for apptainer")
+        command = [
+            container_platform,
+            "run",
+            simulator_image,
+            f"{mean_interarrival}",
+            f"{mean_service}",
+            f"{samples}",
+        ]
     result = subprocess.run(command, capture_output=True, text=True, check=True)
 
     print(f"Simulator output for lambda={lambda_rate}, mu={mu_rate}:\n{result.stdout}")
@@ -347,7 +369,9 @@ def abs_pct_error(actual, estimate):
 
 def collect_results(args):
     rows = []
-    simulator_enabled = args.use_simulator and bool(args.simulator_container)
+    simulator_enabled = args.use_simulator and (
+        bool(args.simulator_container) if args.container_platform == "docker" else bool(args.simulator_image)
+    )
     scenarios = list(DEFAULT_SCENARIOS)
     scenarios.extend(build_mgcc_scenarios(args.real_values_dir))
 
@@ -392,6 +416,8 @@ def collect_results(args):
                     lambda_rate,
                     mu_rate,
                     args.simulator_samples,
+                    args.container_platform,
+                    args.simulator_image,
                 )
                 row["simulator_waiting_time"] = simulator["waiting_time"]
                 row["simulator_response_time"] = simulator["response_time"]
