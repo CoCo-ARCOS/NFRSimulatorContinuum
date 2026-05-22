@@ -2274,6 +2274,8 @@ void makeAgents(int workers, const char *agent_type)
             pwd, pwd,
             quoted_image);
 
+        printf("Starting %s queue agent %d with command: %s\n", agent_type ? agent_type : "worker", i, command);
+
         execute_command(command);
         free(quoted_image);
         free(command);

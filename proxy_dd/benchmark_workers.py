@@ -57,6 +57,7 @@ def new_stage_summary():
         "crypto": [],
         "application": [],
         "output": [],
+        "transfer": [],
         "input_requirements": {},
         "output_requirements": {},
     }
@@ -225,6 +226,8 @@ def clear_results_dir(results_dir: Path):
 
 
 def run_simulation(simulator: Path, config_path: Path, base_dir: Path):
+    simulator = simulator if simulator.is_absolute() else simulator.resolve()
+    config_path = config_path if config_path.is_absolute() else config_path.resolve()
     if not simulator.exists():
         raise FileNotFoundError(f"Simulator executable not found: {simulator}")
     print(f"Running simulator with config: {config_path} {simulator}")
@@ -285,6 +288,7 @@ def read_stage_totals(results_dir: Path):
             )
             row["application_seconds"] = float_any(row, "application_seconds")
             row["output_seconds"] = float_any(row, "output_stage_seconds", "output_seconds")
+            row["transfer_seconds"] = float_any(row, "transfer_seconds", default=0.0)
             row["input_requirements"] = parse_requirement_breakdown(row, "input")
             row["output_requirements"] = parse_requirement_breakdown(row, "output")
             rows.append(row)
@@ -315,6 +319,7 @@ def aggregate_runs(run_results):
             run_crypto_total = 0.0
             run_output_total = 0.0
             run_application_total = 0.0
+            run_transfer_total = 0.0
             for row in rows:
                 stage_total += row["total_seconds"]
                 # derive avg worker seconds if not present
@@ -326,6 +331,7 @@ def aggregate_runs(run_results):
                 run_crypto_total += row.get("crypto_seconds", 0.0)
                 run_output_total += row["output_seconds"]
                 run_application_total += row["application_seconds"]
+                run_transfer_total += row.get("transfer_seconds", 0.0)
                 stage_summary = stage_data[(row["stage"], row["stage_name"])]
                 stage_summary["total"].append(row["total_seconds"])
                 stage_summary["worker"].append(avg_worker)
@@ -335,6 +341,7 @@ def aggregate_runs(run_results):
                 stage_summary["crypto"].append(row.get("crypto_seconds", 0.0))
                 stage_summary["application"].append(row["application_seconds"])
                 stage_summary["output"].append(row["output_seconds"])
+                stage_summary["transfer"].append(row.get("transfer_seconds", 0.0))
 
                 for requirement in row.get("input_requirements", []):
                     req_summary = stage_summary["input_requirements"].setdefault(
@@ -362,6 +369,7 @@ def aggregate_runs(run_results):
             pipeline_crypto_times.append(run_crypto_total)
             pipeline_output_times.append(run_output_total)
             pipeline_application_times.append(run_application_total)
+            pipeline_transfer_times.append(run_transfer_total)
 
         averages = {}
         for (stage, stage_name), values in sorted(stage_data.items()):
@@ -378,6 +386,7 @@ def aggregate_runs(run_results):
                 "avg_crypto_total_seconds": sum(values["crypto"]) / len(values["crypto"]),
                 "avg_application_total_seconds": sum(values["application"]) / len(values["application"]),
                 "avg_output_total_seconds": sum(values["output"]) / len(values["output"]),
+                "avg_transfer_total_seconds": sum(values["transfer"]) / len(values["transfer"]),
                 "avg_input_requirements": average_requirement_breakdown(values["input_requirements"]),
                 "avg_output_requirements": average_requirement_breakdown(values["output_requirements"]),
             }
@@ -396,6 +405,7 @@ def aggregate_runs(run_results):
             "pipeline_avg_crypto_seconds": sum(pipeline_crypto_times) / len(pipeline_crypto_times) if pipeline_crypto_times else 0.0,
             "pipeline_avg_output_seconds": sum(pipeline_output_times) / len(pipeline_output_times) if pipeline_output_times else 0.0,
             "pipeline_avg_application_seconds": sum(pipeline_application_times) / len(pipeline_application_times) if pipeline_application_times else 0.0,
+            "pipeline_avg_transfer_seconds": sum(pipeline_transfer_times) / len(pipeline_transfer_times) if pipeline_transfer_times else 0.0,
             "runs": len(pipeline_times),
         }
 
@@ -434,6 +444,7 @@ def write_summary_csv(summary_path: Path, workers_summary, stage_names):
         "pipeline_avg_crypto_seconds",
         "pipeline_avg_output_seconds",
         "pipeline_avg_application_seconds",
+        "pipeline_avg_transfer_seconds",
         "runs",
     ]
     with summary_path.open("w", newline="", encoding="utf-8") as fp:
@@ -471,6 +482,7 @@ def write_summary_csv(summary_path: Path, workers_summary, stage_names):
                         "pipeline_avg_crypto_seconds": summary.get("pipeline_avg_crypto_seconds", 0.0),
                         "pipeline_avg_output_seconds": summary.get("pipeline_avg_output_seconds", 0.0),
                         "pipeline_avg_application_seconds": summary.get("pipeline_avg_application_seconds", 0.0),
+                        "pipeline_avg_transfer_seconds": summary.get("pipeline_avg_transfer_seconds", 0.0),
                         "runs": summary["runs"],
                     }
                 )

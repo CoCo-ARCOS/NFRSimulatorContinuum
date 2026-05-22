@@ -207,6 +207,7 @@ def summarize_stage_totals(rows):
         "pipeline_input_seconds": 0.0,
         "pipeline_application_seconds": 0.0,
         "pipeline_output_seconds": 0.0,
+        "pipeline_transfer_seconds": 0.0,
         "pipeline_compression_seconds": 0.0,
         "pipeline_hash_seconds": 0.0,
         "pipeline_crypto_seconds": 0.0,
@@ -220,6 +221,7 @@ def summarize_stage_totals(rows):
         summary["pipeline_input_seconds"] += float(row.get("input_seconds", 0.0))
         summary["pipeline_application_seconds"] += float(row.get("application_seconds", 0.0))
         summary["pipeline_output_seconds"] += float(row.get("output_seconds", 0.0))
+        summary["pipeline_transfer_seconds"] += float(row.get("transfer_seconds", 0.0))
         summary["pipeline_compression_seconds"] += float(row.get("compression_seconds", 0.0))
         summary["pipeline_hash_seconds"] += float(row.get("hash_seconds", 0.0))
         summary["pipeline_crypto_seconds"] += float(row.get("crypto_seconds", 0.0))
@@ -365,32 +367,30 @@ def run_sensitivity_benchmarks(args):
                     modified_rows[0]["SIZE"] = float(item["payload_size"])
                     config_copy["traces"] = modified_rows
                     current_trace_rows = modified_rows
+                    # Configure pipeline so stages alternate compress -> uncompress -> compress ...
                     if "stages" in config_copy and config_copy["stages"]:
-                        first_stage = config_copy["stages"][0]
                         mode = item["mode"]
-                        
-                        if mode == "uncompressed":
-                            first_stage["application_size_factor"] = 1.0
-                            first_stage["output_requirements"] = [{"type": "hash", "algorithm": "SHA256"}, {"type": "cipher", "algorithm": "AES"}, {"type": "cipher", "algorithm": "RS"}]
-                        elif mode == "lz4_fast":
-                            first_stage["application_size_factor"] = 0.6
-                            first_stage["output_requirements"] = [{"type": "compress", "algorithm": "LZ4"}, {"type": "hash", "algorithm": "BLAKE3"}, {"type": "cipher", "algorithm": "AES"}, {"type": "cipher", "algorithm": "RS"}]
-                        elif mode == "zlib_standard":
-                            first_stage["application_size_factor"] = 0.4
-                            first_stage["output_requirements"] = [{"type": "compress", "algorithm": "ZLIB"}, {"type": "hash", "algorithm": "SHA256"}, {"type": "cipher", "algorithm": "AES"}, {"type": "cipher", "algorithm": "RS"}]
-                        elif mode == "zstd_modern":
-                            first_stage["application_size_factor"] = 0.3
-                            first_stage["output_requirements"] = [{"type": "compress", "algorithm": "ZSTD"}, {"type": "hash", "algorithm": "SHA256"}, {"type": "cipher", "algorithm": "AES"}, {"type": "cipher", "algorithm": "RS"}]
-                        elif mode == "bz2_max":
-                            first_stage["application_size_factor"] = 0.2
-                            first_stage["output_requirements"] = [{"type": "compress", "algorithm": "BZ2"}, {"type": "hash", "algorithm": "SHA3_256"}, {"type": "cipher", "algorithm": "AES"}, {"type": "cipher", "algorithm": "RS"}]
-                        elif mode == "zstd_light":
-                            first_stage["application_size_factor"] = 0.3
-                            first_stage["output_requirements"] = [{"type": "compress", "algorithm": "ZSTD"}, {"type": "cipher", "algorithm": "RS"}]
-                        
-                        for other_stage in config_copy["stages"][1:]:
-                            other_stage["output_requirements"] = []
+                        # map mode to compression algorithm and size factor
+                        algo_map = {
+                            "uncompressed": (None, 1.0),
+                            "lz4_fast": ("LZ4", 0.6),
+                            "zlib_standard": ("ZLIB", 0.4),
+                            "zstd_modern": ("ZSTD", 0.3),
+                            "bz2_max": ("BZ2", 0.2),
+                            "zstd_light": ("ZSTD", 0.3),
+                        }
+                        comp_algo, size_factor = algo_map.get(mode, (None, 1.0))
 
+                        # apply size factor to first stage application
+                        config_copy["stages"][0]["application_size_factor"] = size_factor
+
+                        # Set output requirements: even-indexed stages (0,2,...) will compress+hash+cipher
+                        for idx, stage in enumerate(config_copy["stages"]):
+                            stage["output_requirements"] = []
+                            if comp_algo and idx % 2 == 0:
+                                stage["output_requirements"].append({"type": "compress", "algorithm": comp_algo})
+                                stage["output_requirements"].append({"type": "hash", "algorithm": "SHA256"})
+                                stage["output_requirements"].append({"type": "cipher", "algorithm": "RS"})
                 # remove legacy traces_fileName to avoid file-based behavior
                 if "traces_fileName" in config_copy:
                     config_copy.pop("traces_fileName", None)
@@ -407,6 +407,111 @@ def run_sensitivity_benchmarks(args):
 
                 stage_rows = bw.read_stage_totals(run_dir / "results")
                 metrics = summarize_stage_totals(stage_rows)
+
+                # compute per-stage input/output bytes using link_metrics.csv and config->machines mapping
+                link_metrics_path = run_dir / "results" / "link_metrics.csv"
+                link_bytes = {}
+                if link_metrics_path.exists():
+                    with link_metrics_path.open("r", encoding="utf-8") as fp:
+                        reader = csv.DictReader(fp)
+                        for r in reader:
+                            frm = r.get("from") or r.get("src") or r.get("src_machine")
+                            to = r.get("to") or r.get("dst") or r.get("dst_machine")
+                            try:
+                                b = float(r.get("bytes", r.get("bytes_transferred", 0)))
+                            except Exception:
+                                b = 0.0
+                            if frm is None or to is None:
+                                continue
+                            link_bytes.setdefault((frm, to), 0.0)
+                            link_bytes[(frm, to)] += b
+
+                # map stage name -> machine name from config_copy
+                machine_list = config_copy.get("machines", [])
+                stage_to_machine = {}
+                for m in machine_list:
+                    mname = m.get("name") or m.get("machine")
+                    for s in m.get("stages", []) if isinstance(m.get("stages", []), list) else []:
+                        stage_to_machine[s] = mname
+
+                # write per-run stage sizes CSV
+                sizes_out = run_dir / "results" / "stage_sizes.csv"
+                sizes_out.parent.mkdir(parents=True, exist_ok=True)
+                with sizes_out.open("w", newline="", encoding="utf-8") as fp:
+                    fieldnames = ["stage", "stage_name", "input_bytes", "output_bytes", "total_seconds", "application_seconds", "compression_seconds", "objects"]
+                    writer = csv.DictWriter(fp, fieldnames=fieldnames)
+                    writer.writeheader()
+                    # compute trace initial total bytes for first stage input
+                    trace_total_bytes = 0.0
+                    try:
+                        for tr in current_trace_rows:
+                            trace_total_bytes += int(tr.get("MUESTRAS", 0)) * float(tr.get("SIZE", 0.0))
+                    except Exception:
+                        trace_total_bytes = 0.0
+
+                    for row in stage_rows:
+                        stage_idx = row.get("stage")
+                        stage_name = row.get("stage_name")
+                        machine = stage_to_machine.get(stage_name)
+                        # input bytes: sum of links from previous machine -> this machine
+                        input_bytes = 0.0
+                        output_bytes = 0.0
+                        if machine:
+                            # find previous machine by looking for a link (any frm -> machine) where frm is not machine and stage mapping matches previous stage
+                            # prefer directly the link from the machine of previous stage
+                            # find prev stage index (stage list order may be contiguous integers)
+                            prev_machine = None
+                            next_machine = None
+                            # attempt to locate prev/next stage by numeric stage index
+                            try:
+                                prev_idx = int(stage_idx) - 1
+                                next_idx = int(stage_idx) + 1
+                                prev_name = None
+                                next_name = None
+                                for r2 in stage_rows:
+                                    if int(r2.get("stage")) == prev_idx:
+                                        prev_name = r2.get("stage_name")
+                                    if int(r2.get("stage")) == next_idx:
+                                        next_name = r2.get("stage_name")
+                                if prev_name:
+                                    prev_machine = stage_to_machine.get(prev_name)
+                                if next_name:
+                                    next_machine = stage_to_machine.get(next_name)
+                            except Exception:
+                                prev_machine = None
+                                next_machine = None
+
+                            if prev_machine:
+                                input_bytes = link_bytes.get((prev_machine, machine), 0.0)
+                            else:
+                                # first stage: use original trace total as input bytes
+                                input_bytes = trace_total_bytes
+
+                            if next_machine:
+                                output_bytes = link_bytes.get((machine, next_machine), 0.0)
+                            else:
+                                # last stage: sum any outgoing links from this machine
+                                out_sum = 0.0
+                                for (frm, to), b in link_bytes.items():
+                                    if frm == machine:
+                                        out_sum += b
+                                output_bytes = out_sum
+
+                        writer.writerow(
+                            {
+                                "stage": stage_idx,
+                                "stage_name": stage_name,
+                                "input_bytes": input_bytes,
+                                "output_bytes": output_bytes,
+                                "total_seconds": row.get("total_seconds", 0.0),
+                                "application_seconds": row.get("application_seconds", 0.0),
+                                "compression_seconds": row.get("compression_seconds", 0.0),
+                                "objects": row.get("objects", 0),
+                            }
+                        )
+
+                # attach summary metadata
+                metrics["stage_sizes_csv"] = str(sizes_out)
                 metrics["trace_objects"] = get_stage_objects(current_trace_rows)
                 metrics["workers"] = config_copy.get("workers", baseline_config.get("workers", 0))
                 runs.append(metrics)
@@ -441,6 +546,7 @@ def run_sensitivity_benchmarks(args):
         "pipeline_input_seconds",
         "pipeline_application_seconds",
         "pipeline_output_seconds",
+        "pipeline_transfer_seconds",
         "pipeline_compression_seconds",
         "pipeline_hash_seconds",
         "pipeline_crypto_seconds",

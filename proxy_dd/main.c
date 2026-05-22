@@ -131,9 +131,9 @@ int main(int argc, char const *argv[]){
 	}
 
 	printf("\n=== Stage Execution Times ===\n");
-	printf("Stage\tName\tWorkers\tObjects\tInputStage(s)\tApplication(s)\tOutputStage(s)\tTotal(s)\n");
+	printf("Stage\tName\tWorkers\tObjects\tInputStage(s)\tApplication(s)\tOutputStage(s)\tTransfer(s)\tTotal(s)\n");
 	if (stage_totals_csv) {
-		fprintf(stage_totals_csv, "stage,stage_name,workers,objects,input_stage_seconds,input_compression_seconds,input_hash_seconds,input_crypto_seconds,application_seconds,output_stage_seconds,output_compression_seconds,output_hash_seconds,output_crypto_seconds,total_seconds");
+		fprintf(stage_totals_csv, "stage,stage_name,workers,objects,input_stage_seconds,input_compression_seconds,input_hash_seconds,input_crypto_seconds,application_seconds,output_stage_seconds,transfer_seconds,output_compression_seconds,output_hash_seconds,output_crypto_seconds,total_seconds");
 		write_requirement_headers(stage_totals_csv, "input", max_input_requirements);
 		write_requirement_headers(stage_totals_csv, "output", max_output_requirements);
 		fprintf(stage_totals_csv, "\n");
@@ -151,6 +151,7 @@ int main(int argc, char const *argv[]){
 		double max_input_time = 0.0;
 		double max_output_time = 0.0;
 		double max_application_time = 0.0;
+		double max_transfer_time = 0.0;
 		double max_compression_input = 0.0;
 		double max_hash_input = 0.0;
 		double max_crypto_input = 0.0;
@@ -164,6 +165,7 @@ int main(int argc, char const *argv[]){
 			max_input_time = fmax(max_input_time, arrayWorkers[w].stage_input_time[stage_idx]);
 			max_output_time = fmax(max_output_time, arrayWorkers[w].stage_output_time[stage_idx]);
 			max_application_time = fmax(max_application_time, arrayWorkers[w].stage_application_time[stage_idx]);
+			max_transfer_time = fmax(max_transfer_time, arrayWorkers[w].stage_transfer_time[stage_idx]);
 			max_compression_input = fmax(max_compression_input, arrayWorkers[w].stage_nfr_input_time[stage_idx][NFR_COMPRESS]);
 			max_compression_output = fmax(max_compression_output, arrayWorkers[w].stage_nfr_output_time[stage_idx][NFR_COMPRESS]);
 			max_hash_input = fmax(max_hash_input, arrayWorkers[w].stage_nfr_input_time[stage_idx][NFR_HASH]);
@@ -186,9 +188,9 @@ int main(int argc, char const *argv[]){
 			}
 		}
 
-		double stage_total = max_input_time + max_application_time + max_output_time;
+		double stage_total = max_input_time + max_application_time + max_output_time + max_transfer_time;
 
-		printf("%d\t%s\t%d\t%ld\t%f\t%f\t%f\t%f\n",
+		printf("%d\t%s\t%d\t%ld\t%f\t%f\t%f\t%f\t%f\n",
 			stage_num,
 			stage_def->name,
 			configuration->workers,
@@ -196,9 +198,10 @@ int main(int argc, char const *argv[]){
 			max_input_time,
 			max_application_time,
 			max_output_time,
+			max_transfer_time,
 			stage_total);
 		if (stage_totals_csv) {
-			fprintf(stage_totals_csv, "%d,%s,%d,%ld,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f",
+			fprintf(stage_totals_csv, "%d,%s,%d,%ld,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f",
 				stage_num,
 				stage_def->name,
 				configuration->workers,
@@ -209,6 +212,7 @@ int main(int argc, char const *argv[]){
 				max_crypto_input,
 				max_application_time,
 				max_output_time,
+				max_transfer_time,
 				max_compression_output,
 				max_hash_output,
 				max_crypto_output,
