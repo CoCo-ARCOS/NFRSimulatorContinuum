@@ -495,6 +495,10 @@ def cloud_inference(input_nifti, output_path):
 # ==========================================
 
 def run_workflow(args):
+    import os
+    edge_dir = os.path.abspath(os.path.join(args.output_dir, 'tmp_edge'))
+    fog_dir = os.path.abspath(os.path.join(args.output_dir, 'tmp_fog'))
+    cloud_dir = os.path.abspath(os.path.join(args.output_dir, 'tmp_cloud'))
     import time
     _t_start = time.time()
     with open('workflow_timing.log', 'w') as _f: _f.write('task,duration_seconds\n')
@@ -526,9 +530,9 @@ def run_workflow(args):
     with open(key_path, 'wb') as f:
         f.write(os.urandom(32))
         
-    os.makedirs('tmp_edge', exist_ok=True)
-    os.makedirs('tmp_fog', exist_ok=True)
-    os.makedirs('tmp_cloud', exist_ok=True)
+    os.makedirs(edge_dir, exist_ok=True)
+    os.makedirs(fog_dir, exist_ok=True)
+    os.makedirs(cloud_dir, exist_ok=True)
     
     futures = []
     
@@ -536,59 +540,59 @@ def run_workflow(args):
         print(f"Submitting workflow for study {i}...")
         
         # === EDGE ===
-        edge_data = edge_acquisition(args.dataset, os.path.abspath('tmp_edge'), i)
-        edge_hash_path = os.path.abspath(f'tmp_edge/hash_{i}.json')
+        edge_data = edge_acquisition(args.dataset, edge_dir, i)
+        edge_hash_path = os.path.abspath(f'{edge_dir}/hash_{i}.json')
         edge_integrity = integrity_edge(edge_data, edge_hash_path)
         
-        edge_compressed = os.path.abspath(f'tmp_edge/compressed_{i}.lz4')
+        edge_compressed = os.path.abspath(f'{edge_dir}/compressed_{i}.lz4')
         edge_compress = compress_edge(edge_integrity, edge_compressed)
         
-        edge_encrypted = os.path.abspath(f'tmp_edge/encrypted_{i}.bin')
+        edge_encrypted = os.path.abspath(f'{edge_dir}/encrypted_{i}.bin')
         edge_encrypt = encrypt_edge(edge_compress, edge_encrypted, key_path)
         
-        edge_encoded_prefix = os.path.abspath(f'tmp_edge/encoded_{i}')
+        edge_encoded_prefix = os.path.abspath(f'{edge_dir}/encoded_{i}')
         edge_encode = encode_edge(edge_encrypt, edge_encoded_prefix)
         
         # === FOG ===
-        fog_decrypted = os.path.abspath(f'tmp_fog/decrypted_{i}.bin')
+        fog_decrypted = os.path.abspath(f'{fog_dir}/decrypted_{i}.bin')
         fog_decode = decode_fog(edge_encode, fog_decrypted)
         
-        fog_decompressed_tmp = os.path.abspath(f'tmp_fog/decompressed_tmp_{i}.lz4')
+        fog_decompressed_tmp = os.path.abspath(f'{fog_dir}/decompressed_tmp_{i}.lz4')
         fog_decrypt = decrypt_fog(fog_decode, fog_decompressed_tmp, key_path)
         
-        fog_decompressed_dir = os.path.abspath(f'tmp_fog/decompressed_{i}')
+        fog_decompressed_dir = os.path.abspath(f'{fog_dir}/decompressed_{i}')
         fog_decompress = decompress_fog(fog_decrypt, fog_decompressed_dir)
         
         fog_verify = verify_fog(fog_decompress)
         
-        fog_preprocessed_dir = os.path.abspath(f'tmp_fog/preprocessed_{i}')
+        fog_preprocessed_dir = os.path.abspath(f'{fog_dir}/preprocessed_{i}')
         fog_preprocess = fog_preprocessing(fog_verify, fog_preprocessed_dir)
         
-        fog_hash_path = os.path.abspath(f'tmp_fog/hash_{i}.json')
+        fog_hash_path = os.path.abspath(f'{fog_dir}/hash_{i}.json')
         fog_integrity = integrity_fog(fog_preprocess, fog_hash_path)
         
-        fog_compressed = os.path.abspath(f'tmp_fog/compressed_{i}.lz4')
+        fog_compressed = os.path.abspath(f'{fog_dir}/compressed_{i}.lz4')
         fog_compress = compress_fog(fog_integrity, fog_compressed)
         
-        fog_encrypted = os.path.abspath(f'tmp_fog/encrypted_{i}.bin')
+        fog_encrypted = os.path.abspath(f'{fog_dir}/encrypted_{i}.bin')
         fog_encrypt = encrypt_fog(fog_compress, fog_encrypted, key_path)
         
-        fog_encoded_prefix = os.path.abspath(f'tmp_fog/encoded_{i}')
+        fog_encoded_prefix = os.path.abspath(f'{fog_dir}/encoded_{i}')
         fog_encode = encode_fog(fog_encrypt, fog_encoded_prefix)
         
         # === CLOUD ===
-        cloud_decrypted = os.path.abspath(f'tmp_cloud/decrypted_{i}.bin')
+        cloud_decrypted = os.path.abspath(f'{cloud_dir}/decrypted_{i}.bin')
         cloud_decode = decode_cloud(fog_encode, cloud_decrypted)
         
-        cloud_decompressed_tmp = os.path.abspath(f'tmp_cloud/decompressed_tmp_{i}.lz4')
+        cloud_decompressed_tmp = os.path.abspath(f'{cloud_dir}/decompressed_tmp_{i}.lz4')
         cloud_decrypt = decrypt_cloud(cloud_decode, cloud_decompressed_tmp, key_path)
         
-        cloud_decompressed_dir = os.path.abspath(f'tmp_cloud/decompressed_{i}')
+        cloud_decompressed_dir = os.path.abspath(f'{cloud_dir}/decompressed_{i}')
         cloud_decompress = decompress_cloud(cloud_decrypt, cloud_decompressed_dir)
         
         cloud_verify = verify_cloud(cloud_decompress)
         
-        cloud_output = os.path.abspath(f'tmp_cloud/inference_mask_{i}.nii.gz')
+        cloud_output = os.path.abspath(f'{cloud_dir}/inference_mask_{i}.nii.gz')
         cloud_infer = cloud_inference(cloud_verify, cloud_output)
         
         futures.append(cloud_infer)
@@ -607,6 +611,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, default="/home/domizzi/Downloads/medicalimages/dicoms/", help="Path to base dataset")
     parser.add_argument("--studies", type=int, default=1, help="Number of mocked studies to process")
     parser.add_argument("--workers", type=int, default=2, help="Number of parallel workers per stage")
+    parser.add_argument("--output_dir", type=str, default=".", help="Base directory for output files")
     parser.add_argument("--local", action="store_true", help="Run locally using ThreadPoolExecutor instead of Slurm")
     args = parser.parse_args()
     
