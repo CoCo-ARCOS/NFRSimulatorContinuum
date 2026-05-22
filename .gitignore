@@ -45,3 +45,6 @@ CaseStudyBoneTumore/tmp_fog/*
 *.log
 CaseStudyBoneTumore/venv/*
 CaseStudyBoneTumore/*.bin
+CaseStudyBoneTumore/runinfo/*
+CaseStudyBoneTumore/files.txt
+CaseStudyBoneTumore/error.txt

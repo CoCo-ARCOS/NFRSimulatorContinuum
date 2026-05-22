@@ -4,19 +4,18 @@
 set -e
 
 # Activate the virtual environment
-source venv/bin/activate
+#source venv/bin/activate
 
 # Define the dimensions to test
 # Adjust these arrays to test more dimensions or larger scales
-WORKERS=(1 2 4)
-STUDIES=(1 2 4)
+WORKERS=(1 2 4 8 16)
+STUDIES=(1 10 100)
 
 # Define execution mode (--local for local threading, empty string for Slurm)
 # Change this to EXEC_MODE="" when submitting to your Slurm cluster!
-EXEC_MODE="--local"
 
 # Base output directory for all experiment runs
-BASE_OUTPUT_DIR="experiments_results"
+BASE_OUTPUT_DIR="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/"
 mkdir -p "$BASE_OUTPUT_DIR"
 
 echo "Starting workflow experiments..."
@@ -35,7 +34,7 @@ for w in "${WORKERS[@]}"; do
         EXP_DIR="$BASE_OUTPUT_DIR/workers_${w}_studies_${s}"
         
         # Execute the workflow
-        python workflow.py --workers "$w" --studies "$s" --output_dir "$EXP_DIR" $EXEC_MODE
+        python3 workflow.py --dataset /lustre/uc3m_a0/dynamic/dantedomizzi/dicoms/ --workers "$w" --studies "$s" --output_dir "$EXP_DIR" 
         
         # Preserve the timing log by moving it into the specific experiment directory
         if [ -f workflow_timing.log ]; then
