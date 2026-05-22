@@ -39,3 +39,9 @@ proxy_dd/sensitivity_results2/*
 proxy_dd/ct_scan_pipeline_results/*
 proxy_dd/ct_scan_pipeline_test/results/*
 proxy_dd/ct_scan_pipeline_test/*
+CaseStudyBoneTumore/tmp_edge/*
+CaseStudyBoneTumore/tmp_cloud/*
+CaseStudyBoneTumore/tmp_fog/*
+*.log
+CaseStudyBoneTumore/venv/*
+CaseStudyBoneTumore/*.bin

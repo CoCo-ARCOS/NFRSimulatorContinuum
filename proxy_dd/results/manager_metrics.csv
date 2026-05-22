@@ -1,3 +1,0 @@
-stage,stage_name,pipeline,task_index,task_name,algorithm,jobs,wall_seconds,avg_wall_seconds,simulated_seconds,avg_simulated_seconds
-1,stage1,output,0,encrypt,RS,1,0.000031,0.000031,0.053032,0.053032
-1,stage1,combined,-1,combined,,1,0.000031,0.000031,0.053032,0.053032
