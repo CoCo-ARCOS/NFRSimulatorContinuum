@@ -30,18 +30,18 @@ def setup_parsl(use_local=False, workers=2):
         executors = [
             HighThroughputExecutor(
                 label='edge',
-                max_workers=workers,
-                provider=SlurmProvider(nodes_per_block=1, init_blocks=1, max_blocks=1)
+                working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
+                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, walltime="12:00:00", worker_init="module load python/3.12")
             ),
             HighThroughputExecutor(
                 label='fog',
-                max_workers=workers,
-                provider=SlurmProvider(nodes_per_block=1, init_blocks=1, max_blocks=1)
+                working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
+                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, walltime="12:00:00", worker_init="module load python/3.12")
             ),
             HighThroughputExecutor(
                 label='cloud',
-                max_workers=workers,
-                provider=SlurmProvider(nodes_per_block=1, init_blocks=1, max_blocks=1)
+                working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
+                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, walltime="12:00:00", worker_init="module load python/3.12")
             ),
         ]
     
@@ -605,6 +605,10 @@ def run_workflow(args):
     _t_end = time.time()
     print(f"\n[TIMING] Overall execution time: {_t_end - _t_start:.4f} seconds")
     print("All studies completed successfully!")
+
+    # Explicitly shut down the DataFlowKernel and executors
+    parsl.dfk().cleanup()
+    parsl.clear()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="OsteoCAD Parsl Workflow")
