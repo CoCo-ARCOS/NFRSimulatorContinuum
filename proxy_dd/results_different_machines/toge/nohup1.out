@@ -1,0 +1,82 @@
+========================================
+ Starting NFR Benchmarks
+ Sizes: 1 10 50 100 1000 MB
+ Objects: 31
+========================================
+
+[1/4] Running cost-efficiency (compression) benchmarks...
+
+============================================================================================================================================
+                                              Benchmark de Algoritmos de Compresión (con I/O)                                               
+============================================================================================================================================
+Algoritmo  | MB orig.   | Ratio    | Comp. (s)    | I/O W (s)    | I/O R (s)    | Descomp. (s)
+--------------------------------------------------------------------------------------------------------------------------------------------
+ZLIB       | 1          | 148.86x | 0.007210     | 0.000330     | 0.000297     | 0.000930    
+ZLIB       | 10         | 154.49x | 0.066217     | 0.003053     | 0.002990     | 0.009570    
+ZLIB       | 50         | 158.47x | 0.331297     | 0.014797     | 0.015296     | 0.052662    
+ZLIB       | 100        | 158.75x | 0.657796     | 0.028735     | 0.029989     | 0.106469    
+ZLIB       | 1000       | 159.01x | 6.630073     | 0.280009     | 0.296455     | 1.063526    
+BZ2        | 1          | 1191.56x | 0.580503     | 0.000340     | 0.001036     | 0.016124    
+BZ2        | 10         | 1878.50x | 6.324475     | 0.003148     | 0.002911     | 0.158891    
+BZ2        | 50         | 1917.59x | 32.152008    | 0.015076     | 0.015483     | 0.825991    
+BZ2        | 100        | 1930.23x | 64.398064    | 0.029193     | 0.030423     | 1.658664    
+BZ2        | 1000       | 1937.27x | 651.951485   | 0.288961     | 0.307491     | 16.657093   
+LZMA       | 1          | 2545.09x | 0.028970     | 0.000377     | 0.001075     | 0.002558    
+LZMA       | 10         | 5851.43x | 0.267540     | 0.003021     | 0.002944     | 0.018474    
+LZMA       | 50         | 6643.28x | 1.312772     | 0.015524     | 0.016214     | 0.100683    
+LZMA       | 100        | 6758.03x | 2.617100     | 0.030327     | 0.031634     | 0.202455    
+LZMA       | 1000       | 6862.95x | 26.074426    | 0.291181     | 0.309073     | 2.014934    
+Saltando 'lz4' - librería no instalada.
+Saltando 'zstd' - librería no instalada.
+
+[OK] Datos crudos: cost-efficiency/comp_raw.csv
+[OK] Estadísticas: cost-efficiency/comp_stats.csv
+Cost-efficiency benchmarks completed.
+
+[2/4] Running security (confidentiality) benchmarks...
+Traceback (most recent call last):
+  File "/home/toge/Descargas/nfrs-benchmarks-main/security/confidentiality.py", line 9, in <module>
+    from Crypto.Cipher import AES, ChaCha20
+ModuleNotFoundError: No module named 'Crypto'
+Confidentiality benchmarks completed.
+
+[3/4] Running security (integrity) benchmarks...
+Aviso: La librería 'blake3' no está instalada. Se omitirán las pruebas de BLAKE3.
+Instálala con: pip install blake3
+
+
+===================================================================================================================
+                           Benchmark de Algoritmos de Integridad (Hashing & HMAC + I/O)                            
+===================================================================================================================
+Algoritmo       | Archivo    | Tiempo Medio (s)   | Velocidad (MB/s) | Std Dev (s)  | I/O W (s)    | I/O R (s)   
+-------------------------------------------------------------------------------------------------------------------
+SHA256          | 1       MB | 0.000708           | 1412.13         | 0.000010     | 0.000224     | 0.000236    
+SHA256          | 10      MB | 0.006866           | 1456.37         | 0.000008     | 0.002861     | 0.002640    
+SHA256          | 50      MB | 0.034239           | 1460.30         | 0.000016     | 0.015692     | 0.015434    
+SHA256          | 100     MB | 0.068407           | 1461.83         | 0.000020     | 0.032165     | 0.031919    
+SHA256          | 1000    MB | 0.683528           | 1463.00         | 0.000118     | 0.291786     | 0.306628    
+SHA3_256        | 1       MB | 0.003463           | 288.78          | 0.000014     | 0.000227     | 0.000951    
+SHA3_256        | 10      MB | 0.034354           | 291.08          | 0.000014     | 0.002651     | 0.002541    
+SHA3_256        | 50      MB | 0.171670           | 291.26          | 0.000028     | 0.015109     | 0.015775    
+SHA3_256        | 100     MB | 0.343278           | 291.31          | 0.000031     | 0.029617     | 0.031731    
+SHA3_256        | 1000    MB | 3.432499           | 291.33          | 0.000127     | 0.291080     | 0.306494    
+HMAC_SHA256     | 1       MB | 0.000720           | 1389.01         | 0.000012     | 0.000216     | 0.000923    
+HMAC_SHA256     | 10      MB | 0.006881           | 1453.33         | 0.000007     | 0.002632     | 0.002540    
+HMAC_SHA256     | 50      MB | 0.034263           | 1459.30         | 0.000018     | 0.014893     | 0.015476    
+HMAC_SHA256     | 100     MB | 0.068432           | 1461.30         | 0.000022     | 0.029573     | 0.031692    
+HMAC_SHA256     | 1000    MB | 0.683545           | 1462.96         | 0.000123     | 0.293423     | 0.306579    
+
+[OK] Datos crudos guardados en: security/integ_raw.csv
+[OK] Estadísticas guardadas en: security/integ_stats.csv
+Integrity benchmarks completed.
+
+[4/4] Running reliability (erasure coding) benchmarks...
+
+[Error] La librería 'zfec' no está instalada.
+Por favor, instálala usando: pip install zfec
+
+Reliability benchmarks completed.
+
+========================================
+ All benchmarks completed successfully!
+========================================

@@ -1,0 +1,30 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%environment
+    export PATH=/home/single:$PATH
+    export HOME=/home/single
+
+%files
+    ./ /home/single
+
+%post
+    # Update and install dependencies
+    apt-get update && \
+    apt-get install -y build-essential python3 python3-dev python-is-python3 nano apptainer && \
+    rm -rf /var/lib/apt/lists/*
+
+    # Go to source directory
+    cd /home/single
+
+    # Compile the code if Makefile exists (case-sensitive!)
+    if [ -f Makefile ] || [ -f makefile ]; then
+        make clean || true
+        make || { echo "Make failed"; exit 1; }
+    else
+        echo "Warning: No Makefile found in /home/trace_generator"
+    fi
+
+%runscript
+    cd /home/single
+    exec ./single "$@"

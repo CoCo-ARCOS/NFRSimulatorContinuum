@@ -14,18 +14,15 @@ double poisson(float , float);
 float  normal(float , float);
 
 //GENERAL VARS
-int   					i , j  , a , c , ct , num , found , cnt , count, stddev , mean , stddevT , stddevP  ,stddevH , stddevR, 
-						inter_arrival , Concurrency , BUFFER , TEMPERATURE, HUMEDITY, PRESION, RADSOLAR , DISTRIBUTION ;
+int   					i , j  , a , c , ct , num , found , cnt , count, stddev , mean , stddevS, 
+						inter_arrival , Concurrency , BUFFER , SIZE, DISTRIBUTION ;
 long long unsigned	 	MUESTRAS, current_time , sum ;
-double 					r, b, y , tmp , prs, hmd, rds;
+double 					r, b, y , sz;
 
 //STRUCTS DECLARATION
 struct traza {
    long long unsigned   interarrival;
-   long long unsigned 	temperature;
-   long long unsigned 	presion;
-   long long unsigned 	humedity;
-   long long unsigned 	radsolar;
+   long long unsigned 	size;
 };
 
 void assignation ( char **argv ) ;
@@ -46,7 +43,7 @@ double atmosParamU ( double param );
 
 void dataConcurrent ( int i  , long long unsigned * current_time_c) ;
 
-void sensorsData ( int distribution, double * tmp, double * psr, double * hmd , double * rds ) ;
+void sensorsData ( int distribution, double * sz ) ;
 
 void makeTrace (  long long unsigned * bufferin, long long unsigned * current_time_c , struct traza * traza_con ) ;
 
