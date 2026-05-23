@@ -9,7 +9,16 @@ from parsl.executors import HighThroughputExecutor, ThreadPoolExecutor
 from parsl.providers import SlurmProvider
 from parsl.app.app import python_app
 
+
+def configure_numeric_threads():
+    os.environ.setdefault("OMP_NUM_THREADS", "1")
+    os.environ.setdefault("MKL_NUM_THREADS", "1")
+    os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+    os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
+
+
 def setup_parsl(use_local=False, workers=2):
+    print(f"Setting up Parsl with use_local={use_local} and workers={workers}...")
     if use_local:
         executors = [
             ThreadPoolExecutor(label='edge', max_threads=workers),
@@ -90,16 +99,18 @@ def edge_pipeline(chunk_files, edge_dir, chunk_idx, key_path, source_dir):
     import shutil
     from pathlib import Path
     import time
-    from nfr_functions import do_integrity, do_compress, do_encrypt, do_encode
+    from nfr_functions import do_integrity, do_compress, do_encrypt, do_encode, log_timing
     
     # 1. Edge Acquisition
     acq_dir = os.path.join(edge_dir, f"chunk_{chunk_idx}_acq")
     os.makedirs(acq_dir, exist_ok=True)
     _t0 = time.time()
-    for f in chunk_files:
-        shutil.copy2(f, acq_dir)
+    for i, f in enumerate(chunk_files):
+        f_path = Path(f)
+        unique_name = f"{i}_{f_path.name}"
+        shutil.copy2(f, os.path.join(acq_dir, unique_name))
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'edge_acquisition,{_t1-_t0:.4f}\n')
+    log_timing('edge_acquisition', _t1 - _t0)
     
     # 2. Integrity
     hash_path = os.path.join(edge_dir, f"chunk_{chunk_idx}.hash.json")
@@ -202,24 +213,34 @@ def cloud_pipeline(fog_encode_dir, cloud_dir, chunk_idx, key_path, source_dir):
 
 def run_workflow(args):
     import time
-    
-    edge_dir = os.path.abspath(os.path.join(args.output_dir, 'tmp_edge'))
-    fog_dir = os.path.abspath(os.path.join(args.output_dir, 'tmp_fog'))
-    cloud_dir = os.path.abspath(os.path.join(args.output_dir, 'tmp_cloud'))
-    
+
+    configure_numeric_threads()
+
+    output_dir = os.path.abspath(args.output_dir)
+    os.makedirs(output_dir, exist_ok=True)
+    timing_log = os.path.join(output_dir, 'workflow_timing.log')
+    os.environ["WORKFLOW_TIMING_LOG"] = timing_log
+
+    edge_dir = os.path.abspath(os.path.join(output_dir, 'tmp_edge'))
+    fog_dir = os.path.abspath(os.path.join(output_dir, 'tmp_fog'))
+    cloud_dir = os.path.abspath(os.path.join(output_dir, 'tmp_cloud'))
+
     _t_start = time.time()
-    with open('workflow_timing.log', 'w') as _f: _f.write('task,duration_seconds\n')
-    
+    with open(timing_log, 'w') as _f:
+        _f.write('task,duration_seconds\n')
+
+    _t_setup_start = time.time()
     setup_parsl(use_local=args.local, workers=args.workers)
-    
-    key_path = os.path.abspath('shared_key.bin')
+    _t_setup_end = time.time()
+
+    key_path = os.path.join(output_dir, 'shared_key.bin')
     with open(key_path, 'wb') as f:
         f.write(os.urandom(32))
-        
+
     os.makedirs(edge_dir, exist_ok=True)
     os.makedirs(fog_dir, exist_ok=True)
     os.makedirs(cloud_dir, exist_ok=True)
-    
+
     # Get all DICOMs
     dataset_path = Path(args.dataset)
     dicom_files = list(dataset_path.glob('**/*.dcm'))
@@ -230,36 +251,49 @@ def run_workflow(args):
     all_files = []
     for i in range(args.studies):
         all_files.extend(dicom_files)
-        
+
     total_files = len(all_files)
-    num_chunks = args.workers
-    
-    chunk_size = math.ceil(total_files / num_chunks)
+    if total_files == 0:
+        raise ValueError(f"No DICOM files found in dataset path: {dataset_path}")
+
+    if args.chunks is not None:
+        num_chunks = max(1, min(args.chunks, total_files))
+        chunk_size = math.ceil(total_files / num_chunks)
+    else:
+        chunk_size = max(1, args.chunk_size)
+
     chunks = [all_files[i:i + chunk_size] for i in range(0, total_files, chunk_size)]
-    
-    print(f"Total files: {total_files}. Partitioned into {len(chunks)} balanced chunks (max {chunk_size} files/chunk).")
-    
+
+    print(
+        f"Total files: {total_files}. Partitioned into {len(chunks)} chunks "
+        f"({chunk_size} file(s)/chunk, workers={args.workers})."
+    )
+
     source_dir = os.path.dirname(os.path.abspath(__file__))
-    
+
     futures = []
-    
+
+    _t_workflow_start = time.time()
     for chunk_idx, chunk in enumerate(chunks):
         chunk_paths = [str(f) for f in chunk]
-        
+
         # Dispatch the chunk across the 3 nodes
         edge_future = edge_pipeline(chunk_paths, edge_dir, chunk_idx, key_path, source_dir)
         fog_future = fog_pipeline(edge_future, fog_dir, chunk_idx, key_path, source_dir)
         cloud_future = cloud_pipeline(fog_future, cloud_dir, chunk_idx, key_path, source_dir)
-        
+
         futures.append(cloud_future)
-        
+
     print("Waiting for workflows to complete...")
     for i, f in enumerate(futures):
         result = f.result()
         print(f"Chunk {i} completed. Output at: {result}")
-        
+    _t_workflow_end = time.time()
+
     _t_end = time.time()
-    print(f"\n[TIMING] Overall execution time: {_t_end - _t_start:.4f} seconds")
+    print(f"\n[TIMING] Parsl setup time: {_t_setup_end - _t_setup_start:.4f} seconds")
+    print(f"[TIMING] Workflow execution time: {_t_workflow_end - _t_workflow_start:.4f} seconds")
+    print(f"[TIMING] Overall execution time: {_t_end - _t_start:.4f} seconds")
     print("All chunks completed successfully!")
 
     parsl.dfk().cleanup()
@@ -270,6 +304,8 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, default="/home/domizzi/Downloads/medicalimages/dicoms/", help="Path to base dataset")
     parser.add_argument("--studies", type=int, default=1, help="Number of mocked studies to process")
     parser.add_argument("--workers", type=int, default=2, help="Number of parallel workers per stage")
+    parser.add_argument("--chunk-size", type=int, default=1, help="DICOM files per workflow chunk. Default 1 keeps this workflow DICOM-by-DICOM.")
+    parser.add_argument("--chunks", type=int, default=None, help="Optional fixed number of chunks; overrides --chunk-size when set.")
     parser.add_argument("--output_dir", type=str, default=".", help="Base directory for output files")
     parser.add_argument("--local", action="store_true", help="Run locally using ThreadPoolExecutor instead of Slurm")
     args = parser.parse_args()
