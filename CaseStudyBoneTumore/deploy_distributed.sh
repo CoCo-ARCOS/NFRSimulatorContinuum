@@ -1,34 +1,27 @@
 #!/bin/bash
 
-# Configuration
-STUDIES=10
-WORKERS=4
+# Default Configuration
+STUDIES=${1:-10}
+WORKERS=${2:-4}
+OUTPUT_DIR=${3:-"."}
 PARTITION="large"
 
-echo "=========================================================="
-echo "Deploying Distributed Pipeline to Slurm"
-echo "Workload: $STUDIES studies"
-echo "Workers per node: $WORKERS"
-echo "=========================================================="
+# Clean up local logs if not sandboxed
+if [ "$OUTPUT_DIR" = "." ]; then
+    rm -rf tmp_edge tmp_fog tmp_cloud workflow_timing.log slurm-*.out
+fi
 
-# Clean up before deployment
-rm -rf tmp_edge tmp_fog tmp_cloud workflow_timing.log slurm-*.out
+# Ensure output directory exists
+mkdir -p "$OUTPUT_DIR"
 
 # 1. Deploy EDGE Node
-EDGE_JOB=$(sbatch --parsable --partition=$PARTITION --nodes=1 -c $WORKERS --wrap="venv/bin/python workflow_multiprocessing.py --stage edge --studies $STUDIES --workers $WORKERS")
-echo "-> Submitted EDGE stage (JobID: $EDGE_JOB)"
+EDGE_JOB=$(sbatch --parsable --partition=$PARTITION --nodes=1 -c $WORKERS --wrap="venv/bin/python workflow_multiprocessing.py --stage edge --studies $STUDIES --workers $WORKERS --output_dir $OUTPUT_DIR")
 
 # 2. Deploy FOG Node
-FOG_JOB=$(sbatch --parsable --partition=$PARTITION --nodes=1 -c $WORKERS --dependency=afterok:$EDGE_JOB --wrap="venv/bin/python workflow_multiprocessing.py --stage fog --studies $STUDIES --workers $WORKERS")
-echo "-> Submitted FOG stage  (JobID: $FOG_JOB) [Depends on EDGE]"
+FOG_JOB=$(sbatch --parsable --partition=$PARTITION --nodes=1 -c $WORKERS --dependency=afterok:$EDGE_JOB --wrap="venv/bin/python workflow_multiprocessing.py --stage fog --studies $STUDIES --workers $WORKERS --output_dir $OUTPUT_DIR")
 
 # 3. Deploy CLOUD Node
-CLOUD_JOB=$(sbatch --parsable --partition=$PARTITION --nodes=1 -c $WORKERS --dependency=afterok:$FOG_JOB --wrap="venv/bin/python workflow_multiprocessing.py --stage cloud --studies $STUDIES --workers $WORKERS")
-echo "-> Submitted CLOUD stage (JobID: $CLOUD_JOB) [Depends on FOG]"
+CLOUD_JOB=$(sbatch --parsable --partition=$PARTITION --nodes=1 -c $WORKERS --dependency=afterok:$FOG_JOB --wrap="venv/bin/python workflow_multiprocessing.py --stage cloud --studies $STUDIES --workers $WORKERS --output_dir $OUTPUT_DIR")
 
-echo ""
-echo "=========================================================="
-echo "All stages successfully queued on Slurm!"
-echo "Monitor your jobs with: squeue -u \$USER"
-echo "Check the slurm-<jobid>.out files for logs."
-echo "=========================================================="
+# OUTPUT ONLY THE CLOUD JOB ID FOR AUTOMATION (Do not add extra echos to stdout)
+echo $CLOUD_JOB

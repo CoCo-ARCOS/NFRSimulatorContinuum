@@ -22,20 +22,21 @@ def aggregate(base_dir):
         # Parse the timing file
         try:
             df = pd.read_csv(timing_file)
-            if 'duration_seconds' in df.columns:
-                total_time = df['duration_seconds'].sum()
+            if 'task' in df.columns and 'duration_seconds' in df.columns:
                 
-                # Breakdown by stage
-                edge_time = df[df['task'].str.contains('edge|integrity|compress|encrypt|encode', case=False, na=False)]['duration_seconds'].sum()
-                fog_time = df[df['task'].str.contains('fog|decode|decrypt|decompress|verify', case=False, na=False)]['duration_seconds'].sum()
-                cloud_time = df[df['task'].str.contains('cloud', case=False, na=False)]['duration_seconds'].sum()
+                # Extract wall-clock times for each stage
+                edge_time = df.loc[df['task'] == 'stage_wall_clock_edge', 'duration_seconds'].sum()
+                fog_time = df.loc[df['task'] == 'stage_wall_clock_fog', 'duration_seconds'].sum()
+                cloud_time = df.loc[df['task'] == 'stage_wall_clock_cloud', 'duration_seconds'].sum()
+                
+                total_time = edge_time + fog_time + cloud_time
 
                 results.append({
                     "Workers": workers,
-                    "Total Compute Time (s)": round(total_time, 2),
-                    "Edge Node Compute (s)": round(edge_time, 2),
-                    "Fog Node Compute (s)": round(fog_time, 2),
-                    "Cloud Node Compute (s)": round(cloud_time, 2),
+                    "Total Wall-Clock Time (s)": round(total_time, 2),
+                    "Edge Node Time (s)": round(edge_time, 2),
+                    "Fog Node Time (s)": round(fog_time, 2),
+                    "Cloud Node Time (s)": round(cloud_time, 2),
                 })
         except Exception as e:
             print(f"Error reading {timing_file}: {e}")
