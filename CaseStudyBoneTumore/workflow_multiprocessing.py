@@ -25,7 +25,8 @@ def edge_pipeline(chunk_files, edge_dir, chunk_idx, key_path):
         unique_name = f"{i}_{f_path.name}"
         shutil.copy2(f, os.path.join(acq_dir, unique_name))
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'edge_acquisition,{_t1-_t0:.4f}\n')
+    timing_log = os.environ.get("WORKFLOW_TIMING_LOG", "workflow_timing.log")
+    with open(timing_log, 'a') as _f: _f.write(f'edge_acquisition,{_t1-_t0:.4f}\n')
     
     # 2. Integrity
     hash_path = os.path.join(edge_dir, f"chunk_{chunk_idx}.hash.json")
@@ -143,11 +144,14 @@ def run_workflow(args):
     
     _t_start = time.time()
     
+    timing_log = os.path.join(args.output_dir, 'workflow_timing.log')
+    os.environ["WORKFLOW_TIMING_LOG"] = timing_log
+    
     if args.stage in ['all', 'edge']:
-        with open('workflow_timing.log', 'w') as _f: 
+        with open(timing_log, 'w') as _f: 
             _f.write('task,duration_seconds\n')
         
-        key_path = os.path.abspath('shared_key.bin')
+        key_path = os.path.join(args.output_dir, 'shared_key.bin')
         with open(key_path, 'wb') as f:
             f.write(os.urandom(32))
             
@@ -155,7 +159,7 @@ def run_workflow(args):
         os.makedirs(fog_dir, exist_ok=True)
         os.makedirs(cloud_dir, exist_ok=True)
     else:
-        key_path = os.path.abspath('shared_key.bin')
+        key_path = os.path.join(args.output_dir, 'shared_key.bin')
     
     # Get all DICOMs
     dataset_path = Path(args.dataset)
