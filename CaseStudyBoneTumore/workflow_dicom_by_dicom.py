@@ -49,7 +49,10 @@ def setup_parsl(use_local=False, workers=2):
 # ==========================================
 
 @python_app(executors=['edge'])
-def edge_pipeline(chunk_files, edge_dir, chunk_idx, key_path):
+def edge_pipeline(chunk_files, edge_dir, chunk_idx, key_path, source_dir):
+    import sys
+    if source_dir not in sys.path:
+        sys.path.append(source_dir)
     import os
     import shutil
     from pathlib import Path
@@ -84,7 +87,10 @@ def edge_pipeline(chunk_files, edge_dir, chunk_idx, key_path):
     return encode_dir
 
 @python_app(executors=['fog'])
-def fog_pipeline(edge_encode_dir, fog_dir, chunk_idx, key_path):
+def fog_pipeline(edge_encode_dir, fog_dir, chunk_idx, key_path, source_dir):
+    import sys
+    if source_dir not in sys.path:
+        sys.path.append(source_dir)
     import os
     from nfr_functions import (do_decode, do_decrypt, do_decompress, do_verify,
                                do_fog_preprocessing, do_integrity, do_compress,
@@ -128,7 +134,10 @@ def fog_pipeline(edge_encode_dir, fog_dir, chunk_idx, key_path):
     return encode_dir
 
 @python_app(executors=['cloud'])
-def cloud_pipeline(fog_encode_dir, cloud_dir, chunk_idx, key_path):
+def cloud_pipeline(fog_encode_dir, cloud_dir, chunk_idx, key_path, source_dir):
+    import sys
+    if source_dir not in sys.path:
+        sys.path.append(source_dir)
     import os
     from nfr_functions import (do_decode, do_decrypt, do_decompress, do_verify,
                                do_cloud_inference)
@@ -197,15 +206,17 @@ def run_workflow(args):
     
     print(f"Total files: {total_files}. Partitioned into {len(chunks)} balanced chunks (max {chunk_size} files/chunk).")
     
+    source_dir = os.path.dirname(os.path.abspath(__file__))
+    
     futures = []
     
     for chunk_idx, chunk in enumerate(chunks):
         chunk_paths = [str(f) for f in chunk]
         
         # Dispatch the chunk across the 3 nodes
-        edge_future = edge_pipeline(chunk_paths, edge_dir, chunk_idx, key_path)
-        fog_future = fog_pipeline(edge_future, fog_dir, chunk_idx, key_path)
-        cloud_future = cloud_pipeline(fog_future, cloud_dir, chunk_idx, key_path)
+        edge_future = edge_pipeline(chunk_paths, edge_dir, chunk_idx, key_path, source_dir)
+        fog_future = fog_pipeline(edge_future, fog_dir, chunk_idx, key_path, source_dir)
+        cloud_future = cloud_pipeline(fog_future, cloud_dir, chunk_idx, key_path, source_dir)
         
         futures.append(cloud_future)
         
