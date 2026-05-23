@@ -395,141 +395,123 @@ def fog_preprocessing(input_dir, output_dir):
     import time
     _t0 = time.time()
     import os
-    import dicom2nifti
-    import dicom2nifti.settings
-    from pathlib import Path
+    import pydicom
     import nibabel as nib
     import numpy as np
+    from pathlib import Path
     
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
     
-    # Isolate ROI / artifact removal (mock logic for demo: thresholding DICOMs before NIfTI)
-    # Since pydicom modifying all files is slow, we'll let dicom2nifti do the conversion first
-    dicom2nifti.settings.disable_validate_slice_increment()
-    try:
-        dicom2nifti.convert_directory(input_dir, output_dir, compression=True, reorient=True)
-    except Exception as e:
-        # fallback if DICOMs are invalid for conversion: create a mock NIfTI
-        print("DICOM to NIfTI failed, creating mock NIfTI:", e)
-        mock_data = np.zeros((128, 128, 128), dtype=np.float32)
-        mock_img = nib.Nifti1Image(mock_data, np.eye(4))
-        nib.save(mock_img, out_path / "preprocessed.nii.gz")
-        
-    # Anonymization / Post-processing on NIfTI
-    nifti_files = list(out_path.glob('*.nii.gz'))
-    if nifti_files:
-        img_path = nifti_files[0]
-        img = nib.load(img_path)
-        data = img.get_fdata()
-        # Mock isolate ROI (remove values below threshold)
-        data[data < 0] = 0
-        new_img = nib.Nifti1Image(data, img.affine)
-        nib.save(new_img, img_path)
-        import time; _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'fog_preprocessing,{_t1-_t0:.4f}\n')
-    return str(img_path)
+    for dcm_file in Path(input_dir).rglob('*.dcm'):
+        try:
+            ds = pydicom.dcmread(dcm_file)
+            data = ds.pixel_array.astype(np.float32)
+            # Mock isolate ROI (remove values below threshold)
+            data[data < 0] = 0
+            
+            # Save as 2D NIfTI
+            img = nib.Nifti1Image(data, np.eye(4))
+            out_name = dcm_file.name.replace('.dcm', '.nii.gz')
+            nib.save(img, out_path / out_name)
+        except Exception as e:
+            pass
+            
     import time; _t1 = time.time()
     with open('workflow_timing.log', 'a') as _f: _f.write(f'fog_preprocessing,{_t1-_t0:.4f}\n')
-    return ""
+    return output_dir
 
 @python_app(executors=['cloud'])
-def cloud_inference(input_nifti, output_path):
+def cloud_inference(input_dir, output_dir):
     import time
     _t0 = time.time()
+    import os
     import nibabel as nib
     import numpy as np
     import torch
-    from monai.networks.nets import UNet
-    
-    img = nib.load(input_nifti)
-    data = img.get_fdata()
-    
     import torch.nn.functional as F
+    from monai.networks.nets import UNet
+    from pathlib import Path
+    import scipy.ndimage as ndi
+    from PIL import Image
     
-    # Convert to PyTorch tensor (batch, channel, D, H, W)
-    tensor_data = torch.tensor(data, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+    out_path = Path(output_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
     
-    # Interpolate to 64x64x64 to fit the UNet memory footprint
-    tensor_data_resized = F.interpolate(tensor_data, size=(64, 64, 64), mode='trilinear', align_corners=False)
+    vis_dir = str(out_path) + "_vis"
+    os.makedirs(vis_dir, exist_ok=True)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tensor_data_resized = tensor_data_resized.to(device)
     
-    # Initialize a standard 3D UNet for medical image segmentation
+    # Initialize a standard 2D UNet
     model = UNet(
-        spatial_dims=3,
+        spatial_dims=2,
         in_channels=1,
-        out_channels=1, # Background vs Tumor
+        out_channels=1,
         channels=(16, 32, 64, 128, 256),
         strides=(2, 2, 2, 2),
         num_res_units=2,
     ).to(device)
-    
     model.eval()
-    # Real Inference (Forward Pass)
-    # This runs the actual UNet to simulate the compute time and memory of the Deep Learning model
-    with torch.no_grad():
-        output = model(tensor_data_resized)
+    
+    for nii_file in Path(input_dir).rglob('*.nii.gz'):
+        if not nii_file.is_file(): continue
         
-    # Since we don't have gigabytes of specific osteosarcoma weights loaded, the raw argmax 
-    # would just be random noise. To visually segment "just the tumor", we use a heuristic 
-    # to isolate the densest bone/calcified mass in the scan to act as the network's output.
-    import scipy.ndimage as ndi
-    
-    # Isolate the top 0.5% brightest pixels (typical for dense bone tumors in CT)
-    threshold_val = np.percentile(data, 99.5)
-    high_density = data > threshold_val
-    
-    # Find the largest connected component to simulate a single localized tumor mass
-    labeled, num_features = ndi.label(high_density)
-    if num_features > 0:
-        sizes = ndi.sum(high_density, labeled, range(1, num_features + 1))
-        largest_idx = np.argmax(sizes) + 1
-        tumor_mask = (labeled == largest_idx)
-        # Dilate to form a cohesive mass
-        tumor_mask = ndi.binary_dilation(tumor_mask, iterations=3)
-    else:
-        tumor_mask = np.zeros_like(data, dtype=bool)
+        img = nib.load(nii_file)
+        data = img.get_fdata() # Shape (H, W)
+        if len(data.shape) > 2:
+            data = data.squeeze()
+            
+        tensor_data = torch.tensor(data, dtype=torch.float32)
+        while len(tensor_data.shape) < 4:
+            tensor_data = tensor_data.unsqueeze(0) # [1, 1, H, W]
+            
+        tensor_data_resized = F.interpolate(tensor_data, size=(64, 64), mode='bilinear', align_corners=False)
+        tensor_data_resized = tensor_data_resized.to(device)
         
-    final_mask = tumor_mask.astype(np.uint8)
-    
-    mask_img = nib.Nifti1Image(final_mask, img.affine)
-    nib.save(mask_img, output_path)
-    
-    # Save PNG overlays for each slice (DICOM) in the 3D volume
-    import os
-    from PIL import Image
-    
-    vis_dir = output_path.replace(".nii.gz", "_vis")
-    os.makedirs(vis_dir, exist_ok=True)
-    
-    d_min, d_max = np.min(data), np.max(data)
-    if d_max > d_min:
-        norm_data = ((data - d_min) / (d_max - d_min) * 255).astype(np.uint8)
-    else:
-        norm_data = np.zeros_like(data, dtype=np.uint8)
+        with torch.no_grad():
+            output = model(tensor_data_resized)
+            
+        # Mocking dense bone isolation (2D)
+        threshold_val = np.percentile(data, 99.5) if data.size > 0 else 0
+        high_density = data > threshold_val
         
-    for i in range(data.shape[2]):
-        base_img = norm_data[:, :, i]
-        mask_slice = final_mask[:, :, i]
+        labeled, num_features = ndi.label(high_density)
+        if num_features > 0:
+            sizes = ndi.sum(high_density, labeled, range(1, num_features + 1))
+            largest_idx = np.argmax(sizes) + 1
+            tumor_mask = (labeled == largest_idx)
+            tumor_mask = ndi.binary_dilation(tumor_mask, iterations=3)
+        else:
+            tumor_mask = np.zeros_like(data, dtype=bool)
+            
+        final_mask = tumor_mask.astype(np.uint8)
         
-        # Create RGB image
-        rgb_img = np.stack([base_img, base_img, base_img], axis=-1)
-        mask_indices = mask_slice > 0
+        mask_img = nib.Nifti1Image(final_mask, np.eye(4))
+        out_nii_path = out_path / nii_file.name
+        nib.save(mask_img, out_nii_path)
         
-        # Overlay mask in red with 40% opacity
+        # Overlay visualization
+        d_min, d_max = np.min(data), np.max(data)
+        if d_max > d_min:
+            norm_data = ((data - d_min) / (d_max - d_min) * 255).astype(np.uint8)
+        else:
+            norm_data = np.zeros_like(data, dtype=np.uint8)
+            
+        rgb_img = np.stack([norm_data, norm_data, norm_data], axis=-1)
+        mask_indices = final_mask > 0
         if np.any(mask_indices):
             rgb_img[mask_indices, 0] = (0.4 * 255 + 0.6 * rgb_img[mask_indices, 0]).astype(np.uint8)
             rgb_img[mask_indices, 1] = (0.6 * rgb_img[mask_indices, 1]).astype(np.uint8)
             rgb_img[mask_indices, 2] = (0.6 * rgb_img[mask_indices, 2]).astype(np.uint8)
             
         im = Image.fromarray(rgb_img)
-        im.save(os.path.join(vis_dir, f"slice_{i:03d}.png"))
-    
+        vis_name = nii_file.name.replace('.nii.gz', '.png')
+        im.save(os.path.join(vis_dir, vis_name))
+        
     import time; _t1 = time.time()
     with open('workflow_timing.log', 'a') as _f: _f.write(f'cloud_inference,{_t1-_t0:.4f}\n')
-    return output_path, vis_dir
+    return str(out_path), vis_dir
 
 # ==========================================
 # Main Workflow Execution
@@ -633,7 +615,7 @@ def run_workflow(args):
         
         cloud_verify = verify_cloud(cloud_decompress)
         
-        cloud_output = os.path.abspath(f'{cloud_dir}/inference_mask_{i}.nii.gz')
+        cloud_output = os.path.abspath(f'{cloud_dir}/inference_mask_{i}')
         cloud_infer = cloud_inference(cloud_verify, cloud_output)
         
         futures.append(cloud_infer)
