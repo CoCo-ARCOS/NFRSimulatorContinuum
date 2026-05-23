@@ -22,22 +22,55 @@ def setup_parsl(use_local=False, workers=2):
                 label='edge',
                 working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
                 cores_per_worker=1,
-                max_workers_per_node=workers,
-                provider=SlurmProvider(partition="large",cores_per_node=workers, init_blocks=1, max_blocks=workers, walltime="12:00:00", worker_init="module load python/3.12")
+                max_workers_per_node=1, # Only 1 worker per physical node
+                provider=SlurmProvider(
+                    partition="large",
+                    nodes_per_block=1, 
+                    cores_per_node=1,        # Request only 1 core per job
+                    mem_per_node=4,          # Request only 4GB per job
+                    init_blocks=workers,           # Submit 4 separate jobs
+                    max_blocks=workers,
+                    # Force all jobs to land on the same node
+                    scheduler_options="#SBATCH --nodelist=srv123\n",
+                    walltime="12:00:00", 
+                    worker_init="module load python/3.12"
+                )
             ),
             HighThroughputExecutor(
                 label='fog',
-                cores_per_worker=1,
-                max_workers_per_node=workers,
                 working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
-                provider=SlurmProvider(partition="large",cores_per_node=workers, init_blocks=1, max_blocks=workers, walltime="12:00:00", worker_init="module load python/3.12")
+                cores_per_worker=1,
+                max_workers_per_node=1, # Only 1 worker per physical node
+                provider=SlurmProvider(
+                    partition="large",
+                    nodes_per_block=1, 
+                    cores_per_node=1,        # Request only 1 core per job
+                    mem_per_node=4,          # Request only 4GB per job
+                    init_blocks=workers,           # Submit 4 separate jobs
+                    max_blocks=workers,
+                    # Force all jobs to land on the same node
+                    scheduler_options="#SBATCH --nodelist=srv124\n",
+                    walltime="12:00:00", 
+                    worker_init="module load python/3.12"
+                )
             ),
             HighThroughputExecutor(
                 label='cloud',
-                cores_per_worker=1,
-                max_workers_per_node=workers,
                 working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
-                provider=SlurmProvider(partition="large",cores_per_node=workers, init_blocks=1, max_blocks=workers, walltime="12:00:00", worker_init="module load python/3.12")
+                cores_per_worker=1,
+                max_workers_per_node=1, # Only 1 worker per physical node
+                provider=SlurmProvider(
+                    partition="large",
+                    nodes_per_block=1, 
+                    cores_per_node=1,        # Request only 1 core per job
+                    mem_per_node=4,          # Request only 4GB per job
+                    init_blocks=workers,           # Submit 4 separate jobs
+                    max_blocks=workers,
+                    # Force all jobs to land on the same node
+                    scheduler_options="#SBATCH --nodelist=srv125\n",
+                    walltime="12:00:00", 
+                    worker_init="module load python/3.12"
+                )
             ),
         ]
     
