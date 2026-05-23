@@ -3,11 +3,45 @@ import time
 import json
 import shutil
 import hashlib
+import threading
 from pathlib import Path
 
 # ==============================================================
 # NFR Functions (executed sequentially by Parsl Node Apps)
 # ==============================================================
+
+def log_timing(task_name, duration_seconds):
+    timing_log = os.environ.get("WORKFLOW_TIMING_LOG", "workflow_timing.log")
+    with open(timing_log, 'a') as _f:
+        _f.write(f'{task_name},{duration_seconds:.4f}\n')
+
+
+_CLOUD_MODEL_CACHE = threading.local()
+
+
+def get_cloud_model(device):
+    import torch
+    from monai.networks.nets import UNet
+
+    device_key = str(device)
+    cached_model = getattr(_CLOUD_MODEL_CACHE, "model", None)
+    cached_device = getattr(_CLOUD_MODEL_CACHE, "device", None)
+    if cached_model is not None and cached_device == device_key:
+        return cached_model
+
+    model = UNet(
+        spatial_dims=2,
+        in_channels=1,
+        out_channels=1,
+        channels=(16, 32, 64, 128, 256),
+        strides=(2, 2, 2, 2),
+        num_res_units=2,
+    ).to(device)
+    model.eval()
+    _CLOUD_MODEL_CACHE.model = model
+    _CLOUD_MODEL_CACHE.device = device_key
+    return model
+
 
 def do_integrity(input_path, output_hash_path, task_name):
     _t0 = time.time()
@@ -25,6 +59,7 @@ def do_integrity(input_path, output_hash_path, task_name):
                 h.update(p.name.encode('utf-8'))
                 hash_file(p)
     else:
+        h.update(in_path.name.encode('utf-8'))
         hash_file(in_path)
         
     hash_val = h.hexdigest()
@@ -32,7 +67,7 @@ def do_integrity(input_path, output_hash_path, task_name):
         json.dump({'hash': hash_val}, f)
         
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'{task_name},{_t1-_t0:.4f}\\n')
+    log_timing(task_name, _t1 - _t0)
 
 def do_compress(data_path, hash_path, output_dir, task_name):
     _t0 = time.time()
@@ -52,7 +87,7 @@ def do_compress(data_path, hash_path, output_dir, task_name):
             f_out.write(lz4.frame.compress(f_in.read()))
             
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'{task_name},{_t1-_t0:.4f}\\n')
+    log_timing(task_name, _t1 - _t0)
     return output_dir
 
 def do_encrypt(input_dir, output_dir, key_path, algo, task_name):
@@ -86,7 +121,7 @@ def do_encrypt(input_dir, output_dir, key_path, algo, task_name):
             f_out.write(out_data)
             
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'{task_name},{_t1-_t0:.4f}\\n')
+    log_timing(task_name, _t1 - _t0)
     return output_dir
 
 def do_encode(input_dir, output_dir, task_name):
@@ -116,7 +151,7 @@ def do_encode(input_dir, output_dir, task_name):
                 f_out.write(block)
     
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'{task_name},{_t1-_t0:.4f}\\n')
+    log_timing(task_name, _t1 - _t0)
     return output_dir
 
 def do_decode(input_dir, output_dir, task_name):
@@ -139,7 +174,8 @@ def do_decode(input_dir, output_dir, task_name):
         blocks = []
         blocknums = []
         pad_len = 0
-        for i, bpath in enumerate(bpaths):
+        sorted_bpaths = sorted(bpaths, key=lambda path: int(str(path).split("block")[-1]))
+        for i, bpath in enumerate(sorted_bpaths):
             if i >= k: break
             with open(bpath, 'rb') as f:
                 if str(bpath).endswith("block0"):
@@ -158,7 +194,7 @@ def do_decode(input_dir, output_dir, task_name):
             f.write(decoded)
             
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'{task_name},{_t1-_t0:.4f}\\n')
+    log_timing(task_name, _t1 - _t0)
     return output_dir
 
 def do_decrypt(input_dir, output_dir, key_path, task_name):
@@ -196,7 +232,7 @@ def do_decrypt(input_dir, output_dir, key_path, task_name):
             f_out.write(plaintext)
             
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'{task_name},{_t1-_t0:.4f}\\n')
+    log_timing(task_name, _t1 - _t0)
     return output_dir
 
 def do_decompress(input_dir, output_dir, task_name):
@@ -223,7 +259,7 @@ def do_decompress(input_dir, output_dir, task_name):
             hash_file_path = str(out_file)
             
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'{task_name},{_t1-_t0:.4f}\\n')
+    log_timing(task_name, _t1 - _t0)
     
     data_files = [str(Path(output_dir) / f) for f in os.listdir(output_dir) if not f.endswith('.json')]
     if len(data_files) == 1:
@@ -253,6 +289,7 @@ def do_verify(data_dir, hash_path, task_name):
                 h.update(p.name.encode('utf-8'))
                 hash_file(p)
     else:
+        h.update(in_path.name.encode('utf-8'))
         hash_file(in_path)
         
     actual_hash = h.hexdigest()
@@ -260,7 +297,7 @@ def do_verify(data_dir, hash_path, task_name):
         raise ValueError(f"Hash mismatch! Expected {expected_hash}, got {actual_hash}")
         
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'{task_name},{_t1-_t0:.4f}\\n')
+    log_timing(task_name, _t1 - _t0)
     return data_dir
 
 # ==============================================================
@@ -276,29 +313,42 @@ def do_fog_preprocessing(input_dir, output_dir, task_name):
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
     
-    for dcm_file in Path(input_dir).rglob('*.dcm'):
+    for dcm_file in Path(input_dir).rglob('*'):
+        if not dcm_file.is_file() or dcm_file.name.endswith('.json'):
+            continue
         try:
             ds = pydicom.dcmread(dcm_file)
             data = ds.pixel_array.astype(np.float32)
             data[data < 0] = 0
             
             img = nib.Nifti1Image(data, np.eye(4))
-            out_name = dcm_file.name.replace('.dcm', '.nii.gz')
+            
+            # Remove .dcm if it exists, then append .nii.gz
+            base_name = dcm_file.name
+            if base_name.endswith('.dcm'):
+                base_name = base_name[:-4]
+            out_name = base_name + '.nii.gz'
+            
             nib.save(img, out_path / out_name)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Failed to process {dcm_file}: {e}")
             
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'{task_name},{_t1-_t0:.4f}\\n')
+    log_timing(task_name, _t1 - _t0)
     return output_dir
 
 def do_cloud_inference(input_dir, output_dir, task_name):
     _t0 = time.time()
+    os.environ["OMP_NUM_THREADS"] = "1"
+    os.environ["MKL_NUM_THREADS"] = "1"
+    os.environ["OPENBLAS_NUM_THREADS"] = "1"
+
     import nibabel as nib
     import numpy as np
     import torch
+    torch.set_num_threads(1)
+
     import torch.nn.functional as F
-    from monai.networks.nets import UNet
     import scipy.ndimage as ndi
     from PIL import Image
     
@@ -309,15 +359,7 @@ def do_cloud_inference(input_dir, output_dir, task_name):
     os.makedirs(vis_dir, exist_ok=True)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = UNet(
-        spatial_dims=2,
-        in_channels=1,
-        out_channels=1,
-        channels=(16, 32, 64, 128, 256),
-        strides=(2, 2, 2, 2),
-        num_res_units=2,
-    ).to(device)
-    model.eval()
+    model = get_cloud_model(device)
     
     for nii_file in Path(input_dir).rglob('*.nii.gz'):
         if not nii_file.is_file(): continue
@@ -372,5 +414,5 @@ def do_cloud_inference(input_dir, output_dir, task_name):
         im.save(os.path.join(vis_dir, vis_name))
         
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'{task_name},{_t1-_t0:.4f}\\n')
+    log_timing(task_name, _t1 - _t0)
     return str(out_path), vis_dir
