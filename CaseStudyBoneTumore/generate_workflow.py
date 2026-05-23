@@ -1,4 +1,4 @@
-import os
+workflow_code = """import os
 import argparse
 from pathlib import Path
 import math
@@ -20,25 +20,18 @@ def setup_parsl(use_local=False, workers=2):
         executors = [
             HighThroughputExecutor(
                 label='edge',
-                max_workers=workers,
                 working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
-                cores_per_worker=1,
-                max_workers_per_node=workers,
-                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, max_blocks=workers, walltime="12:00:00", worker_init="module load python/3.12")
+                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, walltime="12:00:00", worker_init="module load python/3.12")
             ),
             HighThroughputExecutor(
                 label='fog',
-                cores_per_worker=1,
-                max_workers_per_node=workers,
                 working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
-                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, max_blocks=workers, walltime="12:00:00", worker_init="module load python/3.12")
+                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, walltime="12:00:00", worker_init="module load python/3.12")
             ),
             HighThroughputExecutor(
                 label='cloud',
-                cores_per_worker=1,
-                max_workers_per_node=workers,
                 working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
-                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, max_blocks=workers, walltime="12:00:00", worker_init="module load python/3.12")
+                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, walltime="12:00:00", worker_init="module load python/3.12")
             ),
         ]
     
@@ -64,7 +57,7 @@ def edge_pipeline(chunk_files, edge_dir, chunk_idx, key_path):
     for f in chunk_files:
         shutil.copy2(f, acq_dir)
     _t1 = time.time()
-    with open('workflow_timing.log', 'a') as _f: _f.write(f'edge_acquisition,{_t1-_t0:.4f}\n')
+    with open('workflow_timing.log', 'a') as _f: _f.write(f'edge_acquisition,{_t1-_t0:.4f}\\n')
     
     # 2. Integrity
     hash_path = os.path.join(edge_dir, f"chunk_{chunk_idx}.hash.json")
@@ -138,8 +131,11 @@ def cloud_pipeline(fog_encode_dir, cloud_dir, chunk_idx, key_path):
     dec_dir = os.path.join(cloud_dir, f"chunk_{chunk_idx}_dec")
     do_decode(fog_encode_dir, dec_dir, 'decode_in')
     
-    # 2. Decrypt
+    # 2. Decrypt (AES for fog-to-cloud)
     decrypt_dir = os.path.join(cloud_dir, f"chunk_{chunk_idx}_decrypt")
+    # Wait: the fog encrypted with AES! So cloud decrypts with AES.
+    # The original decrypt app determined algo from the header ("AESCFB" vs "CHACHA") 
+    # so we can just pass algo='aes' or whatever, the decrypt_in function uses the header anyway.
     do_decrypt(dec_dir, decrypt_dir, key_path, 'decrypt_in')
     
     # 3. Decompress
@@ -167,7 +163,7 @@ def run_workflow(args):
     cloud_dir = os.path.abspath(os.path.join(args.output_dir, 'tmp_cloud'))
     
     _t_start = time.time()
-    with open('workflow_timing.log', 'w') as _f: _f.write('task,duration_seconds\n')
+    with open('workflow_timing.log', 'w') as _f: _f.write('task,duration_seconds\\n')
     
     setup_parsl(use_local=args.local, workers=args.workers)
     
@@ -186,6 +182,7 @@ def run_workflow(args):
         dicom_files = [f for f in dataset_path.rglob('*') if f.is_file()]
     
     # Mock studies by duplicating the file list if args.studies > 1
+    # To truly process multiple studies DICOM-by-DICOM, we'll just expand the list
     all_files = []
     for i in range(args.studies):
         all_files.extend(dicom_files)
@@ -196,7 +193,7 @@ def run_workflow(args):
     chunk_size = math.ceil(total_files / num_chunks)
     chunks = [all_files[i:i + chunk_size] for i in range(0, total_files, chunk_size)]
     
-    print(f"Total files: {total_files}. Partitioned into {len(chunks)} balanced chunks (max {chunk_size} files/chunk).")
+    print(f"Total files: {total_files}. Partitioned into {len(chunks)} balanced chunks.")
     
     futures = []
     
@@ -216,7 +213,7 @@ def run_workflow(args):
         print(f"Chunk {i} completed. Output at: {result}")
         
     _t_end = time.time()
-    print(f"\n[TIMING] Overall execution time: {_t_end - _t_start:.4f} seconds")
+    print(f"\\n[TIMING] Overall execution time: {_t_end - _t_start:.4f} seconds")
     print("All chunks completed successfully!")
 
     parsl.dfk().cleanup()
@@ -232,3 +229,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     run_workflow(args)
+"""
+
+with open('generate_workflow.py', 'w') as f:
+    f.write('with open("workflow_dicom_by_dicom.py", "w") as f_out:\\n')
+    f.write('    f_out.write("""' + workflow_code.replace('\\n', '\\\\n').replace('"', '\\\\"') + '""")\\n')
+

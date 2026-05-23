@@ -458,7 +458,7 @@ def main():
 
     config = build_ct_scan_config(
         object_count=object_count,
-        average_size_bytes=total_bytes,
+        average_size_bytes=average_size_bytes,
         studies=args.studies,
         compression_algo=args.algorithm,
         workers=args.workers,
