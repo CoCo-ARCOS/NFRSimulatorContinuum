@@ -212,7 +212,12 @@ def run_workflow(args):
                 print(f"Chunk generated an exception: {exc}")
         
     _t_end = time.time()
-    print(f"\n[TIMING] Overall execution time: {_t_end - _t_start:.4f} seconds")
+    overall_time = _t_end - _t_start
+    print(f"\n[TIMING] Overall execution time: {overall_time:.4f} seconds")
+    
+    with open(timing_log, 'a') as _f:
+        _f.write(f'stage_wall_clock_{args.stage},{overall_time:.4f}\n')
+        
     print("All chunks completed successfully!")
 
 
