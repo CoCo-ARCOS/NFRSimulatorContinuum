@@ -22,19 +22,23 @@ def setup_parsl(use_local=False, workers=2):
                 label='edge',
                 max_workers=workers,
                 working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
-                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, walltime="12:00:00", worker_init="module load python/3.12")
+                cores_per_worker=1,
+                max_workers_per_node=workers,
+                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, max_blocks=workers, walltime="12:00:00", worker_init="module load python/3.12")
             ),
             HighThroughputExecutor(
                 label='fog',
-                max_workers=workers,
+                cores_per_worker=1,
+                max_workers_per_node=workers,
                 working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
-                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, walltime="12:00:00", worker_init="module load python/3.12")
+                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, max_blocks=workers, walltime="12:00:00", worker_init="module load python/3.12")
             ),
             HighThroughputExecutor(
                 label='cloud',
-                max_workers=workers,
+                cores_per_worker=1,
+                max_workers_per_node=workers,
                 working_dir="/lustre/uc3m_a0/dynamic/dantedomizzi/parsl/",
-                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, walltime="12:00:00", worker_init="module load python/3.12")
+                provider=SlurmProvider(partition="large",cores_per_node=workers,nodes_per_block=1, init_blocks=1, max_blocks=workers, walltime="12:00:00", worker_init="module load python/3.12")
             ),
         ]
     
