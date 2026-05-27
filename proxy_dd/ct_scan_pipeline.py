@@ -2,6 +2,7 @@
 """Create and optionally run the CT scan continuum case-study pipeline."""
 import argparse
 from pathlib import Path
+import csv
 
 import benchmark_workers as bw
 
@@ -123,7 +124,7 @@ def parse_args():
     parser.add_argument(
         "--storage-bandwidth",
         type=float,
-        default=150.0,
+        default=100.0,
         help="Filesystem bandwidth in MB/s for stage storage operations.",
     )
     parser.add_argument(
@@ -158,6 +159,14 @@ def parse_args():
         type=float,
         default=REFERENCE_TIMINGS["cloud_inference"]["seconds_per_study"],
         help="Application time for tumor segmentation inference, before per-object scaling.",
+    )
+    parser.add_argument(
+        "--calibration-file",
+        type=Path,
+        default=None,
+        help=("Optional CSV timing file to calibrate application stage times. "
+              "CSV must have header 'task,duration_seconds' and include "
+              "entries for edge_acquisition, fog_preprocessing, and cloud_inference."),
     )
     return parser.parse_args()
 
@@ -234,6 +243,7 @@ def build_ct_scan_config(
     edge_acquisition_seconds_per_study: float,
     preprocessing_seconds_per_study: float,
     inference_seconds_per_study: float,
+    calibration_file: Path,
 ):
     payload_size = int(average_size_bytes)
     total_objects = object_count * max(1, studies)
@@ -244,6 +254,41 @@ def build_ct_scan_config(
         "fog_preprocessing": preprocessing_seconds_per_study,
         "cloud_inference": inference_seconds_per_study,
     }
+
+    # If a calibration file is provided, use measured per-stage timings from it.
+    if calibration_file is not None and Path(calibration_file).exists():
+        try:
+            calib = {}
+            with open(calibration_file, newline='') as fh:
+                reader = csv.DictReader(fh)
+                # accumulate sums and counts per task
+                sums = {}
+                counts = {}
+                for row in reader:
+                    task = row.get('task')
+                    try:
+                        dur = float(row.get('duration_seconds', 0))
+                    except Exception:
+                        continue
+                    sums[task] = sums.get(task, 0.0) + dur
+                    counts[task] = counts.get(task, 0) + 1
+
+            # For each key stage, derive a per-study seconds estimate.
+            for key in ('edge_acquisition', 'fog_preprocessing', 'cloud_inference'):
+                if key in sums:
+                    # If only one entry present, treat the sum as the whole-study duration.
+                    if counts.get(key, 0) <= 1:
+                        calib[key] = sums[key]
+                    else:
+                        # otherwise, use the mean duration for that task
+                        calib[key] = sums[key] / counts[key]
+
+            # Apply any calibrated values found
+            for k, v in calib.items():
+                stage_study_seconds[k] = float(v)
+        except Exception:
+            # ignore calibration errors and fall back to defaults
+            pass
     stage_object_seconds = {
         name: stage_seconds_per_object(seconds, object_count)
         for name, seconds in stage_study_seconds.items()
@@ -428,6 +473,7 @@ def main():
         edge_acquisition_seconds_per_study=args.edge_acquisition_seconds_per_study,
         preprocessing_seconds_per_study=args.preprocessing_seconds_per_study,
         inference_seconds_per_study=args.inference_seconds_per_study,
+        calibration_file=args.calibration_file,
     )
     print(
         f"Simulating {args.studies} study(ies) with {object_count} files each "
