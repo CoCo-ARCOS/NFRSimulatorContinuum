@@ -1,4 +1,0 @@
-algoritmo,size_mb,k_datos,m_paridad,num_objects,avg_encoding_s,std_encoding_s,avg_decoding_s,std_decoding_s,avg_io_write_s,std_io_write_s,avg_io_read_s,std_io_read_s
-RS,1000,4,2,31,1.518518,0.058879,0.144163,0.125406,0.365519,0.003844,0.571100,0.078413
-RS,1000,8,4,31,2.592170,0.008812,0.121023,0.001503,0.370274,0.002919,0.601072,0.041650
-RS,1000,10,4,31,2.514774,0.007668,0.122474,0.002741,0.370432,0.002923,0.460090,0.035366

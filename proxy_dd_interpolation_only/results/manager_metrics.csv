@@ -1,3 +1,0 @@
-stage,stage_name,pipeline,task_index,task_name,algorithm,jobs,wall_seconds,avg_wall_seconds,simulated_seconds,avg_simulated_seconds
-1,stage1,output,0,compress,LZ4,1,0.000127,0.000127,1.828260,1.828260
-1,stage1,combined,-1,combined,,1,0.000127,0.000127,1.828260,1.828260
