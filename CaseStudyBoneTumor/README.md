@@ -1,8 +1,7 @@
 # Bone Tumor Case Study
 
-<object data="casestudy.pdf" type="application/pdf" width="100%" height="500px">
-    <p>Your browser does not support PDFs. <a href="casestudy.pdf">Download the PDF</a> instead.</p>
-</object>
+![Case Study](casestudy.png)
+
 
 This directory contains the multiprocessing workflow for the bone tumor case study and the Slurm scripts used to run benchmark experiments.
 
