@@ -1,5 +1,9 @@
 #!/bin/bash
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+CASE_ROOT="$( cd "$SCRIPT_DIR/../../CaseStudyBoneTumor" &> /dev/null && pwd )"
+cd "$CASE_ROOT"
+
 STUDIES=100
 WORKERS_LIST=(1 2 4 8)
 BASE_DIR="benchmark_results"

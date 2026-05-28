@@ -16,6 +16,7 @@ cd CaseStudyBoneTumor
 - `workflow.py`: main edge/fog/cloud workflow.
 - `nfr_functions.py`: compression, encryption, encoding, preprocessing, and inference functions used by the workflow.
 - `requirements.txt`: Python dependencies.
+- `benchmarks/`: Python helper scripts for benchmark result aggregation.
 - `deploy_distributed.sh`: submits one staged Slurm run: edge, then fog, then cloud.
 - `run_all_experiments.sh`: submits several Slurm runs with different worker counts and then submits an aggregation job.
 - `casestudy.pdf`: case study description.
@@ -146,6 +147,14 @@ benchmark_results/exp_w2/
 benchmark_results/exp_w4/
 benchmark_results/exp_w8/
 ```
+
+The final aggregation step runs:
+
+```bash
+python benchmarks/aggregate_results.py --base_dir benchmark_results
+```
+
+See `benchmarks/README.md` for details about the benchmark helper scripts.
 
 
 
