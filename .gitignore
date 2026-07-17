@@ -51,3 +51,4 @@ CaseStudyBoneTumore/error.txt
 proxy_dd/*.json
 results/*.txt
 results/*.csv
+*.png
