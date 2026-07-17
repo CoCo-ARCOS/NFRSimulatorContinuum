@@ -48,3 +48,6 @@ CaseStudyBoneTumore/*.bin
 CaseStudyBoneTumore/runinfo/*
 CaseStudyBoneTumore/files.txt
 CaseStudyBoneTumore/error.txt
+proxy_dd/*.json
+results/*.txt
+results/*.csv
