@@ -10,6 +10,7 @@ enum power_model_type {
     POWER_MODEL_CUBIC,
     POWER_MODEL_SQUARE,
     POWER_MODEL_SQRT,
+    POWER_MODEL_SPEC,
     POWER_MODEL_COUNT
 };
 

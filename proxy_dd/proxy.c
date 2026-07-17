@@ -1908,6 +1908,8 @@ struct config *read_config(const char *file_name)
                     configuration->machines[m_idx].power_model_enum = POWER_MODEL_SQUARE;
                 } else if (strcasecmp(configuration->machines[m_idx].power_model, "sqrt") == 0) {
                     configuration->machines[m_idx].power_model_enum = POWER_MODEL_SQRT;
+                } else if (strcasecmp(configuration->machines[m_idx].power_model, "spec") == 0) {
+                    configuration->machines[m_idx].power_model_enum = POWER_MODEL_SPEC;
                 } else {
                     configuration->machines[m_idx].power_model_enum = POWER_MODEL_LINEAR;
                 }
@@ -1915,6 +1917,16 @@ struct config *read_config(const char *file_name)
                 
                 configuration->machines[m_idx].max_power = cJSON_IsNumber(mmaxpower) ? mmaxpower->valuedouble : 0.0;
                 configuration->machines[m_idx].static_power_percent = cJSON_IsNumber(mstaticpower) ? mstaticpower->valuedouble : 0.0;
+                
+                configuration->machines[m_idx].has_spec_power = 0;
+                cJSON *mspecpower = cJSON_GetObjectItemCaseSensitive(m, "spec_power");
+                if (cJSON_IsArray(mspecpower) && cJSON_GetArraySize(mspecpower) == 11) {
+                    for (int i = 0; i < 11; i++) {
+                        cJSON *pitem = cJSON_GetArrayItem(mspecpower, i);
+                        configuration->machines[m_idx].spec_power[i] = cJSON_IsNumber(pitem) ? pitem->valuedouble : 0.0;
+                    }
+                    configuration->machines[m_idx].has_spec_power = 1;
+                }
 
                 if (cJSON_IsString(mprofile) && mprofile->valuestring) {
                     strncpy(configuration->machines[m_idx].hardware_profile, mprofile->valuestring, sizeof(configuration->machines[m_idx].hardware_profile) - 1);

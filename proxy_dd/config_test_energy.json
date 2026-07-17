@@ -78,7 +78,7 @@
   "b_fs_read": 100,
   "b_fs_write": 100,
   "machines": [
-    { "name": "m0", "stages": ["stage1"], "hardware_profile": "dantelap", "power_model": "cubic", "max_power": 250, "static_power_percent": 0.7 },
+    { "name": "m0", "stages": ["stage1"], "hardware_profile": "dantelap", "power_model": "spec", "max_power": 250, "static_power_percent": 0.7, "spec_power": [105, 112, 118, 125, 131, 137, 147, 153, 157, 164, 169] },
     { "name": "m1", "stages": ["stage2"], "hardware_profile": "dantelap", "power_model": "square", "max_power": 200, "static_power_percent": 0.6 },
     { "name": "m2", "stages": ["stage3"], "hardware_profile": "dantelap", "power_model": "sqrt", "max_power": 150, "static_power_percent": 0.5 },
     { "name": "m3", "stages": ["stage4"], "hardware_profile": "dantelap", "power_model": "linear", "max_power": 100, "static_power_percent": 0.5 }

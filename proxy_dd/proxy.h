@@ -93,6 +93,8 @@ struct machine_node
 	enum power_model_type power_model_enum;
 	double max_power;
 	double static_power_percent;
+	double spec_power[11];
+	int has_spec_power;
 };
 
 struct link_node
