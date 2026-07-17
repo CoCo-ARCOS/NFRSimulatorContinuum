@@ -1132,13 +1132,7 @@ int nfr_manager_init(struct nfr_manager *m, int stage, int task_id, int task_typ
 int nfr_manager_enqueue(struct nfr_manager *m, struct worker *w)
 {
     if (!m || !w) return -1;
-    printf("[ENQUEUE] Stage %d %s task %d (%s:%s) worker %d\n",
-           m->stage,
-           m->is_application ? "APP" : (m->is_input ? "IN" : "OUT"),
-           m->task_id,
-           m->task_name,
-           m->task_algorithm,
-           w->id);
+    // Debug output removed for cleaner logs
     pthread_mutex_lock(&m->lock);
     while (m->q_count == m->q_size && !m->stop)
         pthread_cond_wait(&m->cond_nonfull, &m->lock);
@@ -1384,17 +1378,22 @@ void shutdown_and_report_metrics(struct config *configuration)
     printf("\n=== Link Metrics ===\n");
     FILE *link_csv = open_report_csv("link_metrics.csv");
     if (link_csv)
-        fprintf(link_csv, "from,to,transfers,bytes,total_seconds\n");
+        fprintf(link_csv, "from,to,transfers,bytes,total_seconds,energy_joules\n");
     for (int li = 0; li < configuration->links_number; ++li)
     {
-        printf("Link %s->%s transfers=%d bytes=%f total_time=%f s\n", configuration->links[li].from, configuration->links[li].to, configuration->links[li].transfers_count, configuration->links[li].bytes_transferred, configuration->links[li].total_transfer_time);
+        double link_energy = configuration->links[li].bytes_transferred * configuration->links[li].energy_per_byte;
+        printf("Link %s->%s transfers=%d bytes=%f total_time=%f s energy=%f J\n", 
+               configuration->links[li].from, configuration->links[li].to, 
+               configuration->links[li].transfers_count, configuration->links[li].bytes_transferred, 
+               configuration->links[li].total_transfer_time, link_energy);
         if (link_csv)
-            fprintf(link_csv, "%s,%s,%d,%f,%f\n",
+            fprintf(link_csv, "%s,%s,%d,%f,%f,%f\n",
                     configuration->links[li].from,
                     configuration->links[li].to,
                     configuration->links[li].transfers_count,
                     configuration->links[li].bytes_transferred,
-                    configuration->links[li].total_transfer_time);
+                    configuration->links[li].total_transfer_time,
+                    link_energy);
     }
     if (link_csv)
         fclose(link_csv);
@@ -1881,6 +1880,10 @@ struct config *read_config(const char *file_name)
                 cJSON *mprofile = cJSON_GetObjectItemCaseSensitive(m, "hardware_profile");
                 cJSON *mprofile_alt = cJSON_GetObjectItemCaseSensitive(m, "profile");
                 cJSON *mvalues = cJSON_GetObjectItemCaseSensitive(m, "real_values_dir");
+                cJSON *mpower = cJSON_GetObjectItemCaseSensitive(m, "power_model");
+                cJSON *mmaxpower = cJSON_GetObjectItemCaseSensitive(m, "max_power");
+                cJSON *mstaticpower = cJSON_GetObjectItemCaseSensitive(m, "static_power_percent");
+
                 if (cJSON_IsString(mname) && mname->valuestring) {
                     strncpy(configuration->machines[m_idx].name, mname->valuestring, sizeof(configuration->machines[m_idx].name)-1);
                     configuration->machines[m_idx].name[sizeof(configuration->machines[m_idx].name)-1] = '\0';
@@ -1890,6 +1893,29 @@ struct config *read_config(const char *file_name)
                 configuration->machines[m_idx].hardware_profile[0] = '\0';
                 configuration->machines[m_idx].real_values_dir[0] = '\0';
                 configuration->machines[m_idx].service_profile_index = 0;
+                
+                if (cJSON_IsString(mpower) && mpower->valuestring) {
+                    strncpy(configuration->machines[m_idx].power_model, mpower->valuestring, sizeof(configuration->machines[m_idx].power_model) - 1);
+                    configuration->machines[m_idx].power_model[sizeof(configuration->machines[m_idx].power_model) - 1] = '\0';
+                } else {
+                    strncpy(configuration->machines[m_idx].power_model, "linear", sizeof(configuration->machines[m_idx].power_model) - 1);
+                    configuration->machines[m_idx].power_model[sizeof(configuration->machines[m_idx].power_model) - 1] = '\0';
+                }
+
+                if (strcasecmp(configuration->machines[m_idx].power_model, "cubic") == 0) {
+                    configuration->machines[m_idx].power_model_enum = POWER_MODEL_CUBIC;
+                } else if (strcasecmp(configuration->machines[m_idx].power_model, "square") == 0) {
+                    configuration->machines[m_idx].power_model_enum = POWER_MODEL_SQUARE;
+                } else if (strcasecmp(configuration->machines[m_idx].power_model, "sqrt") == 0) {
+                    configuration->machines[m_idx].power_model_enum = POWER_MODEL_SQRT;
+                } else {
+                    configuration->machines[m_idx].power_model_enum = POWER_MODEL_LINEAR;
+                }
+
+                
+                configuration->machines[m_idx].max_power = cJSON_IsNumber(mmaxpower) ? mmaxpower->valuedouble : 0.0;
+                configuration->machines[m_idx].static_power_percent = cJSON_IsNumber(mstaticpower) ? mstaticpower->valuedouble : 0.0;
+
                 if (cJSON_IsString(mprofile) && mprofile->valuestring) {
                     strncpy(configuration->machines[m_idx].hardware_profile, mprofile->valuestring, sizeof(configuration->machines[m_idx].hardware_profile) - 1);
                     configuration->machines[m_idx].hardware_profile[sizeof(configuration->machines[m_idx].hardware_profile) - 1] = '\0';
@@ -1929,6 +1955,8 @@ struct config *read_config(const char *file_name)
                 cJSON *to = cJSON_GetObjectItemCaseSensitive(l, "to");
                 cJSON *bnet = cJSON_GetObjectItemCaseSensitive(l, "b_net");
                 cJSON *lat = cJSON_GetObjectItemCaseSensitive(l, "latency_ms");
+                cJSON *energy_byte = cJSON_GetObjectItemCaseSensitive(l, "energy_per_byte");
+                
                 if (cJSON_IsString(from) && from->valuestring) {
                     strncpy(configuration->links[l_idx].from, from->valuestring, sizeof(configuration->links[l_idx].from)-1);
                     configuration->links[l_idx].from[sizeof(configuration->links[l_idx].from)-1] = '\0';
@@ -1937,10 +1965,15 @@ struct config *read_config(const char *file_name)
                     strncpy(configuration->links[l_idx].to, to->valuestring, sizeof(configuration->links[l_idx].to)-1);
                     configuration->links[l_idx].to[sizeof(configuration->links[l_idx].to)-1] = '\0';
                 } else configuration->links[l_idx].to[0] = '\0';
+                
                 configuration->links[l_idx].b_net = 0.0;
                 if (cJSON_IsNumber(bnet)) configuration->links[l_idx].b_net = bnet->valuedouble * 1048576.0; /* MB/s -> bytes/sec */
+                
                 configuration->links[l_idx].latency_ms = 0.0;
                 if (cJSON_IsNumber(lat)) configuration->links[l_idx].latency_ms = lat->valuedouble;
+
+                configuration->links[l_idx].energy_per_byte = 0.0;
+                if (cJSON_IsNumber(energy_byte)) configuration->links[l_idx].energy_per_byte = energy_byte->valuedouble;
                 l_idx++;
             }
             configuration->links_number = l_idx;
@@ -2638,7 +2671,7 @@ struct worker *assignation(struct config *configuration, struct traceConfig *tra
             if (size_val < 0.0) size_val = base_size;
         }
 
-        printf("Generated trace %d: size=%f\n", i, size_val);
+        // trace debug output removed
 
         traces[i].traceName = "object";
         traces[i].size = (long long unsigned)(size_val);
@@ -3138,8 +3171,7 @@ void compress_time(struct worker *my_data)
         {
             double t_read = 0.0, t_write = 0.0;
             long unsigned size_before = my_data->trace[j].size;
-            printf("AAAAAAAAAAAAAAAA Worker %d (machine %d) compressing object %d of size %.2f MB with algorithm %s\n",
-                   my_data->id, my_data->machine_id, j, (double)size_before / 1048576.0, my_data->task_algorithm);
+
             if (my_data->b_fs_read > 0.0)
                 t_read = (double)size_before / my_data->b_fs_read;
 

@@ -17,26 +17,31 @@ For Apptainer, build or provide the queue estimator SIF. The simulator defaults 
 
 ### Simulator execution
 
-Go to the ```proxy_dd``` directory, compile the code, and execute the main program:
+Go to the `proxy_dd` directory, compile the code, and execute the main program:
 
 ```bash
 cd proxy_dd
 make
 ./main config_distributed_example.json
-./main config_distributed_example.json apptainer ../stages/single_queue.sif
+./main config_distributed_example.json log-log docker single:queue
 ```
+
+The simulator outputs extensive performance metrics into the console and generates CSV reports, including Stage Totals, Manager Metrics, Link Metrics, and Machine Energy Estimations.
 
 #### Configurations
 
-In ```proxy_dd``` directory, edit the file ```config.cfg``` specifying the following:
+In the `proxy_dd` directory, the simulation is configured through a JSON file (e.g., `config_distributed_example.json`). Key fields include:
 
-* ```workers```: number of parallel workers to simulate.
-* ```traces_number```: number of input traces for each worker.
-* ```traces_fileName```: configuration file containing the parameters of each trace.
-* ```service_time_model```: service-time model for benchmark tables. Use ```linear``` for the previous linear interpolation or ```log-log``` for a power-law fit in log-log space.
-* ```container_platform```: container runtime for the queue estimator. Use ```docker``` (default) or ```apptainer```.
-* ```queue_container_image```: Docker image or Apptainer SIF for the queue estimator. Defaults to ```single:queue``` with Docker and ```../stages/single_queue.sif``` with Apptainer.
-* ```application_mean_service_time```: per-stage average application execution time, in seconds, configured inside each stage and simulated between that stage's input and output pipelines with the ```single:queue``` estimator.
+* `workers`: Number of parallel workers to simulate.
+* `traces`: List of trace distributions and sizes.
+* `stages`: List of simulated pipeline stages. Each stage specifies its I/O throughput (`b_fs`, `b_fs_read`, `b_fs_write`), `application_mean_service_time`, and an array of `input_requirements` and `output_requirements` (e.g., `compress`, `hash`, `cipher`).
+* `machines`: Defines physical or virtual machines, mapping each to specific `stages`, and defining a `hardware_profile` to enable energy consumption estimations.
+* `links`: Defines network connections between machines (`b_net`, `latency_ms`).
+
+Command-line arguments can optionally be provided to override defaults:
+* `service_time_model`: Use `linear` for interpolation or `log-log` for a power-law fit.
+* `container_platform`: Container runtime for the queue estimator (`docker` or `apptainer`).
+* `queue_container_image`: Docker image or Apptainer SIF for the queue estimator.
 
 ### Single Requirement Benchmarks
 

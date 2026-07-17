@@ -422,31 +422,7 @@ void print_interpolation_points()
     if (!profile)
         return;
 
-    // Print the interpolation points for debugging
-    for (int i = 0; i < profile->compress_table_size; i++)
-    {
-        printf("Compress Table: %s %f %f %f\n", profile->compress_table[i].algo, profile->compress_table[i].size, profile->compress_table[i].time, profile->compress_table[i].ratio);
-    }
-
-    for (int i = 0; i < profile->decompress_table_size; i++)
-    {
-        printf("Decompress Table: %s %f %f %f\n", profile->decompress_table[i].algo, profile->decompress_table[i].size, profile->decompress_table[i].time, profile->decompress_table[i].ratio);
-    }
-
-    for (int i = 0; i < profile->hashing_table_size; i++)
-    {
-        printf("Hashing Table: %s %f %f %f\n", profile->hashing_table[i].algo, profile->hashing_table[i].size, profile->hashing_table[i].time, profile->hashing_table[i].ratio);
-    }
-
-    for (int i = 0; i < profile->ida_table_size; i++)
-    {
-        printf("IDA Table: %s %f %f %f\n", profile->ida_table[i].algo, profile->ida_table[i].size, profile->ida_table[i].time, profile->ida_table[i].ratio);
-    }
-
-    for (int i = 0; i < profile->ida_decode_table_size; i++)
-    {
-        printf("IDA Decode Table: %s %f %f %f\n", profile->ida_decode_table[i].algo, profile->ida_decode_table[i].size, profile->ida_decode_table[i].time, profile->ida_decode_table[i].ratio);
-    }
+    // Print the interpolation points for debugging (removed)
 }
 
 float interpolation(float x, float x0, float x1, float y0, float y1)
@@ -613,7 +589,7 @@ double compressStageSizeAlgo(double filesize, const char *algo)
     ratio = do_interpolate_algo((float)filesize, profile->compress_table, profile->compress_table_size, 1, algo && algo[0] ? algo : default_compression_algo);
     if (ratio <= 0.0f)
         ratio = 1.0f;
-    printf("CompressStageSizeAlgo: filesize = %f, ratio = %f\n", filesize, ratio);
+    // Debug print removed
     return (double)(filesize / ratio);
 }
 

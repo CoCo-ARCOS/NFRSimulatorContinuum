@@ -9,6 +9,7 @@
 #include <errno.h>
 #include "service_time.h"
 #include "cJSON.h"
+#include "power_models.h"
 
 #define MAX_SIZE_RESTORE_STACK 16
 
@@ -88,6 +89,10 @@ struct machine_node
 	char hardware_profile[64];
 	char real_values_dir[512];
 	int service_profile_index;
+	char power_model[32];
+	enum power_model_type power_model_enum;
+	double max_power;
+	double static_power_percent;
 };
 
 struct link_node
@@ -96,6 +101,7 @@ struct link_node
 	char to[64];
 	double b_net;	   /* bytes/sec */
 	double latency_ms; /* optional */
+	double energy_per_byte; /* Joules per byte transferred */
 	/* runtime metrics */
 	double bytes_transferred;
 	int transfers_count;

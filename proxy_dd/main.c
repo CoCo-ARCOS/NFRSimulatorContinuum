@@ -139,6 +139,9 @@ int main(int argc, char const *argv[]){
 		fprintf(stage_totals_csv, "\n");
 	}
 
+	double machine_active_time[MAX_MACHINES] = {0.0};
+
+
 	for (int si = 0; si < configuration->stages_number; ++si) {
 		int stage_num = configuration->stages[si];
 		int stage_idx = stage_num - 1;
@@ -189,6 +192,16 @@ int main(int argc, char const *argv[]){
 		}
 
 		double stage_total = max_input_time + max_application_time + max_output_time + max_transfer_time;
+
+		// Assign stage_total to the corresponding machine's active time
+		for (int m = 0; m < configuration->machines_number; ++m) {
+			for (int sm = 0; sm < configuration->machines[m].stages_number; ++sm) {
+				if (configuration->machines[m].stages[sm] == stage_num) {
+					machine_active_time[m] += stage_total;
+					break;
+				}
+			}
+		}
 
 		printf("%d\t%s\t%d\t%ld\t%f\t%f\t%f\t%f\t%f\n",
 			stage_num,
@@ -247,6 +260,39 @@ int main(int argc, char const *argv[]){
 	}
 
 	if (stage_totals_csv) fclose(stage_totals_csv);
+
+	FILE *energy_csv = open_report_csv("energy_by_machine.csv");
+	if (energy_csv) {
+		fprintf(energy_csv, "machine_name,power_model,active_time_sec,idle_time_sec,energy_joules\n");
+	}
+	printf("\n=== Machine Energy Estimation ===\n");
+	printf("Machine\tPowerModel\tActiveTime(s)\tIdleTime(s)\tEnergy(J)\n");
+
+	double total_sim_time = 0.0;
+	for (int m = 0; m < configuration->machines_number; ++m) {
+		if (machine_active_time[m] > total_sim_time) {
+			total_sim_time = machine_active_time[m];
+		}
+	}
+
+	for (int m = 0; m < configuration->machines_number; ++m) {
+		struct machine_node *machine = &configuration->machines[m];
+		double active_time = machine_active_time[m];
+		double idle_time = total_sim_time - active_time;
+		if (idle_time < 0.0) idle_time = 0.0;
+		
+		double active_power = get_power(machine, 1.0);
+		double idle_power = get_power(machine, 0.0);
+		
+		double energy = (active_power * active_time) + (idle_power * idle_time);
+		
+		printf("%s\t%s\t%f\t%f\t%f\n", machine->name, machine->power_model, active_time, idle_time, energy);
+		if (energy_csv) {
+			fprintf(energy_csv, "%s,%s,%f,%f,%f\n", machine->name, machine->power_model, active_time, idle_time, energy);
+		}
+	}
+	if (energy_csv) fclose(energy_csv);
+
 
 	for (int i = 0; i < configuration->workers; ++i) {
 		free(arrayWorkers[i].trace);

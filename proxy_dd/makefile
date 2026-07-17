@@ -5,10 +5,13 @@ CONTAINER_PLATFORM ?= docker
 
 all: main
 
-main: main.o proxy.o service_time.o cJSON.o
-	$(CC) -g -o main main.o proxy.o service_time.o cJSON.o $(LDLIBS) $(THREAD)
+main: main.o proxy.o service_time.o cJSON.o power_models.o
+	$(CC) -g -o main main.o proxy.o service_time.o cJSON.o power_models.o $(LDLIBS) $(THREAD)
 
-proxy.o: proxy.c proxy.h cJSON.h
+power_models.o: power_models.c power_models.h proxy.h
+	$(CC) -g -c power_models.c -o power_models.o
+
+proxy.o: proxy.c proxy.h cJSON.h power_models.h
 	$(CC) -g -c proxy.c -o proxy.o
 
 service_time.o: service_time.c service_time.h
