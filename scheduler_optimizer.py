@@ -9,6 +9,149 @@ import itertools
 ENERGY_CSV = "results/energy_by_machine.csv"
 STAGE_CSV = "results/stage_totals_by_workers.csv"
 
+def plot_pareto_frontier(candidates_data):
+    """
+    Generates a 3D scatter plot of Makespan vs Total Energy vs Edge Energy.
+    Highlights the Pareto optimal configurations.
+    """
+    try:
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+    except ImportError:
+        print("matplotlib is required for plotting. Install it using: pip install matplotlib")
+        return
+
+    # Filter for valid data
+    data = [c for c in candidates_data if c["makespan"] > 0 and c["total_energy"] > 0]
+    if not data:
+        print("No valid data to plot.")
+        return
+    
+    # Calculate Pareto front (minimizing all 3 objectives)
+    pareto_front = []
+    for i, c1 in enumerate(data):
+        is_pareto = True
+        for j, c2 in enumerate(data):
+            if i == j:
+                continue
+            if (c2["makespan"] <= c1["makespan"] and c2["total_energy"] <= c1["total_energy"] and c2["edge_energy"] <= c1["edge_energy"]) and \
+               (c2["makespan"] < c1["makespan"] or c2["total_energy"] < c1["total_energy"] or c2["edge_energy"] < c1["edge_energy"]):
+                is_pareto = False
+                break
+        if is_pareto:
+            pareto_front.append(c1)
+            
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    
+    # Separate viable and non-viable for different marker styles
+    v_data = [c for c in data if c["viable"]]
+    nv_data = [c for c in data if not c["viable"]]
+
+    if nv_data:
+        ax.scatter([c["makespan"] for c in nv_data], [c["total_energy"] for c in nv_data], [c["edge_energy"] for c in nv_data], 
+                   c='red', marker='x', alpha=0.3, label='Discarded (Budget Exceeded)')
+    
+    if v_data:
+        sc = ax.scatter([c["makespan"] for c in v_data], [c["total_energy"] for c in v_data], [c["edge_energy"] for c in v_data], 
+                        c=[c["edge_energy"] for c in v_data], cmap='viridis', marker='o', s=50, label='Viable Candidates')
+        plt.colorbar(sc, ax=ax, label='Edge Energy (J)', pad=0.1)
+        
+    # Plot Pareto Front Highlight
+    if pareto_front:
+        ax.scatter([c["makespan"] for c in pareto_front], [c["total_energy"] for c in pareto_front], [c["edge_energy"] for c in pareto_front], 
+                   c='none', edgecolors='black', s=120, linewidth=2, label='Pareto Optimal')
+
+    ax.set_xlabel('Makespan ($C_{max}$) (s)')
+    ax.set_ylabel('Total Energy (J)')
+    ax.set_zlabel('Edge Energy (J)')
+    ax.set_title('Continuum Deployment Trade-offs')
+    ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1))
+    
+    plt.tight_layout()
+    output_file = 'pareto_frontier.png'
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    print(f"\nPlot saved to {output_file}")
+
+def plot_additional_analytics(candidates_data):
+    """
+    Generates additional analytics plots: 2D Tradeoffs, Placement Distribution, and NFR Distribution.
+    """
+    try:
+        import matplotlib.pyplot as plt
+        import collections
+    except ImportError:
+        return
+
+    v_data = [c for c in candidates_data if c["viable"]]
+    if not v_data:
+        print("No viable candidates for additional analytics.")
+        return
+
+    # 1. 2D Trade-off (Makespan vs Total Energy)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    makespans = [c["makespan"] for c in v_data]
+    energies = [c["total_energy"] for c in v_data]
+    edge_energies = [c["edge_energy"] for c in v_data]
+    
+    sc = ax.scatter(makespans, energies, c=edge_energies, cmap='coolwarm', s=60, edgecolors='k')
+    plt.colorbar(sc, ax=ax, label='Edge Energy (J)')
+    
+    ax.set_xlabel('Makespan ($C_{max}$) (s)')
+    ax.set_ylabel('Total Energy (J)')
+    ax.set_title('Viable Deployments: Makespan vs. Total Energy')
+    ax.grid(True, linestyle='--', alpha=0.6)
+    
+    plt.tight_layout()
+    plt.savefig('tradeoff_2d.png', dpi=300)
+    print("Saved plot to tradeoff_2d.png")
+    
+    # 2. Placement Distribution Bar Chart
+    tasks = list(v_data[0]["placement"].keys())
+    machines = ["Edge", "Fog", "Cloud"]
+    
+    counts = {t: {m: 0 for m in machines} for t in tasks}
+    for c in v_data:
+        for t, m in c["placement"].items():
+            if m in counts[t]:
+                counts[t][m] += 1
+            
+    fig, ax = plt.subplots(figsize=(10, 6))
+    x = range(len(tasks))
+    width = 0.25
+    
+    for i, m in enumerate(machines):
+        y = [counts[t][m] for t in tasks]
+        ax.bar([pos + i*width for pos in x], y, width, label=m)
+        
+    ax.set_xticks([pos + width for pos in x])
+    ax.set_xticklabels(tasks)
+    ax.set_ylabel('Number of Viable Configurations')
+    ax.set_title('Task Placement Distribution Across Viable Candidates')
+    ax.legend()
+    
+    plt.tight_layout()
+    plt.savefig('placement_distribution.png', dpi=300)
+    print("Saved plot to placement_distribution.png")
+    
+    # 3. NFR combination distribution
+    nfr_counts = collections.Counter()
+    for c in v_data:
+        nfr_str = f"{c['nfr_config'].get('compression', 'None')} + {c['nfr_config'].get('encryption', 'None')}"
+        nfr_counts[nfr_str] += 1
+        
+    fig, ax = plt.subplots(figsize=(8, 6))
+    labels = list(nfr_counts.keys())
+    vals = list(nfr_counts.values())
+    ax.bar(labels, vals, color='teal', edgecolor='black')
+    ax.set_ylabel('Frequency in Viable Candidates')
+    ax.set_title('NFR Pipeline Distribution')
+    plt.xticks(rotation=45, ha='right')
+    
+    plt.tight_layout()
+    plt.savefig('nfr_distribution.png', dpi=300)
+    print("Saved plot to nfr_distribution.png")
+
 def generate_dynamic_candidates(tasks, machines, nfr_options):
     """
     Generates the complete search space.
@@ -149,6 +292,7 @@ def main():
     parser.add_argument("--edge-budget", type=float, default=8000.0, help="Edge energy budget specifically (J)")
     parser.add_argument("--simulator-cmd", type=str, required=True, help="Path to simulator executable")
     parser.add_argument("--simulator-dir", type=str, default=".", help="Directory of simulator")
+    parser.add_argument("--plot", action="store_true", help="Plot a 3D Pareto frontier at the end of the simulation")
     args = parser.parse_args()
 
     # Absolute path to prevent directory change issues
@@ -186,6 +330,8 @@ def main():
     best_config_file = None
     best_energy_metrics = {}
     best_total_energy = 0.0
+    
+    plot_data = []
 
     print(f"Orchestrating {len(candidates)} candidate deployments across the continuum...")
     print("-" * 60)
@@ -207,6 +353,16 @@ def main():
 
         # Dynamic multi-constraint validation
         is_viable = (edge_energy <= args.edge_budget) and (total_energy <= args.global_budget)
+        
+        plot_data.append({
+            "makespan": c_max,
+            "total_energy": total_energy,
+            "edge_energy": edge_energy,
+            "viable": is_viable,
+            "label": f"Candidate {i}",
+            "placement": semantic_placement,
+            "nfr_config": candidate['nfr_config']
+        })
 
         if is_viable:
             print("  Status: ✅ Accepted")
@@ -236,6 +392,11 @@ def main():
         print(f"  Optimal Makespan (C_max): {best_c_max:.2f} s")
     else:
         print("  Status: Failure. No viable configurations met the combined constraints.")
+        
+    if args.plot:
+        print("\nGenerating Pareto frontier plot and additional analytics...")
+        plot_pareto_frontier(plot_data)
+        plot_additional_analytics(plot_data)
 
 if __name__ == "__main__":
     main()
