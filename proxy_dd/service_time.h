@@ -1,58 +1,31 @@
-/**
- * @file simulator.h
- * @mainpage Simulator to Preparation and retrieval service
- * @author Diana E. Carrizales-Espinoza
- * @date November 2019
- */
+#ifndef NFR_DAG_SERVICE_TIME_H
+#define NFR_DAG_SERVICE_TIME_H
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <string.h>
-#include <errno.h>
-#include <time.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/ipc.h>
-#include <sys/time.h>
-#include <sys/shm.h>
-#include <fcntl.h>
-#include <libgen.h>
-#include "string.h"
+#include <stddef.h>
 
-struct config;
-void load_service_times(struct config *configuration);
-void load_service_times_with_base(struct config *configuration, const char *runtime_base_dir);
-void set_service_time_profile(int profile_index);
+#include "proxy.h"
 
-float interpolation( float x, float x0, float x1, float y0, float y1) ;
+struct service_prediction {
+    double mean_time_s;
+    double stddev_time_s;
+    double ratio;
+    int extrapolated;
+};
 
-float compressStage (long unsigned filesize) ;
-float decompressStage (long unsigned filesize) ;
-float compressStageAlgo (long unsigned filesize, const char *algo) ;
-float decompressStageAlgo (long unsigned filesize, const char *algo) ;
+int service_time_init(const struct config *configuration,
+                      const char *runtime_base_dir,
+                      char *error_buffer,
+                      size_t error_buffer_size);
 
-double compressStageSize ( double filesize ) ;
-double compressStageSizeAlgo ( double filesize, const char *algo ) ;
+int service_time_predict(int machine_index,
+                         enum nfr_type type,
+                         int inverse,
+                         const struct nfr_operation *operation,
+                         double logical_size_bytes,
+                         struct service_prediction *prediction,
+                         char *error_buffer,
+                         size_t error_buffer_size);
 
-float hashingStage (double filesize) ;
-double hashingStageSize (double filesize) ;
-float hashingStageAlgo (double filesize, const char *algo) ;
-double hashingStageSizeAlgo (double filesize, const char *algo) ;
+void service_time_shutdown(void);
 
-float indexingStage (long numFiles) ;
-
-float IDAStage (double filesize) ;
-float IDADecodeStage (double filesize) ;
-float IDAStageAlgo (double filesize, const char *algo) ;
-float IDADecodeStageAlgo (double filesize, const char *algo) ;
-double IDAStageSize (double filesize) ;
-double IDAStageSizeAlgo (double filesize, const char *algo) ;
-
-void print_interpolation_points();
-
-//float uploadStage (long long unsigned filesize) ;
+#endif

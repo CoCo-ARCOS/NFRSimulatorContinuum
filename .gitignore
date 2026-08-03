@@ -52,3 +52,6 @@ proxy_dd/*.json
 results/*.txt
 results/*.csv
 *.png
+paper-evaluation-output/*
+PROFILER_README.md
+smoke-output/*

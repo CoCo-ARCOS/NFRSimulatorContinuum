@@ -1,12 +1,12 @@
 CC = gcc
 THREAD = -lpthread
-LDLIBS = -lm
+LDLIBS = -lm -ljson-c
 CONTAINER_PLATFORM ?= docker
 
-all: main
+all: nfr_dag_sim
 
-main: main.o proxy.o service_time.o cJSON.o power_models.o
-	$(CC) -g -o main main.o proxy.o service_time.o cJSON.o power_models.o $(LDLIBS) $(THREAD)
+nfr_dag_sim: main.o proxy.o service_time.o cJSON.o power_models.o
+	$(CC) -g -o nfr_dag_sim main.o proxy.o service_time.o cJSON.o power_models.o $(LDLIBS) $(THREAD)
 
 power_models.o: power_models.c power_models.h proxy.h
 	$(CC) -g -c power_models.c -o power_models.o
@@ -24,7 +24,7 @@ main.o: main.c proxy.h service_time.h
 	$(CC) -g -c main.c -o main.o
 
 clean:
-	rm -f *.o main
+	rm -f *.o nfr_dag_sim
 
 remove_containers:
 ifeq ($(CONTAINER_PLATFORM),docker)
@@ -39,8 +39,8 @@ endif
 delete_trace_results:
 	rm -f traces/* results/*
 
-run_output: main
-	./main config.json
+run_output: nfr_dag_sim
+	./nfr_dag_sim config.json
 
-run_input: main
-	./main config_input.json
+run_input: nfr_dag_sim
+	./nfr_dag_sim config_input.json

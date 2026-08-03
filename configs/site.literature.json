@@ -1,0 +1,313 @@
+{
+  "site_id": "continuum-testbed",
+  "description": "Edge, fog, and HPC infrastructure used for contract-driven workflow evaluation. Power parameters are literature-derived reference values and are not measurements of the deployed machines.",
+  "infrastructure": {
+    "machines": [
+      {
+        "name": "Edge_p",
+        "slots": 4,
+        "speed_factor": 1.0,
+        "read_bandwidth_Bps": 3236252697.15,
+        "write_bandwidth_Bps": 3406141089.94,
+        "power_model": "linear",
+        "max_power_w": 9.5,
+        "static_power_fraction": 0.263158,
+        "real_values_dir": "/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/results_different_machines/organized/toge/real_values/",
+        "power_metadata": {
+          "parameter_type": "literature-derived-reference",
+          "idle_power_w": 2.5,
+          "max_power_w": 9.5,
+          "uncertainty_fraction": 0.2,
+          "source_description": "Raspberry Pi official statement: idle power 2-3 W and fully loaded power below 10 W.",
+          "source_url": "https://www.raspberrypi.com/news/16gb-raspberry-pi-5-on-sale-now-at-120/"
+        }
+      },
+      {
+        "name": "Edge_t",
+        "slots": 4,
+        "speed_factor": 1.0,
+        "read_bandwidth_Bps": 3236252697.15,
+        "write_bandwidth_Bps": 3406141089.94,
+        "power_model": "linear",
+        "max_power_w": 9.5,
+        "static_power_fraction": 0.263158,
+        "real_values_dir": "/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/results_different_machines/organized/toge/real_values/",
+        "power_metadata": {
+          "parameter_type": "literature-derived-reference",
+          "idle_power_w": 2.5,
+          "max_power_w": 9.5,
+          "uncertainty_fraction": 0.2,
+          "source_description": "Raspberry Pi official statement: idle power 2-3 W and fully loaded power below 10 W.",
+          "source_url": "https://www.raspberrypi.com/news/16gb-raspberry-pi-5-on-sale-now-at-120/"
+        }
+      },
+      {
+        "name": "Fog1_de",
+        "slots": 6,
+        "speed_factor": 1.0,
+        "read_bandwidth_Bps": 1583269260.48,
+        "write_bandwidth_Bps": 920122535.78,
+        "power_model": "linear",
+        "max_power_w": 35.0,
+        "static_power_fraction": 0.228571,
+        "real_values_dir": "/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/results_different_machines/organized/dantelap/real_values/",
+        "power_metadata": {
+          "parameter_type": "literature-derived-reference",
+          "idle_power_w": 8.0,
+          "max_power_w": 35.0,
+          "uncertainty_fraction": 0.3,
+          "source_description": "Literature-informed whole-laptop proxy based on AMD Ryzen 5 4500U default TDP 15 W and cTDP range 10-25 W, plus system overhead.",
+          "source_url": "https://www.amd.com/"
+        }
+      },
+      {
+        "name": "Fog2_dd",
+        "slots": 16,
+        "speed_factor": 1.0,
+        "read_bandwidth_Bps": 1583269260.48,
+        "write_bandwidth_Bps": 920122535.78,
+        "power_model": "linear",
+        "max_power_w": 65.0,
+        "static_power_fraction": 0.184615,
+        "real_values_dir": "/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/results_different_machines/organized/dantelap/real_values/",
+        "power_metadata": {
+          "parameter_type": "literature-derived-reference",
+          "idle_power_w": 12.0,
+          "max_power_w": 65.0,
+          "uncertainty_fraction": 0.3,
+          "source_description": "Literature-informed whole-laptop proxy based on AMD Ryzen 7 4800H default TDP 45 W, plus system overhead; assumes discrete GPU is inactive.",
+          "source_url": "https://www.amd.com/"
+        }
+      },
+      {
+        "name": "Cloud_c3_1",
+        "slots": 64,
+        "speed_factor": 1.0,
+        "read_bandwidth_Bps": 4820797962.94,
+        "write_bandwidth_Bps": 2886047002.14,
+        "power_model": "linear",
+        "max_power_w": 879.0,
+        "static_power_fraction": 0.225256,
+        "real_values_dir": "/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/results_different_machines/organized/c3/real_values/",
+        "power_metadata": {
+          "parameter_type": "literature-derived-reference",
+          "idle_power_w": 198.0,
+          "max_power_w": 879.0,
+          "uncertainty_fraction": 0.25,
+          "source_description": "SPECpower proxy from a dual-socket, 64-core AMD EPYC server: active idle 198 W and 100% load 879 W. Not the exact EPYC 7543 node.",
+          "source_url": "https://www.spec.org/power_ssj2008/results/res2026q2/power_ssj2008-20260406-01561.html"
+        }
+      },
+      {
+        "name": "Cloud_c3_2",
+        "slots": 64,
+        "speed_factor": 1.0,
+        "read_bandwidth_Bps": 4820797962.94,
+        "write_bandwidth_Bps": 2886047002.14,
+        "power_model": "linear",
+        "max_power_w": 879.0,
+        "static_power_fraction": 0.225256,
+        "real_values_dir": "/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/results_different_machines/organized/c3/real_values/",
+        "power_metadata": {
+          "parameter_type": "literature-derived-reference",
+          "idle_power_w": 198.0,
+          "max_power_w": 879.0,
+          "uncertainty_fraction": 0.25,
+          "source_description": "SPECpower proxy from a dual-socket, 64-core AMD EPYC server: active idle 198 W and 100% load 879 W. Not the exact EPYC 7543 node.",
+          "source_url": "https://www.spec.org/power_ssj2008/results/res2026q2/power_ssj2008-20260406-01561.html"
+        }
+      },
+      {
+        "name": "Cloud_c3_3",
+        "slots": 64,
+        "speed_factor": 1.0,
+        "read_bandwidth_Bps": 4820797962.94,
+        "write_bandwidth_Bps": 2886047002.14,
+        "power_model": "linear",
+        "max_power_w": 879.0,
+        "static_power_fraction": 0.225256,
+        "real_values_dir": "/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/results_different_machines/organized/c3/real_values/",
+        "power_metadata": {
+          "parameter_type": "literature-derived-reference",
+          "idle_power_w": 198.0,
+          "max_power_w": 879.0,
+          "uncertainty_fraction": 0.25,
+          "source_description": "SPECpower proxy from a dual-socket, 64-core AMD EPYC server: active idle 198 W and 100% load 879 W. Not the exact EPYC 7543 node.",
+          "source_url": "https://www.spec.org/power_ssj2008/results/res2026q2/power_ssj2008-20260406-01561.html"
+        }
+      }
+    ],
+    "links": [
+      {
+        "id": "Edge_p-Fog1_de",
+        "from": "Edge_p",
+        "to": "Fog1_de",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 131072000,
+        "latency_s": 0.01,
+        "energy_per_byte_j": 4e-09
+      },
+      {
+        "id": "Edge_t-Fog2_dd",
+        "from": "Edge_t",
+        "to": "Fog2_dd",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 131072000,
+        "latency_s": 0.01,
+        "energy_per_byte_j": 4e-09
+      },
+      {
+        "id": "Fog1_de-Cloud_c3_1",
+        "from": "Fog1_de",
+        "to": "Cloud_c3_1",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 131072000,
+        "latency_s": 0.01,
+        "energy_per_byte_j": 4e-09
+      },
+      {
+        "id": "Fog1_de-Cloud_c3_2",
+        "from": "Fog1_de",
+        "to": "Cloud_c3_2",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 131072000,
+        "latency_s": 0.01,
+        "energy_per_byte_j": 4e-09
+      },
+      {
+        "id": "Fog1_de-Cloud_c3_3",
+        "from": "Fog1_de",
+        "to": "Cloud_c3_3",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 131072000,
+        "latency_s": 0.01,
+        "energy_per_byte_j": 4e-09
+      },
+      {
+        "id": "Fog2_dd-Cloud_c3_1",
+        "from": "Fog2_dd",
+        "to": "Cloud_c3_1",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 131072000,
+        "latency_s": 0.01,
+        "energy_per_byte_j": 4e-09
+      },
+      {
+        "id": "Fog2_dd-Cloud_c3_2",
+        "from": "Fog2_dd",
+        "to": "Cloud_c3_2",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 131072000,
+        "latency_s": 0.01,
+        "energy_per_byte_j": 4e-09
+      },
+      {
+        "id": "Fog2_dd-Cloud_c3_3",
+        "from": "Fog2_dd",
+        "to": "Cloud_c3_3",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 131072000,
+        "latency_s": 0.01,
+        "energy_per_byte_j": 4e-09
+      }
+    ]
+  },
+  "requirements": {
+    "compression": {
+      "algorithms": [
+        "LZ4",
+        "ZSTD",
+        "ZLIB"
+      ],
+      "strength_overrides": {
+        "LZ4": 1,
+        "ZLIB": 2,
+        "ZSTD": 3
+      }
+    },
+    "confidentiality": {
+      "algorithms": [
+        "AES",
+        "CHACHA20"
+      ],
+      "strength_overrides": {
+        "AES": 2,
+        "CHACHA20": 2
+      }
+    },
+    "reliability": {
+      "algorithms": [
+        "RS"
+      ],
+      "ida_km": [
+        [
+          8,
+          2
+        ],
+        [
+          8,
+          4
+        ]
+      ]
+    },
+    "integrity": {
+      "algorithms": [
+        "SHA256",
+        "SHA3_256",
+        "HMAC_SHA256"
+      ],
+      "strength_overrides": {
+        "SHA256": 1,
+        "SHA3_256": 1,
+        "HMAC_SHA256": 2
+      }
+    }
+  },
+  "mechanism_models": {
+    "LZ4": {
+      "ratio": 61.438
+    },
+    "ZSTD": {
+      "ratio": 3147.658
+    },
+    "ZLIB": {
+      "ratio": 155.916
+    },
+    "AES": {
+      "key_bits": 256,
+      "metadata_bytes": 28
+    },
+    "CHACHA20": {
+      "key_bits": 256,
+      "metadata_bytes": 28
+    },
+    "RS": {},
+    "SHA256": {
+      "metadata_bytes": 32
+    },
+    "SHA3_256": {
+      "metadata_bytes": 32
+    },
+    "HMAC_SHA256": {
+      "metadata_bytes": 32
+    }
+  },
+  "simulator": {
+    "service_time_model": "log-log",
+    "strict_calibration": true,
+    "allow_extrapolation": false
+  },
+  "energy_model_notes": {
+    "interpretation": "Use for comparative simulation and sensitivity analysis, not meter-level prediction.",
+    "recommended_admission_rule": "Admit a plan only when it remains feasible under the upper uncertainty bound.",
+    "network_energy_note": "The existing 4e-9 J/byte link value was retained and should also be treated as a literature-derived assumption unless independently sourced."
+  }
+}

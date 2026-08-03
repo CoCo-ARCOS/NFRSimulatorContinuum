@@ -43,6 +43,20 @@ Command-line arguments can optionally be provided to override defaults:
 * `container_platform`: Container runtime for the queue estimator (`docker` or `apptainer`).
 * `queue_container_image`: Docker image or Apptainer SIF for the queue estimator.
 
+### NFR Cost Profiler
+
+`nfr_profiler.py` turns the simulator into a profiler for the cost of adding NFRs
+(confidentiality, integrity, compression, reliability) to data in continuum
+workflows: given a declarative request with requirement levels and time/energy
+constraints, it proposes compliant configurations, ranks them on the
+makespan/energy Pareto front, and attributes the marginal cost of each NFR. See
+`PROFILER_README.md`:
+
+```bash
+python3 nfr_profiler.py --request profiler_request_example.json \
+    --simulator-cmd proxy_dd/main --simulator-dir proxy_dd --plot
+```
+
 ### Single Requirement Benchmarks
 
 The repository includes a comprehensive benchmark runner designed to compare real pipeline performance against the simulator's predicted models dynamically.

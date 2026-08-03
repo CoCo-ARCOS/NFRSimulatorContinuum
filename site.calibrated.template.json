@@ -1,0 +1,93 @@
+{
+  "site_id": "replace-with-site-id",
+  "description": "Template for paper runs. Replace calibration paths, power values, speed factors, bandwidths, and compression ratios with measured values.",
+  "infrastructure": {
+    "machines": [
+      {
+        "name": "edge-1",
+        "slots": 4,
+        "speed_factor": 1.0,
+        "read_bandwidth_Bps": 1,
+        "write_bandwidth_Bps": 1,
+        "power_model": "linear",
+        "max_power_w": 1,
+        "static_power_fraction": 0.5,
+        "real_values_dir": "/ABSOLUTE/PATH/TO/EDGE/real_values"
+      },
+      {
+        "name": "fog-1",
+        "slots": 8,
+        "speed_factor": 1.0,
+        "read_bandwidth_Bps": 1,
+        "write_bandwidth_Bps": 1,
+        "power_model": "linear",
+        "max_power_w": 1,
+        "static_power_fraction": 0.5,
+        "real_values_dir": "/ABSOLUTE/PATH/TO/FOG/real_values"
+      },
+      {
+        "name": "hpc-1",
+        "slots": 16,
+        "speed_factor": 1.0,
+        "read_bandwidth_Bps": 1,
+        "write_bandwidth_Bps": 1,
+        "power_model": "linear",
+        "max_power_w": 1,
+        "static_power_fraction": 0.5,
+        "real_values_dir": "/ABSOLUTE/PATH/TO/HPC/real_values"
+      }
+    ],
+    "links": [
+      {
+        "id": "edge-fog",
+        "from": "edge-1",
+        "to": "fog-1",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 1,
+        "latency_s": 0.0,
+        "energy_per_byte_j": 0.0
+      },
+      {
+        "id": "fog-hpc",
+        "from": "fog-1",
+        "to": "hpc-1",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 1,
+        "latency_s": 0.0,
+        "energy_per_byte_j": 0.0
+      }
+    ]
+  },
+  "requirements": {
+    "compression": {
+      "algorithms": ["ZSTD"],
+      "strength_overrides": {"ZSTD": 3}
+    },
+    "confidentiality": {
+      "algorithms": ["AES"],
+      "strength_overrides": {"AES": 2}
+    },
+    "reliability": {
+      "algorithms": ["RS"],
+      "ida_km": [[8, 2], [8, 4]]
+    },
+    "integrity": {
+      "algorithms": ["SHA256", "HMAC_SHA256"],
+      "strength_overrides": {"SHA256": 1, "HMAC_SHA256": 2}
+    }
+  },
+  "mechanism_models": {
+    "ZSTD": {"ratio": 2.5},
+    "AES": {"key_bits": 256, "metadata_bytes": 28},
+    "RS": {},
+    "SHA256": {"metadata_bytes": 32},
+    "HMAC_SHA256": {"metadata_bytes": 32}
+  },
+  "simulator": {
+    "service_time_model": "log-log",
+    "strict_calibration": true,
+    "allow_extrapolation": false
+  }
+}

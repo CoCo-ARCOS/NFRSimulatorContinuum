@@ -1,0 +1,33 @@
+{
+  "workflow": {
+    "workers": 4,
+    "tasks": [
+      {"name": "ingest",  "service_time": 1.2, "allowed_machines": ["edge"]},
+      {"name": "analyze", "service_time": 2.0},
+      {"name": "archive", "service_time": 0.8, "allowed_machines": ["cloud"]}
+    ],
+    "trace": {"objects": 200, "size_bytes": 4194304}
+  },
+  "infrastructure": {
+    "machines": [
+      {"name": "edge",   "max_power": 25.0},
+      {"name": "server", "max_power": 120.0},
+      {"name": "cloud",  "max_power": 220.0}
+    ]
+  },
+  "requirements": {
+    "confidentiality": {"level": "required", "weight": 3.0},
+    "integrity":       {"level": "optional", "weight": 2.0},
+    "compression":     {"level": "optional", "weight": 1.0},
+    "reliability":     {"level": "optional", "weight": 2.0, "ida_km": [[8, 2], [8, 4]]}
+  },
+  "constraints": {
+    "max_makespan_s": 220.0,
+    "global_energy_budget_j": 4200.0
+  },
+  "objective": {
+    "assurance_mode": "weighted",
+    "energy_weight": 0.7,
+    "default_configuration": "ZLIB + SHA256 + AES"
+  }
+}

@@ -1,0 +1,236 @@
+{
+  "workflow": {
+    "workload": {
+      "instances": 4,
+      "arrival_model": "fixed",
+      "mean_interarrival_s": 0.25,
+      "input_size_bytes": 16777216,
+      "input_size_cv": 0.05
+    },
+    "tasks": [
+      {
+        "id": "acquire",
+        "service_time_s": 0.25,
+        "output_size_factor": 1.0
+      },
+      {
+        "id": "filter",
+        "service_time_s": 0.7,
+        "output_size_factor": 0.65
+      },
+      {
+        "id": "analyse",
+        "service_time_s": 2.5,
+        "output_size_factor": 0.2
+      },
+      {
+        "id": "publish",
+        "service_time_s": 0.4,
+        "output_size_factor": 0.1
+      }
+    ],
+    "edges": [
+      {
+        "id": "raw-data",
+        "from": "acquire",
+        "to": "filter",
+        "nfr_families": [
+          "compression",
+          "confidentiality",
+          "reliability",
+          "integrity"
+        ],
+        "policy_group": "protected"
+      },
+      {
+        "id": "filtered-for-analysis",
+        "from": "filter",
+        "to": "analyse",
+        "nfr_families": [
+          "compression",
+          "confidentiality",
+          "integrity"
+        ],
+        "policy_group": "protected"
+      },
+      {
+        "id": "filtered-preview",
+        "from": "filter",
+        "to": "publish",
+        "size_factor": 0.05,
+        "nfr_families": [
+          "integrity"
+        ],
+        "policy_group": "preview"
+      },
+      {
+        "id": "analysis-result",
+        "from": "analyse",
+        "to": "publish",
+        "nfr_families": [
+          "confidentiality",
+          "integrity"
+        ],
+        "policy_group": "protected"
+      }
+    ],
+    "plans": [
+      {
+        "id": "continuum-balanced",
+        "placement": {
+          "acquire": "edge-1",
+          "filter": "fog-1",
+          "analyse": "hpc-1",
+          "publish": "fog-1"
+        }
+      },
+      {
+        "id": "fog-heavy",
+        "placement": {
+          "acquire": "edge-1",
+          "filter": "fog-1",
+          "analyse": "fog-1",
+          "publish": "fog-1"
+        }
+      }
+    ]
+  },
+  "infrastructure": {
+    "machines": [
+      {
+        "name": "edge-1",
+        "slots": 2,
+        "speed_factor": 0.8,
+        "read_bandwidth_Bps": 180000000,
+        "write_bandwidth_Bps": 150000000,
+        "power_model": "linear",
+        "max_power_w": 35,
+        "static_power_fraction": 0.45
+      },
+      {
+        "name": "fog-1",
+        "slots": 4,
+        "speed_factor": 1.5,
+        "read_bandwidth_Bps": 600000000,
+        "write_bandwidth_Bps": 500000000,
+        "power_model": "square",
+        "max_power_w": 120,
+        "static_power_fraction": 0.35
+      },
+      {
+        "name": "hpc-1",
+        "slots": 8,
+        "speed_factor": 5.0,
+        "read_bandwidth_Bps": 2000000000,
+        "write_bandwidth_Bps": 1500000000,
+        "power_model": "cubic",
+        "max_power_w": 420,
+        "static_power_fraction": 0.55
+      }
+    ],
+    "links": [
+      {
+        "id": "edge-fog",
+        "from": "edge-1",
+        "to": "fog-1",
+        "bidirectional": true,
+        "slots": 1,
+        "bandwidth_Bps": 125000000,
+        "latency_s": 0.01,
+        "energy_per_byte_j": 4e-09
+      },
+      {
+        "id": "fog-hpc",
+        "from": "fog-1",
+        "to": "hpc-1",
+        "bidirectional": true,
+        "slots": 2,
+        "bandwidth_Bps": 500000000,
+        "latency_s": 0.02,
+        "energy_per_byte_j": 1e-09
+      }
+    ]
+  },
+  "requirements": {
+    "compression": {
+      "level": "optional",
+      "algorithms": [
+        "ZSTD"
+      ],
+      "weight": 1.0,
+      "min_strength": 1
+    },
+    "confidentiality": {
+      "level": "required",
+      "algorithms": [
+        "AES"
+      ],
+      "weight": 2.0,
+      "min_strength": 2
+    },
+    "reliability": {
+      "level": "optional",
+      "algorithms": [
+        "RS"
+      ],
+      "ida_km": [
+        [
+          8,
+          4
+        ]
+      ],
+      "weight": 1.5,
+      "min_strength": 4
+    },
+    "integrity": {
+      "level": "optional",
+      "algorithms": [
+        "SHA256"
+      ],
+      "weight": 1.0,
+      "min_strength": 1
+    }
+  },
+  "mechanism_models": {
+    "ZSTD": {
+      "encode_throughput_Bps": 300000000,
+      "decode_throughput_Bps": 500000000,
+      "ratio": 2.5
+    },
+    "AES": {
+      "encode_throughput_Bps": 700000000,
+      "decode_throughput_Bps": 800000000,
+      "metadata_bytes": 28,
+      "key_bits": 256
+    },
+    "RS": {
+      "encode_throughput_Bps": 250000000,
+      "decode_throughput_Bps": 300000000
+    },
+    "SHA256": {
+      "encode_throughput_Bps": 600000000,
+      "decode_throughput_Bps": 600000000,
+      "metadata_bytes": 32
+    }
+  },
+  "constraints": {
+    "global_energy_budget_j": 1700,
+    "max_makespan_s": 7.0,
+    "risk_mode": "ucb95"
+  },
+  "objective": {
+    "energy_weight": 0.5,
+    "pipeline_order": [
+      "compression",
+      "confidentiality",
+      "reliability",
+      "integrity"
+    ],
+    "policy_scope": "edge"
+  },
+  "simulator": {
+    "service_time_model": "linear",
+    "strict_calibration": true,
+    "allow_extrapolation": false
+  }
+}

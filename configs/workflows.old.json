@@ -1,0 +1,315 @@
+{
+  "workflows": [
+    {
+      "id": "linear-5",
+      "description": "Five-task linear continuum pipeline.",
+      "tasks": [
+        {"id": "acquire", "service_time_s": 0.25, "output_size_factor": 1.0},
+        {"id": "preprocess", "service_time_s": 0.9, "output_size_factor": 0.7},
+        {"id": "extract", "service_time_s": 1.5, "output_size_factor": 0.4},
+        {"id": "analyse", "service_time_s": 4.0, "output_size_factor": 0.15},
+        {"id": "archive", "service_time_s": 0.3, "output_size_factor": 1.0}
+      ],
+      "edges": [
+        {
+          "id": "raw-data",
+          "from": "acquire",
+          "to": "preprocess",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "critical", "resilient", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "reliability", "integrity"]
+        },
+        {
+          "id": "curated-data",
+          "from": "preprocess",
+          "to": "extract",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "integrity"]
+        },
+        {
+          "id": "features",
+          "from": "extract",
+          "to": "analyse",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "integrity"]
+        },
+        {
+          "id": "analysis-result",
+          "from": "analyse",
+          "to": "archive",
+          "policy_group": "result",
+          "risk_tags": ["critical", "authentic", "resilient"],
+          "nfr_families": ["reliability", "integrity"]
+        }
+      ],
+      "plans": [
+        {
+          "id": "continuum-balanced",
+          "placement": {
+            "acquire": "edge-1",
+            "preprocess": "fog-1",
+            "extract": "fog-1",
+            "analyse": "hpc-1",
+            "archive": "fog-1"
+          }
+        },
+        {
+          "id": "fog-heavy",
+          "placement": {
+            "acquire": "edge-1",
+            "preprocess": "fog-1",
+            "extract": "fog-1",
+            "analyse": "fog-1",
+            "archive": "fog-1"
+          }
+        },
+        {
+          "id": "hpc-heavy",
+          "placement": {
+            "acquire": "edge-1",
+            "preprocess": "fog-1",
+            "extract": "hpc-1",
+            "analyse": "hpc-1",
+            "archive": "hpc-1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "diamond-6",
+      "description": "Fan-out/fan-in DAG with two parallel analysis branches.",
+      "tasks": [
+        {"id": "ingest", "service_time_s": 0.3, "output_size_factor": 1.0},
+        {"id": "clean", "service_time_s": 1.0, "output_size_factor": 0.75},
+        {"id": "branch-a", "service_time_s": 2.2, "output_size_factor": 0.3},
+        {"id": "branch-b", "service_time_s": 2.8, "output_size_factor": 0.25},
+        {"id": "merge", "service_time_s": 1.1, "output_size_factor": 0.2},
+        {"id": "store", "service_time_s": 0.25, "output_size_factor": 1.0}
+      ],
+      "edges": [
+        {
+          "id": "ingested-data",
+          "from": "ingest",
+          "to": "clean",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "critical", "resilient", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "reliability", "integrity"]
+        },
+        {
+          "id": "clean-to-a",
+          "from": "clean",
+          "to": "branch-a",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "integrity"]
+        },
+        {
+          "id": "clean-to-b",
+          "from": "clean",
+          "to": "branch-b",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "integrity"]
+        },
+        {
+          "id": "a-result",
+          "from": "branch-a",
+          "to": "merge",
+          "policy_group": "result",
+          "risk_tags": ["critical", "authentic", "resilient"],
+          "nfr_families": ["reliability", "integrity"]
+        },
+        {
+          "id": "b-result",
+          "from": "branch-b",
+          "to": "merge",
+          "policy_group": "result",
+          "risk_tags": ["critical", "authentic", "resilient"],
+          "nfr_families": ["reliability", "integrity"]
+        },
+        {
+          "id": "merged-result",
+          "from": "merge",
+          "to": "store",
+          "policy_group": "result",
+          "risk_tags": ["critical", "authentic", "resilient"],
+          "nfr_families": ["reliability", "integrity"]
+        }
+      ],
+      "plans": [
+        {
+          "id": "continuum-balanced",
+          "placement": {
+            "ingest": "edge-1",
+            "clean": "fog-1",
+            "branch-a": "hpc-1",
+            "branch-b": "hpc-1",
+            "merge": "fog-1",
+            "store": "fog-1"
+          }
+        },
+        {
+          "id": "fog-heavy",
+          "placement": {
+            "ingest": "edge-1",
+            "clean": "fog-1",
+            "branch-a": "fog-1",
+            "branch-b": "fog-1",
+            "merge": "fog-1",
+            "store": "fog-1"
+          }
+        },
+        {
+          "id": "hpc-heavy",
+          "placement": {
+            "ingest": "edge-1",
+            "clean": "fog-1",
+            "branch-a": "hpc-1",
+            "branch-b": "hpc-1",
+            "merge": "hpc-1",
+            "store": "hpc-1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fork-join-8",
+      "description": "Wider fan-out/fan-in DAG for system-level sensitivity.",
+      "tasks": [
+        {"id": "source", "service_time_s": 0.2, "output_size_factor": 1.0},
+        {"id": "prepare", "service_time_s": 0.8, "output_size_factor": 0.8},
+        {"id": "worker-1", "service_time_s": 1.8, "output_size_factor": 0.25},
+        {"id": "worker-2", "service_time_s": 2.0, "output_size_factor": 0.25},
+        {"id": "worker-3", "service_time_s": 2.4, "output_size_factor": 0.2},
+        {"id": "worker-4", "service_time_s": 2.7, "output_size_factor": 0.2},
+        {"id": "aggregate", "service_time_s": 1.4, "output_size_factor": 0.15},
+        {"id": "sink", "service_time_s": 0.3, "output_size_factor": 1.0}
+      ],
+      "edges": [
+        {
+          "id": "source-data",
+          "from": "source",
+          "to": "prepare",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "critical", "resilient", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "reliability", "integrity"]
+        },
+        {
+          "id": "prepared-1",
+          "from": "prepare",
+          "to": "worker-1",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "integrity"]
+        },
+        {
+          "id": "prepared-2",
+          "from": "prepare",
+          "to": "worker-2",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "integrity"]
+        },
+        {
+          "id": "prepared-3",
+          "from": "prepare",
+          "to": "worker-3",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "integrity"]
+        },
+        {
+          "id": "prepared-4",
+          "from": "prepare",
+          "to": "worker-4",
+          "policy_group": "protected",
+          "risk_tags": ["sensitive", "bulk"],
+          "nfr_families": ["compression", "confidentiality", "integrity"]
+        },
+        {
+          "id": "worker-1-result",
+          "from": "worker-1",
+          "to": "aggregate",
+          "policy_group": "result",
+          "risk_tags": ["critical", "authentic", "resilient"],
+          "nfr_families": ["reliability", "integrity"]
+        },
+        {
+          "id": "worker-2-result",
+          "from": "worker-2",
+          "to": "aggregate",
+          "policy_group": "result",
+          "risk_tags": ["critical", "authentic", "resilient"],
+          "nfr_families": ["reliability", "integrity"]
+        },
+        {
+          "id": "worker-3-result",
+          "from": "worker-3",
+          "to": "aggregate",
+          "policy_group": "result",
+          "risk_tags": ["critical", "authentic", "resilient"],
+          "nfr_families": ["reliability", "integrity"]
+        },
+        {
+          "id": "worker-4-result",
+          "from": "worker-4",
+          "to": "aggregate",
+          "policy_group": "result",
+          "risk_tags": ["critical", "authentic", "resilient"],
+          "nfr_families": ["reliability", "integrity"]
+        },
+        {
+          "id": "aggregate-result",
+          "from": "aggregate",
+          "to": "sink",
+          "policy_group": "result",
+          "risk_tags": ["critical", "authentic", "resilient"],
+          "nfr_families": ["reliability", "integrity"]
+        }
+      ],
+      "plans": [
+        {
+          "id": "continuum-balanced",
+          "placement": {
+            "source": "edge-1",
+            "prepare": "fog-1",
+            "worker-1": "hpc-1",
+            "worker-2": "hpc-1",
+            "worker-3": "fog-1",
+            "worker-4": "fog-1",
+            "aggregate": "fog-1",
+            "sink": "fog-1"
+          }
+        },
+        {
+          "id": "fog-heavy",
+          "placement": {
+            "source": "edge-1",
+            "prepare": "fog-1",
+            "worker-1": "fog-1",
+            "worker-2": "fog-1",
+            "worker-3": "fog-1",
+            "worker-4": "fog-1",
+            "aggregate": "fog-1",
+            "sink": "fog-1"
+          }
+        },
+        {
+          "id": "hpc-heavy",
+          "placement": {
+            "source": "edge-1",
+            "prepare": "fog-1",
+            "worker-1": "hpc-1",
+            "worker-2": "hpc-1",
+            "worker-3": "hpc-1",
+            "worker-4": "hpc-1",
+            "aggregate": "hpc-1",
+            "sink": "hpc-1"
+          }
+        }
+      ]
+    }
+  ]
+}

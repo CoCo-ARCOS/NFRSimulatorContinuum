@@ -1,0 +1,215 @@
+{
+  "base_seed": 2026001,
+  "replications": 5,
+  "max_candidates": 1000,
+  "timeout_s": 600,
+  "workload_scales": {
+    "small": {
+      "instances": 8,
+      "arrival_model": "exponential",
+      "mean_interarrival_s": 0.40,
+      "input_size_bytes": 16777216,
+      "input_size_cv": 0.05
+    },
+    "medium": {
+      "instances": 32,
+      "arrival_model": "exponential",
+      "mean_interarrival_s": 0.20,
+      "input_size_bytes": 67108864,
+      "input_size_cv": 0.10
+    },
+    "large": {
+      "instances": 128,
+      "arrival_model": "exponential",
+      "mean_interarrival_s": 0.10,
+      "input_size_bytes": 268435456,
+      "input_size_cv": 0.10
+    }
+  },
+  "contracts": {
+    "balanced": {
+      "description": "Mandatory confidentiality and corruption detection, with optional resilience, authenticated integrity, and data reduction.",
+      "rules": [
+        {
+          "tag": "sensitive",
+          "risk": "unauthorized_disclosure",
+          "property": "confidentiality",
+          "modality": "mandatory",
+          "metric": "assurance_level",
+          "minimum": 2,
+          "weight": 4
+        },
+        {
+          "tag": "critical",
+          "risk": "corruption",
+          "property": "integrity",
+          "modality": "mandatory",
+          "metric": "assurance_level",
+          "minimum": 1,
+          "weight": 4
+        },
+        {
+          "tag": "authentic",
+          "risk": "unauthorized_modification",
+          "property": "integrity",
+          "modality": "optional",
+          "metric": "assurance_level",
+          "minimum": 2,
+          "weight": 3
+        },
+        {
+          "tag": "resilient",
+          "risk": "artifact_unavailability",
+          "property": "reliability",
+          "modality": "optional",
+          "metric": "tolerated_fragment_losses",
+          "minimum": 2,
+          "weight": 3
+        },
+        {
+          "tag": "bulk",
+          "risk": "excessive_volume",
+          "property": "data_reduction",
+          "modality": "optional",
+          "metric": "compression_ratio",
+          "minimum": 1.3,
+          "weight": 2
+        }
+      ]
+    },
+    "security-first": {
+      "description": "Disclosure and authenticated modification are non-negotiable; resilience and data reduction are secondary.",
+      "rules": [
+        {
+          "tag": "sensitive",
+          "risk": "unauthorized_disclosure",
+          "property": "confidentiality",
+          "modality": "mandatory",
+          "metric": "assurance_level",
+          "minimum": 2,
+          "weight": 4
+        },
+        {
+          "tag": "critical",
+          "risk": "corruption",
+          "property": "integrity",
+          "modality": "mandatory",
+          "metric": "assurance_level",
+          "minimum": 1,
+          "weight": 4
+        },
+        {
+          "tag": "authentic",
+          "risk": "unauthorized_modification",
+          "property": "integrity",
+          "modality": "mandatory",
+          "metric": "assurance_level",
+          "minimum": 2,
+          "weight": 4
+        },
+        {
+          "tag": "resilient",
+          "risk": "artifact_unavailability",
+          "property": "reliability",
+          "modality": "optional",
+          "metric": "tolerated_fragment_losses",
+          "minimum": 2,
+          "weight": 1
+        },
+        {
+          "tag": "bulk",
+          "risk": "excessive_volume",
+          "property": "data_reduction",
+          "modality": "optional",
+          "metric": "compression_ratio",
+          "minimum": 1.3,
+          "weight": 1
+        }
+      ]
+    },
+    "resilience-first": {
+      "description": "Recoverability and corruption detection are mandatory; confidentiality, authenticity, and data reduction are optional.",
+      "rules": [
+        {
+          "tag": "resilient",
+          "risk": "artifact_unavailability",
+          "property": "reliability",
+          "modality": "mandatory",
+          "metric": "tolerated_fragment_losses",
+          "minimum": 2,
+          "weight": 4
+        },
+        {
+          "tag": "critical",
+          "risk": "corruption",
+          "property": "integrity",
+          "modality": "mandatory",
+          "metric": "assurance_level",
+          "minimum": 1,
+          "weight": 4
+        },
+        {
+          "tag": "sensitive",
+          "risk": "unauthorized_disclosure",
+          "property": "confidentiality",
+          "modality": "optional",
+          "metric": "assurance_level",
+          "minimum": 2,
+          "weight": 3
+        },
+        {
+          "tag": "authentic",
+          "risk": "unauthorized_modification",
+          "property": "integrity",
+          "modality": "optional",
+          "metric": "assurance_level",
+          "minimum": 2,
+          "weight": 3
+        },
+        {
+          "tag": "bulk",
+          "risk": "excessive_volume",
+          "property": "data_reduction",
+          "modality": "optional",
+          "metric": "compression_ratio",
+          "minimum": 1.3,
+          "weight": 2
+        }
+      ]
+    }
+  },
+  "catalog_matrix": [
+    {
+      "kind": "core",
+      "workflows": ["linear-5", "diamond-6", "fork-join-8"],
+      "contracts": ["balanced", "security-first", "resilience-first"],
+      "scales": ["medium"],
+      "policy_scopes": ["edge", "global"]
+    },
+    {
+      "kind": "workload-sensitivity",
+      "workflows": ["diamond-6"],
+      "contracts": ["balanced"],
+      "scales": ["small", "large"],
+      "policy_scopes": ["edge"]
+    }
+  ],
+  "constraint_sweep": {
+    "energy_levels": [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
+    "deadline_levels": [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2],
+    "representative_level": 0.6
+  },
+  "scalability": {
+    "enabled": true,
+    "policy_groups": [1, 2, 3, 4],
+    "replications": 1,
+    "instances": 8,
+    "input_size_bytes": 4194304
+  },
+  "holdout": {
+    "enabled": true,
+    "replications": 30,
+    "base_seed": 9100001,
+    "representative_level": 0.6
+  }
+}

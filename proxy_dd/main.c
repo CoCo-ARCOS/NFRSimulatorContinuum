@@ -1,306 +1,89 @@
 #include "proxy.h"
-#include <libgen.h>
 
-static void requirement_label(const struct nfr_requirement *req, char *buffer, size_t buffer_size)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+static void usage(const char *program)
 {
-	if (!buffer || buffer_size == 0) {
-		return;
-	}
-
-	buffer[0] = '\0';
-	if (!req || req->type == NFR_NONE) {
-		return;
-	}
-
-	if (req->algorithm[0] != '\0') {
-		snprintf(buffer, buffer_size, "%s:%s", req->task_name, req->algorithm);
-		return;
-	}
-
-	snprintf(buffer, buffer_size, "%s", req->task_name);
+    fprintf(stderr, "Usage: %s <config.json> [--output-dir DIRECTORY]\n", program);
 }
 
-static FILE *open_report_csv(const char *file_name)
+int main(int argc, char **argv)
 {
-	char path[256];
-	mkdir("results", 0777);
-	snprintf(path, sizeof(path), "results/%s", file_name);
-	FILE *fp = fopen(path, "w");
-	if (!fp)
-		printf("Warning: could not open %s for writing\n", path);
-	return fp;
-}
+    const char *config_path;
+    const char *output_dir = "results";
+    char error[1024] = {0};
+    struct config *configuration;
+    struct simulation_result result;
+    int simulation_status;
 
-static void write_requirement_headers(FILE *fp, const char *prefix, int count)
-{
-	if (!fp || !prefix || count <= 0) {
-		return;
-	}
-
-	for (int i = 0; i < count; ++i) {
-		fprintf(fp, ",%s_requirement_%d,%s_requirement_%d_seconds", prefix, i + 1, prefix, i + 1);
-	}
-}
-
-int main(int argc, char const *argv[]){
-	char const 					*filename;
-	struct config        		*configuration;
-	struct traceConfig		 	*traceData;
-	struct worker 			    *arrayWorkers;
-
-
-	if (argc < 2) {
-		fprintf(stderr, "Usage: %s <config_file.json> [service_time_model] [container_platform] [queue_container_image]\n", argv[0]);
-		fprintf(stderr, "       %s <config_file.json> [container_platform] [queue_container_image]\n", argv[0]);
-		return 1;
-	}
-
-	filename = argv[1];
-
-
-    configuration = read_config(filename);
-	if (argc >= 3) {
-		if (is_container_platform_name(argv[2])) {
-			strncpy(configuration->container_platform, argv[2], sizeof(configuration->container_platform) - 1);
-			configuration->container_platform[sizeof(configuration->container_platform) - 1] = '\0';
-			if (argc >= 4) {
-				strncpy(configuration->queue_container_image, argv[3], sizeof(configuration->queue_container_image) - 1);
-				configuration->queue_container_image[sizeof(configuration->queue_container_image) - 1] = '\0';
-			}
-		} else {
-			strncpy(configuration->service_time_model, argv[2], sizeof(configuration->service_time_model) - 1);
-			configuration->service_time_model[sizeof(configuration->service_time_model) - 1] = '\0';
-			if (argc >= 4) {
-				strncpy(configuration->container_platform, argv[3], sizeof(configuration->container_platform) - 1);
-				configuration->container_platform[sizeof(configuration->container_platform) - 1] = '\0';
-			}
-			if (argc >= 5) {
-				strncpy(configuration->queue_container_image, argv[4], sizeof(configuration->queue_container_image) - 1);
-				configuration->queue_container_image[sizeof(configuration->queue_container_image) - 1] = '\0';
-			}
-		}
-	}
-	configure_container_runtime(configuration);
-
-    snprintf(agent_container_prefix, sizeof(agent_container_prefix), "%s_agent", configuration->agent_type);
-
-    // Load dynamic service times from CSV files based on configuration
+    if (argc < 2)
     {
-        char runtime_path[1024];
-        char *runtime_dir;
+        usage(argv[0]);
+        return EXIT_FAILURE;
+    }
+    config_path = argv[1];
 
-        strncpy(runtime_path, argv[0], sizeof(runtime_path) - 1);
-        runtime_path[sizeof(runtime_path) - 1] = '\0';
-        runtime_dir = dirname(runtime_path);
-        load_service_times_with_base(configuration, runtime_dir ? runtime_dir : ".");
+    for (int index = 2; index < argc; ++index)
+    {
+        if (strcmp(argv[index], "--output-dir") == 0 && index + 1 < argc)
+        {
+            output_dir = argv[++index];
+        }
+        else
+        {
+            fprintf(stderr, "Unknown or incomplete argument: %s\n", argv[index]);
+            usage(argv[0]);
+            return EXIT_FAILURE;
+        }
     }
 
-	print_interpolation_points();
+    configuration = read_config(config_path, error, sizeof(error));
+    if (!configuration)
+    {
+        fprintf(stderr, "Configuration error: %s\n", error);
+        return EXIT_FAILURE;
+    }
 
+    memset(&result, 0, sizeof(result));
+    simulation_status = run_dag_simulation(configuration, &result, error, sizeof(error));
+    if (simulation_status != 0)
+    {
+        snprintf(result.status, sizeof(result.status), "error");
+        if (result.error[0] == '\0')
+        {
+            size_t length = 0;
+            while (length < sizeof(result.error) - 1 && error[length] != '\0')
+                ++length;
+            memcpy(result.error, error, length);
+            result.error[length] = '\0';
+        }
+    }
 
-	traceData = read_configTrace(configuration->traces_number, configuration->traces_fileName);
+    char output_error[1024] = {0};
+    if (write_simulation_results(configuration, &result, output_dir,
+                                 output_error, sizeof(output_error)) != 0)
+    {
+        fprintf(stderr, "Result-output error: %s\n", output_error);
+        free_config(configuration);
+        return EXIT_FAILURE;
+    }
 
+    if (simulation_status != 0)
+    {
+        fprintf(stderr, "Simulation error: %s\n", error);
+        free_config(configuration);
+        return EXIT_FAILURE;
+    }
 
-	makeContainers( configuration );
-	if (!has_inline_traces()) {
-		traceGenerator(traceData, configuration->traces_number);
-	}
-	arrayWorkers = assignation(configuration, traceData);
+    printf("DAG simulation completed: instances=%d, makespan=%.6f s, total_energy=%.6f J, network_energy=%.6f J\n",
+           result.instances_completed,
+           result.makespan_s,
+           result.total_energy_j,
+           result.network_energy_j);
+    printf("Summary: %s/run_summary.json\n", output_dir);
 
-
-	// Start execution from the first configured stage; chaining will forward to subsequent stages
-	if (configuration->stages_number > 0) {
-		deployThread_stages(configuration, arrayWorkers, configuration->stages[0]);
-		/* wait for processing to fully complete (timeout 60s) */
-		wait_for_outstanding_zero(60);
-	}
-
-	/* shutdown NFR managers and print metrics */
-	shutdown_and_report_metrics(configuration);
-
-	FILE *stage_totals_csv = open_report_csv("stage_totals_by_workers.csv");
-	int max_input_requirements = 0;
-	int max_output_requirements = 0;
-
-	for (int si = 0; si < configuration->stages_number; ++si) {
-		struct stage_definition *stage_def = &configuration->stage_definitions[si];
-		if (stage_def->input_count > max_input_requirements)
-			max_input_requirements = stage_def->input_count;
-		if (stage_def->output_count > max_output_requirements)
-			max_output_requirements = stage_def->output_count;
-	}
-
-	printf("\n=== Stage Execution Times ===\n");
-	printf("Stage\tName\tWorkers\tObjects\tInputStage(s)\tApplication(s)\tOutputStage(s)\tTransfer(s)\tTotal(s)\n");
-	if (stage_totals_csv) {
-		fprintf(stage_totals_csv, "stage,stage_name,workers,objects,input_stage_seconds,input_compression_seconds,input_hash_seconds,input_crypto_seconds,application_seconds,output_stage_seconds,transfer_seconds,output_compression_seconds,output_hash_seconds,output_crypto_seconds,total_seconds");
-		write_requirement_headers(stage_totals_csv, "input", max_input_requirements);
-		write_requirement_headers(stage_totals_csv, "output", max_output_requirements);
-		fprintf(stage_totals_csv, "\n");
-	}
-
-	double machine_active_time[MAX_MACHINES] = {0.0};
-
-
-	for (int si = 0; si < configuration->stages_number; ++si) {
-		int stage_num = configuration->stages[si];
-		int stage_idx = stage_num - 1;
-		if (stage_idx < 0 || stage_idx >= MAX_STAGES)
-			continue;
-
-		struct stage_definition *stage_def = &configuration->stage_definitions[si];
-		double input_requirement_times[MAX_PIPELINE_TASKS] = {0.0};
-		double output_requirement_times[MAX_PIPELINE_TASKS] = {0.0};
-		double max_input_time = 0.0;
-		double max_output_time = 0.0;
-		double max_application_time = 0.0;
-		double max_transfer_time = 0.0;
-		double max_compression_input = 0.0;
-		double max_hash_input = 0.0;
-		double max_crypto_input = 0.0;
-		double max_compression_output = 0.0;
-		double max_hash_output = 0.0;
-		double max_crypto_output = 0.0;
-		long stage_objects = 0;
-
-		for (int w = 0; w < configuration->workers; ++w) {
-			stage_objects += arrayWorkers[w].sizeWorker;
-			max_input_time = fmax(max_input_time, arrayWorkers[w].stage_input_time[stage_idx]);
-			max_output_time = fmax(max_output_time, arrayWorkers[w].stage_output_time[stage_idx]);
-			max_application_time = fmax(max_application_time, arrayWorkers[w].stage_application_time[stage_idx]);
-			max_transfer_time = fmax(max_transfer_time, arrayWorkers[w].stage_transfer_time[stage_idx]);
-			max_compression_input = fmax(max_compression_input, arrayWorkers[w].stage_nfr_input_time[stage_idx][NFR_COMPRESS]);
-			max_compression_output = fmax(max_compression_output, arrayWorkers[w].stage_nfr_output_time[stage_idx][NFR_COMPRESS]);
-			max_hash_input = fmax(max_hash_input, arrayWorkers[w].stage_nfr_input_time[stage_idx][NFR_HASH]);
-			max_hash_output = fmax(max_hash_output, arrayWorkers[w].stage_nfr_output_time[stage_idx][NFR_HASH]);
-			max_crypto_input = fmax(max_crypto_input, arrayWorkers[w].stage_nfr_input_time[stage_idx][NFR_ENCRYPT]);
-			max_crypto_output = fmax(max_crypto_output, arrayWorkers[w].stage_nfr_output_time[stage_idx][NFR_ENCRYPT]);
-
-			for (int task = 0; task < stage_def->input_count; ++task) {
-				input_requirement_times[task] = fmax(
-					input_requirement_times[task],
-					arrayWorkers[w].stage_input_requirement_time[stage_idx][task]
-				);
-			}
-
-			for (int task = 0; task < stage_def->output_count; ++task) {
-				output_requirement_times[task] = fmax(
-					output_requirement_times[task],
-					arrayWorkers[w].stage_output_requirement_time[stage_idx][task]
-				);
-			}
-		}
-
-		double stage_total = max_input_time + max_application_time + max_output_time + max_transfer_time;
-
-		// Assign stage_total to the corresponding machine's active time
-		for (int m = 0; m < configuration->machines_number; ++m) {
-			for (int sm = 0; sm < configuration->machines[m].stages_number; ++sm) {
-				if (configuration->machines[m].stages[sm] == stage_num) {
-					machine_active_time[m] += stage_total;
-					break;
-				}
-			}
-		}
-
-		printf("%d\t%s\t%d\t%ld\t%f\t%f\t%f\t%f\t%f\n",
-			stage_num,
-			stage_def->name,
-			configuration->workers,
-			stage_objects,
-			max_input_time,
-			max_application_time,
-			max_output_time,
-			max_transfer_time,
-			stage_total);
-		if (stage_totals_csv) {
-			fprintf(stage_totals_csv, "%d,%s,%d,%ld,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f",
-				stage_num,
-				stage_def->name,
-				configuration->workers,
-				stage_objects,
-				max_input_time,
-				max_compression_input,
-				max_hash_input,
-				max_crypto_input,
-				max_application_time,
-				max_output_time,
-				max_transfer_time,
-				max_compression_output,
-				max_hash_output,
-				max_crypto_output,
-				stage_total);
-
-			for (int task = 0; task < max_input_requirements; ++task) {
-				char label[96];
-				double seconds = 0.0;
-
-				label[0] = '\0';
-				if (task < stage_def->input_count) {
-					requirement_label(&stage_def->input_requirements[task], label, sizeof(label));
-					seconds = input_requirement_times[task];
-				}
-				fprintf(stage_totals_csv, ",%s,%f", label, seconds);
-			}
-
-			for (int task = 0; task < max_output_requirements; ++task) {
-				char label[96];
-				double seconds = 0.0;
-
-				label[0] = '\0';
-				if (task < stage_def->output_count) {
-					requirement_label(&stage_def->output_requirements[task], label, sizeof(label));
-					seconds = output_requirement_times[task];
-				}
-				fprintf(stage_totals_csv, ",%s,%f", label, seconds);
-			}
-
-			fprintf(stage_totals_csv, "\n");
-		}
-	}
-
-	if (stage_totals_csv) fclose(stage_totals_csv);
-
-	FILE *energy_csv = open_report_csv("energy_by_machine.csv");
-	if (energy_csv) {
-		fprintf(energy_csv, "machine_name,power_model,active_time_sec,idle_time_sec,energy_joules\n");
-	}
-	printf("\n=== Machine Energy Estimation ===\n");
-	printf("Machine\tPowerModel\tActiveTime(s)\tIdleTime(s)\tEnergy(J)\n");
-
-	double total_sim_time = 0.0;
-	for (int m = 0; m < configuration->machines_number; ++m) {
-		if (machine_active_time[m] > total_sim_time) {
-			total_sim_time = machine_active_time[m];
-		}
-	}
-
-	for (int m = 0; m < configuration->machines_number; ++m) {
-		struct machine_node *machine = &configuration->machines[m];
-		double active_time = machine_active_time[m];
-		double idle_time = total_sim_time - active_time;
-		if (idle_time < 0.0) idle_time = 0.0;
-		
-		double active_power = get_power(machine, 1.0);
-		double idle_power = get_power(machine, 0.0);
-		
-		double energy = (active_power * active_time) + (idle_power * idle_time);
-		
-		printf("%s\t%s\t%f\t%f\t%f\n", machine->name, machine->power_model, active_time, idle_time, energy);
-		if (energy_csv) {
-			fprintf(energy_csv, "%s,%s,%f,%f,%f\n", machine->name, machine->power_model, active_time, idle_time, energy);
-		}
-	}
-	if (energy_csv) fclose(energy_csv);
-
-
-	for (int i = 0; i < configuration->workers; ++i) {
-		free(arrayWorkers[i].trace);
-	}
-	free(arrayWorkers);
-	free(traceData);
-	free(configuration->traces_fileName);
-	free(configuration);
-
-	return 0;
+    free_config(configuration);
+    return EXIT_SUCCESS;
 }

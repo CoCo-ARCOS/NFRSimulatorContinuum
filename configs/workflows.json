@@ -1,0 +1,561 @@
+{
+  "workflows": [
+    {
+      "id": "linear-5",
+      "description": "Five-task linear continuum pipeline.",
+      "tasks": [
+        {
+          "id": "acquire",
+          "service_time_s": 0.25,
+          "output_size_factor": 1.0
+        },
+        {
+          "id": "preprocess",
+          "service_time_s": 0.9,
+          "output_size_factor": 0.7
+        },
+        {
+          "id": "extract",
+          "service_time_s": 1.5,
+          "output_size_factor": 0.4
+        },
+        {
+          "id": "analyse",
+          "service_time_s": 4.0,
+          "output_size_factor": 0.15
+        },
+        {
+          "id": "archive",
+          "service_time_s": 0.3,
+          "output_size_factor": 1.0
+        }
+      ],
+      "edges": [
+        {
+          "id": "raw-data",
+          "from": "acquire",
+          "to": "preprocess",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "critical",
+            "resilient",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "reliability",
+            "integrity"
+          ]
+        },
+        {
+          "id": "curated-data",
+          "from": "preprocess",
+          "to": "extract",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "integrity"
+          ]
+        },
+        {
+          "id": "features",
+          "from": "extract",
+          "to": "analyse",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "integrity"
+          ]
+        },
+        {
+          "id": "analysis-result",
+          "from": "analyse",
+          "to": "archive",
+          "policy_group": "result",
+          "risk_tags": [
+            "critical",
+            "authentic",
+            "resilient"
+          ],
+          "nfr_families": [
+            "reliability",
+            "integrity"
+          ]
+        }
+      ],
+      "plans": [
+        {
+          "id": "continuum-balanced",
+          "placement": {
+            "acquire": "Edge_p",
+            "preprocess": "Fog1_de",
+            "extract": "Fog2_dd",
+            "analyse": "Cloud_c3_1",
+            "archive": "Fog1_de"
+          }
+        },
+        {
+          "id": "fog-heavy",
+          "placement": {
+            "acquire": "Edge_p",
+            "preprocess": "Fog1_de",
+            "extract": "Fog2_dd",
+            "analyse": "Fog2_dd",
+            "archive": "Fog1_de"
+          }
+        },
+        {
+          "id": "hpc-heavy",
+          "placement": {
+            "acquire": "Edge_p",
+            "preprocess": "Fog1_de",
+            "extract": "Cloud_c3_1",
+            "analyse": "Cloud_c3_2",
+            "archive": "Cloud_c3_3"
+          }
+        }
+      ]
+    },
+    {
+      "id": "diamond-6",
+      "description": "Fan-out/fan-in DAG with two parallel analysis branches.",
+      "tasks": [
+        {
+          "id": "ingest",
+          "service_time_s": 0.3,
+          "output_size_factor": 1.0
+        },
+        {
+          "id": "clean",
+          "service_time_s": 1.0,
+          "output_size_factor": 0.75
+        },
+        {
+          "id": "branch-a",
+          "service_time_s": 2.2,
+          "output_size_factor": 0.3
+        },
+        {
+          "id": "branch-b",
+          "service_time_s": 2.8,
+          "output_size_factor": 0.25
+        },
+        {
+          "id": "merge",
+          "service_time_s": 1.1,
+          "output_size_factor": 0.2
+        },
+        {
+          "id": "store",
+          "service_time_s": 0.25,
+          "output_size_factor": 1.0
+        }
+      ],
+      "edges": [
+        {
+          "id": "ingested-data",
+          "from": "ingest",
+          "to": "clean",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "critical",
+            "resilient",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "reliability",
+            "integrity"
+          ]
+        },
+        {
+          "id": "clean-to-a",
+          "from": "clean",
+          "to": "branch-a",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "integrity"
+          ]
+        },
+        {
+          "id": "clean-to-b",
+          "from": "clean",
+          "to": "branch-b",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "integrity"
+          ]
+        },
+        {
+          "id": "a-result",
+          "from": "branch-a",
+          "to": "merge",
+          "policy_group": "result",
+          "risk_tags": [
+            "critical",
+            "authentic",
+            "resilient"
+          ],
+          "nfr_families": [
+            "reliability",
+            "integrity"
+          ]
+        },
+        {
+          "id": "b-result",
+          "from": "branch-b",
+          "to": "merge",
+          "policy_group": "result",
+          "risk_tags": [
+            "critical",
+            "authentic",
+            "resilient"
+          ],
+          "nfr_families": [
+            "reliability",
+            "integrity"
+          ]
+        },
+        {
+          "id": "merged-result",
+          "from": "merge",
+          "to": "store",
+          "policy_group": "result",
+          "risk_tags": [
+            "critical",
+            "authentic",
+            "resilient"
+          ],
+          "nfr_families": [
+            "reliability",
+            "integrity"
+          ]
+        }
+      ],
+      "plans": [
+        {
+          "id": "continuum-balanced",
+          "placement": {
+            "ingest": "Edge_t",
+            "clean": "Fog1_de",
+            "branch-a": "Cloud_c3_1",
+            "branch-b": "Cloud_c3_2",
+            "merge": "Fog2_dd",
+            "store": "Fog1_de"
+          }
+        },
+        {
+          "id": "fog-heavy",
+          "placement": {
+            "ingest": "Edge_t",
+            "clean": "Fog1_de",
+            "branch-a": "Fog1_de",
+            "branch-b": "Fog2_dd",
+            "merge": "Fog2_dd",
+            "store": "Fog1_de"
+          }
+        },
+        {
+          "id": "hpc-heavy",
+          "placement": {
+            "ingest": "Edge_t",
+            "clean": "Fog1_de",
+            "branch-a": "Cloud_c3_1",
+            "branch-b": "Cloud_c3_2",
+            "merge": "Cloud_c3_3",
+            "store": "Cloud_c3_3"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fork-join-8",
+      "description": "Wider fan-out/fan-in DAG for system-level sensitivity.",
+      "tasks": [
+        {
+          "id": "source",
+          "service_time_s": 0.2,
+          "output_size_factor": 1.0
+        },
+        {
+          "id": "prepare",
+          "service_time_s": 0.8,
+          "output_size_factor": 0.8
+        },
+        {
+          "id": "worker-1",
+          "service_time_s": 1.8,
+          "output_size_factor": 0.25
+        },
+        {
+          "id": "worker-2",
+          "service_time_s": 2.0,
+          "output_size_factor": 0.25
+        },
+        {
+          "id": "worker-3",
+          "service_time_s": 2.4,
+          "output_size_factor": 0.2
+        },
+        {
+          "id": "worker-4",
+          "service_time_s": 2.7,
+          "output_size_factor": 0.2
+        },
+        {
+          "id": "aggregate",
+          "service_time_s": 1.4,
+          "output_size_factor": 0.15
+        },
+        {
+          "id": "sink",
+          "service_time_s": 0.3,
+          "output_size_factor": 1.0
+        }
+      ],
+      "edges": [
+        {
+          "id": "source-data",
+          "from": "source",
+          "to": "prepare",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "critical",
+            "resilient",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "reliability",
+            "integrity"
+          ]
+        },
+        {
+          "id": "prepared-1",
+          "from": "prepare",
+          "to": "worker-1",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "integrity"
+          ]
+        },
+        {
+          "id": "prepared-2",
+          "from": "prepare",
+          "to": "worker-2",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "integrity"
+          ]
+        },
+        {
+          "id": "prepared-3",
+          "from": "prepare",
+          "to": "worker-3",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "integrity"
+          ]
+        },
+        {
+          "id": "prepared-4",
+          "from": "prepare",
+          "to": "worker-4",
+          "policy_group": "protected",
+          "risk_tags": [
+            "sensitive",
+            "bulk"
+          ],
+          "nfr_families": [
+            "compression",
+            "confidentiality",
+            "integrity"
+          ]
+        },
+        {
+          "id": "worker-1-result",
+          "from": "worker-1",
+          "to": "aggregate",
+          "policy_group": "result",
+          "risk_tags": [
+            "critical",
+            "authentic",
+            "resilient"
+          ],
+          "nfr_families": [
+            "reliability",
+            "integrity"
+          ]
+        },
+        {
+          "id": "worker-2-result",
+          "from": "worker-2",
+          "to": "aggregate",
+          "policy_group": "result",
+          "risk_tags": [
+            "critical",
+            "authentic",
+            "resilient"
+          ],
+          "nfr_families": [
+            "reliability",
+            "integrity"
+          ]
+        },
+        {
+          "id": "worker-3-result",
+          "from": "worker-3",
+          "to": "aggregate",
+          "policy_group": "result",
+          "risk_tags": [
+            "critical",
+            "authentic",
+            "resilient"
+          ],
+          "nfr_families": [
+            "reliability",
+            "integrity"
+          ]
+        },
+        {
+          "id": "worker-4-result",
+          "from": "worker-4",
+          "to": "aggregate",
+          "policy_group": "result",
+          "risk_tags": [
+            "critical",
+            "authentic",
+            "resilient"
+          ],
+          "nfr_families": [
+            "reliability",
+            "integrity"
+          ]
+        },
+        {
+          "id": "aggregate-result",
+          "from": "aggregate",
+          "to": "sink",
+          "policy_group": "result",
+          "risk_tags": [
+            "critical",
+            "authentic",
+            "resilient"
+          ],
+          "nfr_families": [
+            "reliability",
+            "integrity"
+          ]
+        }
+      ],
+      "plans": [
+        {
+          "id": "continuum-balanced",
+          "placement": {
+            "source": "Edge_p",
+            "prepare": "Fog1_de",
+            "worker-1": "Cloud_c3_1",
+            "worker-2": "Cloud_c3_2",
+            "worker-3": "Fog2_dd",
+            "worker-4": "Fog1_de",
+            "aggregate": "Fog2_dd",
+            "sink": "Fog1_de"
+          }
+        },
+        {
+          "id": "fog-heavy",
+          "placement": {
+            "source": "Edge_p",
+            "prepare": "Fog1_de",
+            "worker-1": "Fog1_de",
+            "worker-2": "Fog2_dd",
+            "worker-3": "Fog1_de",
+            "worker-4": "Fog2_dd",
+            "aggregate": "Fog2_dd",
+            "sink": "Fog1_de"
+          }
+        },
+        {
+          "id": "hpc-heavy",
+          "placement": {
+            "source": "Edge_p",
+            "prepare": "Fog1_de",
+            "worker-1": "Cloud_c3_1",
+            "worker-2": "Cloud_c3_2",
+            "worker-3": "Cloud_c3_3",
+            "worker-4": "Cloud_c3_1",
+            "aggregate": "Cloud_c3_2",
+            "sink": "Cloud_c3_3"
+          }
+        }
+      ]
+    }
+  ],
+  "node_mapping": {
+    "edge_nodes": [
+      "Edge_p",
+      "Edge_t"
+    ],
+    "fog_nodes": [
+      "Fog1_de",
+      "Fog2_dd"
+    ],
+    "cloud_hpc_nodes": [
+      "Cloud_c3_1",
+      "Cloud_c3_2",
+      "Cloud_c3_3"
+    ],
+    "notes": [
+      "continuum-balanced plans distribute tasks across edge, fog, and cloud/HPC tiers",
+      "fog-heavy plans keep compute-intensive tasks on fog nodes when possible",
+      "hpc-heavy plans move most downstream computation and storage to cloud/HPC nodes",
+      "parallel branches are distributed across distinct nodes where possible"
+    ]
+  }
+}
