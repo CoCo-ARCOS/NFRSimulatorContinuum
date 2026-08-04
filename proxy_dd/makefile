@@ -9,6 +9,12 @@ ifdef CONDA_PREFIX
   LDFLAGS += -L$(CONDA_PREFIX)/lib -Wl,-rpath,$(CONDA_PREFIX)/lib
 endif
 
+# Fallback to local json-c build if it exists
+ifneq ("$(wildcard json-c-local/include/json-c/json.h)","")
+  CFLAGS += -Ijson-c-local/include -Ijson-c-local/include/json-c
+  LDFLAGS += -Ljson-c-local/lib
+endif
+
 all: nfr_dag_sim
 
 nfr_dag_sim: main.o proxy.o service_time.o cJSON.o power_models.o

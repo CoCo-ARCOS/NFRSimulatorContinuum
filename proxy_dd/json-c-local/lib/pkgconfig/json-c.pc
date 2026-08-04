@@ -1,0 +1,12 @@
+prefix=/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/json-c-local
+exec_prefix=/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/json-c-local
+libdir=/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/json-c-local/lib
+includedir=/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/json-c-local/include
+
+Name: json-c
+Description: A JSON implementation in C
+Version: 0.16
+Requires:
+Libs.private: 
+Libs: -L${libdir} -ljson-c
+Cflags: -I${includedir} -I${includedir}/json-c
