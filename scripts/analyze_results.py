@@ -306,95 +306,142 @@ def make_plots(output: Path, grid_rows: list[dict[str, Any]], baseline_rows: lis
 
     figures = output / "figures"
     figures.mkdir(parents=True, exist_ok=True)
+    
+    plt.rcParams.update({'axes.labelsize': 11, 'legend.fontsize': 10, 'xtick.labelsize': 9, 'ytick.labelsize': 9})
 
+    # 1. Combined Heatmaps (1xN grid)
     contracts = sorted({row["contract_id"] for row in grid_rows if row["method"] == "contract-aware-edge" and row["scale_id"] == "medium"})
-    for contract_id in contracts:
-        subset = [
-            row for row in grid_rows
-            if row["method"] == "contract-aware-edge" and row["contract_id"] == contract_id and row["scale_id"] == "medium"
-        ]
-        e_levels = sorted({float(row["energy_level"]) for row in subset})
-        d_levels = sorted({float(row["deadline_level"]) for row in subset})
-        matrix = []
-        for deadline_level in d_levels:
-            line = []
-            for energy_level in e_levels:
-                values = [
-                    row["admitted_coverage_fraction"] for row in subset
-                    if float(row["energy_level"]) == energy_level and float(row["deadline_level"]) == deadline_level
-                ]
-                line.append(statistics.fmean(values) if values else math.nan)
-            matrix.append(line)
-        fig, ax = plt.subplots()
-        image = ax.imshow(matrix, origin="lower", aspect="auto", vmin=0.0, vmax=1.0)
-        ax.set_xticks(range(len(e_levels)), [f"{value:.1f}" for value in e_levels])
-        ax.set_yticks(range(len(d_levels)), [f"{value:.1f}" for value in d_levels])
-        ax.set_xlabel("Energy tightness level")
-        ax.set_ylabel("Deadline tightness level")
-        ax.set_title(f"Mean admitted risk coverage: {contract_id}")
-        fig.colorbar(image, ax=ax, label="Weighted optional-clause coverage")
-        fig.tight_layout()
-        fig.savefig(figures / f"coverage_heatmap_{contract_id}.pdf")
-        fig.savefig(figures / f"coverage_heatmap_{contract_id}.png", dpi=200)
-        plt.close(fig)
+    if contracts:
+        fig_hm, axes_hm = plt.subplots(1, len(contracts), figsize=(3.5 * len(contracts), 3.5), sharey=True)
+        if len(contracts) == 1: axes_hm = [axes_hm]
+        
+        for i, contract_id in enumerate(contracts):
+            subset = [
+                row for row in grid_rows
+                if row["method"] == "contract-aware-edge" and row["contract_id"] == contract_id and row["scale_id"] == "medium"
+            ]
+            e_levels = sorted({float(row["energy_level"]) for row in subset})
+            d_levels = sorted({float(row["deadline_level"]) for row in subset})
+            matrix = []
+            for deadline_level in d_levels:
+                line = []
+                for energy_level in e_levels:
+                    values = [
+                        row["admitted_coverage_fraction"] for row in subset
+                        if float(row["energy_level"]) == energy_level and float(row["deadline_level"]) == deadline_level
+                    ]
+                    line.append(statistics.fmean(values) if values else math.nan)
+                matrix.append(line)
+            
+            ax = axes_hm[i]
+            im = ax.imshow(matrix, origin="lower", aspect="auto", vmin=0.0, vmax=1.0, cmap="viridis")
+            ax.set_xticks(range(len(e_levels)))
+            ax.set_xticklabels([f"{value:.1f}" for value in e_levels])
+            ax.set_yticks(range(len(d_levels)))
+            ax.set_yticklabels([f"{value:.1f}" for value in d_levels])
+            ax.set_xlabel("Energy tightness level")
+            if i == 0:
+                ax.set_ylabel("Deadline tightness level")
+            ax.set_title(contract_id)
+            
+        fig_hm.subplots_adjust(right=0.85)
+        cbar_ax = fig_hm.add_axes([0.88, 0.15, 0.02, 0.7])
+        fig_hm.colorbar(im, cax=cbar_ax, label="Weighted optional-clause coverage")
+        fig_hm.savefig(figures / "combined_heatmaps.pdf", bbox_inches='tight')
+        fig_hm.savefig(figures / "combined_heatmaps.png", dpi=200, bbox_inches='tight')
+        plt.close(fig_hm)
 
+    # 2. Combined Baselines (1x2 grid)
     if baseline_rows:
         methods = sorted({row["method"] for row in baseline_rows})
+        # Style definition for highlighting our method
+        colors = ['#2ca02c' if 'contract-aware' in m else '#7f7f7f' for m in methods]
+        
+        fig_bl, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+        
         admitted = [statistics.fmean(row["admitted_coverage_fraction"] for row in baseline_rows if row["method"] == method) for method in methods]
-        fig, ax = plt.subplots()
-        ax.bar(range(len(methods)), admitted)
-        ax.set_xticks(range(len(methods)), methods, rotation=35, ha="right")
-        ax.set_ylabel("Mean admitted coverage")
-        ax.set_ylim(0.0, 1.05)
-        fig.tight_layout()
-        fig.savefig(figures / "baseline_admitted_coverage.pdf")
-        fig.savefig(figures / "baseline_admitted_coverage.png", dpi=200)
-        plt.close(fig)
-
+        ax1.bar(range(len(methods)), admitted, color=colors)
+        ax1.set_xticks(range(len(methods)))
+        ax1.set_xticklabels(methods, rotation=35, ha="right")
+        ax1.set_ylabel("Mean admitted coverage")
+        ax1.set_ylim(0.0, 1.05)
+        
         violations = [statistics.fmean(1.0 - row["feasible"] for row in baseline_rows if row["method"] == method) for method in methods]
-        fig, ax = plt.subplots()
-        ax.bar(range(len(methods)), violations)
-        ax.set_xticks(range(len(methods)), methods, rotation=35, ha="right")
-        ax.set_ylabel("Constraint-violation rate")
-        ax.set_ylim(0.0, 1.05)
-        fig.tight_layout()
-        fig.savefig(figures / "baseline_violation_rate.pdf")
-        fig.savefig(figures / "baseline_violation_rate.png", dpi=200)
-        plt.close(fig)
+        ax2.bar(range(len(methods)), violations, color=colors)
+        ax2.set_xticks(range(len(methods)))
+        ax2.set_xticklabels(methods, rotation=35, ha="right")
+        ax2.set_ylabel("Constraint-violation rate")
+        ax2.set_ylim(0.0, 1.05)
+        
+        fig_bl.tight_layout()
+        fig_bl.savefig(figures / "combined_baselines.pdf")
+        fig_bl.savefig(figures / "combined_baselines.png", dpi=200)
+        plt.close(fig_bl)
 
+    # 2.5 Combined Baselines Per Topology (1xN grid)
+    if baseline_rows:
+        workflows = sorted({row["workflow_id"] for row in baseline_rows})
+        methods = sorted({row["method"] for row in baseline_rows})
+        colors = ['#2ca02c' if 'contract-aware' in m else '#7f7f7f' for m in methods]
+        
+        if workflows:
+            fig_top, axes_top = plt.subplots(1, len(workflows), figsize=(4.0 * len(workflows), 4), sharey=True)
+            if len(workflows) == 1: axes_top = [axes_top]
+            
+            for i, workflow_id in enumerate(workflows):
+                subset = [row for row in baseline_rows if row["workflow_id"] == workflow_id]
+                admitted = [statistics.fmean(row["admitted_coverage_fraction"] for row in subset if row["method"] == method) if any(row["method"] == method for row in subset) else 0.0 for method in methods]
+                
+                ax = axes_top[i]
+                ax.bar(range(len(methods)), admitted, color=colors)
+                ax.set_xticks(range(len(methods)))
+                ax.set_xticklabels(methods, rotation=35, ha="right")
+                if i == 0:
+                    ax.set_ylabel("Mean admitted coverage")
+                ax.set_ylim(0.0, 1.05)
+                ax.set_title(f"Topology: {workflow_id}")
+                
+            fig_top.tight_layout()
+            fig_top.savefig(figures / "combined_topologies.pdf")
+            fig_top.savefig(figures / "combined_topologies.png", dpi=200)
+            plt.close(fig_top)
+
+
+    # 3. Combined Scalability (1x2 grid)
     if scalability_rows:
         ordered = sorted(scalability_rows, key=lambda row: int(row["policy_groups"]))
-        fig, ax = plt.subplots()
-        ax.plot([int(row["policy_groups"]) for row in ordered], [int(row["candidate_count"]) for row in ordered], marker="o")
-        ax.set_xlabel("Policy groups")
-        ax.set_ylabel("Candidate configurations")
-        ax.set_yscale("log")
-        fig.tight_layout()
-        fig.savefig(figures / "scalability_candidates.pdf")
-        fig.savefig(figures / "scalability_candidates.png", dpi=200)
-        plt.close(fig)
+        fig_sc, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 3.5))
+        
+        ax1.plot([int(row["policy_groups"]) for row in ordered], [int(row["candidate_count"]) for row in ordered], marker="o", color="#1f77b4", linewidth=2)
+        ax1.set_xlabel("Policy groups")
+        ax1.set_ylabel("Candidate configurations")
+        ax1.set_yscale("log")
+        ax1.grid(True, linestyle="--", alpha=0.5)
+        
+        ax2.plot([int(row["candidate_count"]) for row in ordered], [float(row["elapsed_wall_s"]) for row in ordered], marker="o", color="#d62728", linewidth=2)
+        ax2.set_xlabel("Candidate configurations")
+        ax2.set_ylabel("Profiler wall time (s)")
+        ax2.grid(True, linestyle="--", alpha=0.5)
+        
+        fig_sc.tight_layout()
+        fig_sc.savefig(figures / "combined_scalability.pdf")
+        fig_sc.savefig(figures / "combined_scalability.png", dpi=200)
+        plt.close(fig_sc)
 
-        fig, ax = plt.subplots()
-        ax.plot([int(row["candidate_count"]) for row in ordered], [float(row["elapsed_wall_s"]) for row in ordered], marker="o")
-        ax.set_xlabel("Candidate configurations")
-        ax.set_ylabel("Profiler wall time (s)")
-        fig.tight_layout()
-        fig.savefig(figures / "scalability_runtime.pdf")
-        fig.savefig(figures / "scalability_runtime.png", dpi=200)
-        plt.close(fig)
-
+    # 4. Priority Sensitivity
     if representative_rows:
-        contracts = sorted({row["contract_id"] for row in representative_rows})
-        values = [statistics.fmean(row["admitted_coverage_fraction"] for row in representative_rows if row["contract_id"] == contract) for contract in contracts]
-        fig, ax = plt.subplots()
-        ax.bar(range(len(contracts)), values)
-        ax.set_xticks(range(len(contracts)), contracts, rotation=25, ha="right")
+        contracts_rep = sorted({row["contract_id"] for row in representative_rows})
+        values = [statistics.fmean(row["admitted_coverage_fraction"] for row in representative_rows if row["contract_id"] == contract) for contract in contracts_rep]
+        fig_rep, ax = plt.subplots(figsize=(5, 4))
+        ax.bar(range(len(contracts_rep)), values, color='#2ca02c')
+        ax.set_xticks(range(len(contracts_rep)))
+        ax.set_xticklabels(contracts_rep, rotation=25, ha="right")
         ax.set_ylabel("Mean admitted coverage")
         ax.set_ylim(0.0, 1.05)
-        fig.tight_layout()
-        fig.savefig(figures / "contract_priority_sensitivity.pdf")
-        fig.savefig(figures / "contract_priority_sensitivity.png", dpi=200)
-        plt.close(fig)
+        fig_rep.tight_layout()
+        fig_rep.savefig(figures / "contract_priority_sensitivity.pdf")
+        fig_rep.savefig(figures / "contract_priority_sensitivity.png", dpi=200)
+        plt.close(fig_rep)
 
 
 def parse_args() -> argparse.Namespace:
