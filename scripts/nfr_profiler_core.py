@@ -21,6 +21,7 @@ import itertools
 import json
 import math
 import os
+import random
 import shutil
 import statistics
 import subprocess
@@ -358,13 +359,29 @@ def build_group_combos(
 
 
 def build_nfr_policies(
-    request: dict[str, Any]
+    request: dict[str, Any], max_policies: int = None
 ) -> list[dict[str, dict[str, dict[str, Any] | None]]]:
     groups = policy_groups(request)
     if not groups:
         return [{}]
     combinations_by_group = [build_group_combos(request, group) for group in groups]
+    
+    total = 1
+    for c in combinations_by_group:
+        total *= len(c)
+        
     policies = []
+    if max_policies is not None and total > max_policies:
+        print(f"Sampling {max_policies} policies from {total} possible combinations.")
+        seen_indices = set()
+        while len(policies) < max_policies:
+            idx_tuple = tuple(random.randrange(len(c)) for c in combinations_by_group)
+            if idx_tuple not in seen_indices:
+                seen_indices.add(idx_tuple)
+                values = tuple(c[idx] for c, idx in zip(combinations_by_group, idx_tuple))
+                policies.append({group: combo for group, combo in zip(groups, values)})
+        return policies
+
     for values in itertools.product(*combinations_by_group):
         policies.append({group: combo for group, combo in zip(groups, values)})
     return policies
@@ -1145,19 +1162,18 @@ def build_candidates(
     request: dict[str, Any], args: argparse.Namespace
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     placements = build_placements(request)
-    policies = build_nfr_policies(request)
+    
+    # Calculate max policies per plan to stay within args.max_candidates
+    # We must allow at least 1 policy per plan, and reserve 1 for the baseline if needed.
+    max_policies_per_plan = max(1, (args.max_candidates // len(placements)) - 1)
+    
+    policies = build_nfr_policies(request, max_policies=max_policies_per_plan)
     baseline_per_plan = 0 if any(is_reference(policy) for policy in policies) else 1
     total = len(placements) * (len(policies) + baseline_per_plan)
     print(
         f"Search space: {len(placements)} workflow plans x "
         f"({len(policies)} edge-policy assignments + {baseline_per_plan} reference) = {total}"
     )
-    if total > args.max_candidates and not args.dry_run:
-        raise ValueError(
-            f"search space {total} exceeds --max-candidates={args.max_candidates}; "
-            "group edges with policy_group, use objective.policy_scope='global', "
-            "provide workflow.plans, or reduce algorithms"
-        )
 
     candidates = []
     for plan in placements:

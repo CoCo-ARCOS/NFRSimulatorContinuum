@@ -249,11 +249,15 @@
       ],
       "ida_km": [
         [
-          8,
+          4,
           2
         ],
         [
           8,
+          4
+        ],
+        [
+          10,
           4
         ]
       ]
@@ -303,7 +307,7 @@
   "simulator": {
     "service_time_model": "log-log",
     "strict_calibration": true,
-    "allow_extrapolation": false
+    "allow_extrapolation": true
   },
   "energy_model_notes": {
     "interpretation": "Use for comparative simulation and sensitivity analysis, not meter-level prediction.",
