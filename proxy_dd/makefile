@@ -12,7 +12,7 @@ endif
 # Fallback to local json-c build if it exists
 ifneq ("$(wildcard json-c-local/include/json-c/json.h)","")
   CFLAGS += -Ijson-c-local/include -Ijson-c-local/include/json-c
-  LDFLAGS += -Ljson-c-local/lib
+  LDFLAGS += -Ljson-c-local/lib -Ljson-c-local/lib64
 endif
 
 all: nfr_dag_sim
