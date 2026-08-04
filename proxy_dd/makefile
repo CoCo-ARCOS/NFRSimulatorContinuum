@@ -3,25 +3,31 @@ THREAD = -lpthread
 LDLIBS = -lm -ljson-c
 CONTAINER_PLATFORM ?= docker
 
+# Use Conda environment paths if active
+ifdef CONDA_PREFIX
+  CFLAGS += -I$(CONDA_PREFIX)/include -I$(CONDA_PREFIX)/include/json-c
+  LDFLAGS += -L$(CONDA_PREFIX)/lib -Wl,-rpath,$(CONDA_PREFIX)/lib
+endif
+
 all: nfr_dag_sim
 
 nfr_dag_sim: main.o proxy.o service_time.o cJSON.o power_models.o
-	$(CC) -g -o nfr_dag_sim main.o proxy.o service_time.o cJSON.o power_models.o $(LDLIBS) $(THREAD)
+	$(CC) $(CFLAGS) $(LDFLAGS) -g -o nfr_dag_sim main.o proxy.o service_time.o cJSON.o power_models.o $(LDLIBS) $(THREAD)
 
 power_models.o: power_models.c power_models.h proxy.h
-	$(CC) -g -c power_models.c -o power_models.o
+	$(CC) $(CFLAGS) -g -c power_models.c -o power_models.o
 
 proxy.o: proxy.c proxy.h cJSON.h power_models.h
-	$(CC) -g -c proxy.c -o proxy.o
+	$(CC) $(CFLAGS) -g -c proxy.c -o proxy.o
 
 service_time.o: service_time.c service_time.h
-	$(CC) -g -c service_time.c -o service_time.o
+	$(CC) $(CFLAGS) -g -c service_time.c -o service_time.o
 
 cJSON.o: cJSON.c cJSON.h
-	$(CC) -g -c cJSON.c -o cJSON.o
+	$(CC) $(CFLAGS) -g -c cJSON.c -o cJSON.o
 
 main.o: main.c proxy.h service_time.h
-	$(CC) -g -c main.c -o main.o
+	$(CC) $(CFLAGS) -g -c main.c -o main.o
 
 clean:
 	rm -f *.o nfr_dag_sim
