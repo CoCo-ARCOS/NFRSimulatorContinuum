@@ -106,12 +106,15 @@ def select_greedy(feasible, e_ref, t_ref):
     return max(feasible, key=key)
 
 
-def summarize_scenario(scenario, report, request, budget_multipliers):
+def summarize_scenario(scenario, report, request, budget_multipliers, global_report=None):
     candidates = report.get("candidates", [])
     opt_total = optional_total_from_request(request)
     admissible = [c for c in candidates if mandatory_ok(c)]
     if not admissible:
         return [], []
+    global_admissible = [
+        c for c in (global_report or {}).get("candidates", []) if mandatory_ok(c)
+    ]
 
     e_ref = min(cand_energy(c) for c in admissible)
     t_ref = min(cand_time(c) for c in admissible)
@@ -128,7 +131,15 @@ def summarize_scenario(scenario, report, request, budget_multipliers):
             feasible = [c for c in admissible if cand_energy(c) <= budget and cand_time(c) <= deadline]
             chosen = select_contract_aware(feasible)
             greedy = select_greedy(feasible, e_ref, t_ref)
-            for method, cand in [("contract-aware-edge", chosen), ("greedy-coverage-per-cost", greedy)]:
+            budgeted = [("contract-aware-edge", chosen), ("greedy-coverage-per-cost", greedy)]
+            if global_admissible:
+                # Same selection rule, restricted to the uniform (global-scope) catalog.
+                global_feasible = [
+                    c for c in global_admissible
+                    if cand_energy(c) <= budget and cand_time(c) <= deadline
+                ]
+                budgeted.append(("global-uniform", select_contract_aware(global_feasible)))
+            for method, cand in budgeted:
                 row = {
                     **{k: scenario[k] for k in ("id", "workflow", "plan", "contract", "scale", "power_scenario")},
                     "method": method,
@@ -283,13 +294,17 @@ def main() -> int:
     diag = []
     missing = []
     for sc in manifest["scenarios"]:
+        if sc.get("policy_scope", "edge") == "global":
+            continue  # Consumed as the sibling catalog of the edge scenario.
         rep_path = args.catalogs / sc["id"] / "profiler_report.json"
         if not rep_path.exists():
             missing.append(sc["id"])
             continue
         report = load_json(rep_path)
         request = load_json(Path(sc["request"]))
-        srows, drows = summarize_scenario(sc, report, request, multipliers)
+        global_rep_path = args.catalogs / f"{sc['id']}__global" / "profiler_report.json"
+        global_report = load_json(global_rep_path) if global_rep_path.exists() else None
+        srows, drows = summarize_scenario(sc, report, request, multipliers, global_report)
         sweep.extend(srows)
         diag.extend(drows)
 

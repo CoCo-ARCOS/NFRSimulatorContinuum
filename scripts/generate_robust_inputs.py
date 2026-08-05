@@ -336,7 +336,8 @@ def clauses_for_workflow(workflow: dict[str, Any], contract_id: str) -> list[dic
 
 
 def request_for(site: dict[str, Any], workflow: dict[str, Any], plan: dict[str, Any],
-                contract_id: str, scale: dict[str, Any], max_candidates: int) -> dict[str, Any]:
+                contract_id: str, scale: dict[str, Any], max_candidates: int,
+                policy_scope: str = "edge") -> dict[str, Any]:
     tasks = []
     for t in workflow["tasks"]:
         name = t["id"]
@@ -388,6 +389,7 @@ def request_for(site: dict[str, Any], workflow: dict[str, Any], plan: dict[str, 
         "objective": {
             "assurance_mode": "weighted",
             "energy_weight": 0.5,
+            "policy_scope": policy_scope,
         },
         # Loose constraints; offline analysis evaluates meaningful budget grids.
         "constraints": {
@@ -449,7 +451,7 @@ def main() -> int:
                 "input_size_cv": 0.10,
             },
         },
-        "policy_scopes": ["edge"],
+        "policy_scopes": ["edge", "global"],
         "replications": args.replications,
         "max_candidates": args.max_candidates,
     }
@@ -471,19 +473,23 @@ def main() -> int:
             for plan in wf["plans"]:
                 for contract_id in CONTRACT_RULES:
                     for scale_name, scale in suite["workload_scales"].items():
-                        scenario_id = f"{wf['id']}__{plan['id']}__{contract_id}__{scale_name}__{power_scenario}"
-                        request = request_for(site, wf, plan, contract_id, scale, args.max_candidates)
-                        path = reqdir / f"{scenario_id}.json"
-                        write_json(path, request)
-                        manifest["scenarios"].append({
-                            "id": scenario_id,
-                            "workflow": wf["id"],
-                            "plan": plan["id"],
-                            "contract": contract_id,
-                            "scale": scale_name,
-                            "power_scenario": power_scenario,
-                            "request": str(path),
-                        })
+                        base_id = f"{wf['id']}__{plan['id']}__{contract_id}__{scale_name}__{power_scenario}"
+                        for policy_scope in suite["policy_scopes"]:
+                            scenario_id = base_id if policy_scope == "edge" else f"{base_id}__global"
+                            request = request_for(site, wf, plan, contract_id, scale,
+                                                  args.max_candidates, policy_scope)
+                            path = reqdir / f"{scenario_id}.json"
+                            write_json(path, request)
+                            manifest["scenarios"].append({
+                                "id": scenario_id,
+                                "workflow": wf["id"],
+                                "plan": plan["id"],
+                                "contract": contract_id,
+                                "scale": scale_name,
+                                "power_scenario": power_scenario,
+                                "policy_scope": policy_scope,
+                                "request": str(path),
+                            })
 
     write_json(out / "manifest.json", manifest)
     print(f"Wrote {len(manifest['scenarios'])} scenarios to {out}")

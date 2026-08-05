@@ -1,100 +1,720 @@
 #!/usr/bin/env python3
-"""Create paper figures for the robust evaluation."""
+"""Create paper figures for the robust evaluation.
+
+The plots intentionally foreground the edge-contract method and keep baselines
+muted so the figures read well in a paper column or appendix.
+"""
 
 from __future__ import annotations
 
 import argparse
+import os
+import warnings
 from pathlib import Path
-import pandas as pd
+
+if "MPLCONFIGDIR" not in os.environ:
+    mpl_cache = Path(os.environ.get("TMPDIR", "/tmp")) / "nfrsim-matplotlib"
+    mpl_cache.mkdir(parents=True, exist_ok=True)
+    os.environ["MPLCONFIGDIR"] = str(mpl_cache)
+
 import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
+import numpy as np
+import pandas as pd
 
 
-def savefig(path: Path):
+EDGE_METHOD = "contract-aware-edge"
+GREEDY_METHOD = "greedy-coverage-per-cost"
+GLOBAL_METHOD = "global-uniform"
+
+METHOD_ORDER = [
+    EDGE_METHOD,
+    GLOBAL_METHOD,
+    "strongest",
+    "minimum-energy",
+    "minimum-makespan",
+    "required-only",
+]
+
+METHOD_LABELS = {
+    EDGE_METHOD: "Edge-contract",
+    GLOBAL_METHOD: "Global uniform",
+    "strongest": "Strongest",
+    "minimum-energy": "Min energy",
+    "minimum-makespan": "Min makespan",
+    "required-only": "Required only",
+}
+
+METHOD_COLORS = {
+    EDGE_METHOD: "#0072B2",
+    GLOBAL_METHOD: "#E69F00",
+    "strongest": "#5F6368",
+    "minimum-energy": "#8E8E8E",
+    "minimum-makespan": "#B0B0B0",
+    "required-only": "#D0D0D0",
+}
+
+METHOD_MARKERS = {
+    EDGE_METHOD: "o",
+    GLOBAL_METHOD: "s",
+    "strongest": "^",
+    "minimum-energy": "v",
+    "minimum-makespan": "D",
+    "required-only": "X",
+}
+
+METHOD_LINESTYLES = {
+    EDGE_METHOD: "-",
+    GLOBAL_METHOD: "-",
+    "strongest": "--",
+    "minimum-energy": "-.",
+    "minimum-makespan": ":",
+    "required-only": "--",
+}
+
+COVERAGE_LOSS_COLOR = "#E69F00"
+
+CONTRACT_ORDER = ["balanced", "bandwidth-first", "resilience-first", "security-first"]
+CONTRACT_LABELS = {
+    "balanced": "Balanced",
+    "bandwidth-first": "Bandwidth-first",
+    "resilience-first": "Resilience-first",
+    "security-first": "Security-first",
+}
+
+WORKFLOW_ORDER = ["linear-5", "diamond-6", "fork-join-8", "realistic-14"]
+WORKFLOW_LABELS = {
+    "linear-5": "Linear-5",
+    "diamond-6": "Diamond-6",
+    "fork-join-8": "Fork-join-8",
+    "realistic-14": "Realistic-14",
+}
+
+RISK_LABELS = {
+    "corruption": "Corruption",
+    "disclosure": "Disclosure",
+    "modification": "Modification",
+    "unavailability": "Unavailability",
+    "volume": "Volume",
+}
+
+RISK_COLORS = {
+    "corruption": "#CC79A7",
+    "disclosure": "#E69F00",
+    "modification": "#009E73",
+    "unavailability": "#D55E00",
+    "volume": "#56B4E9",
+}
+
+BUDGET_XLABEL = "Energy and deadline budget (x mandatory baseline)"
+
+
+def configure_style() -> None:
+    plt.rcParams.update(
+        {
+            "figure.dpi": 160,
+            "savefig.dpi": 400,
+            "font.family": "DejaVu Sans",
+            "font.size": 8.5,
+            "axes.titlesize": 10,
+            "axes.labelsize": 8.5,
+            "xtick.labelsize": 8,
+            "ytick.labelsize": 8,
+            "legend.fontsize": 8,
+            "axes.linewidth": 0.8,
+            "lines.linewidth": 1.7,
+            "lines.markersize": 4.5,
+            "pdf.fonttype": 42,
+            "ps.fonttype": 42,
+        }
+    )
+
+
+def savefig(fig, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    plt.tight_layout()
-    plt.savefig(path, dpi=300)
-    plt.savefig(path.with_suffix(".pdf"))
-    plt.close()
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message="This figure includes Axes that are not compatible with tight_layout.*",
+        )
+        fig.tight_layout()
+    fig.savefig(path, bbox_inches="tight")
+    fig.savefig(path.with_suffix(".pdf"), bbox_inches="tight")
+    plt.close(fig)
+
+
+def read_csv(path: Path) -> pd.DataFrame:
+    if not path.exists() or path.stat().st_size == 0:
+        return pd.DataFrame()
+    return pd.read_csv(path)
+
+
+def nominal_medium(df: pd.DataFrame) -> pd.DataFrame:
+    return df[(df["power_scenario"] == "nominal") & (df["scale"] == "medium")].copy()
+
+
+def drop_greedy(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty or "method" not in df.columns:
+        return df
+    return df[df["method"] != GREEDY_METHOD].copy()
+
+
+def ordered(values, preferred) -> list[str]:
+    seen = list(dict.fromkeys(values))
+    return [v for v in preferred if v in seen] + [v for v in seen if v not in preferred]
+
+
+def method_label(method: str) -> str:
+    return METHOD_LABELS.get(method, method.replace("-", " ").title())
+
+
+def contract_label(contract: str) -> str:
+    return CONTRACT_LABELS.get(contract, contract.replace("-", " ").title())
+
+
+def workflow_label(workflow: str) -> str:
+    return WORKFLOW_LABELS.get(workflow, workflow.replace("-", " ").title())
+
+
+def risk_label(risk: str) -> str:
+    return RISK_LABELS.get(risk, risk.replace("-", " ").title())
+
+
+def method_color(method: str) -> str:
+    return METHOD_COLORS.get(method, "#6F6F6F")
+
+
+def to_bool(value) -> bool:
+    if pd.isna(value):
+        return False
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    return str(value).strip().lower() in {"1", "true", "yes", "y"}
+
+
+def feasible_series(df: pd.DataFrame) -> pd.Series:
+    raw = df["selected_feasible"] if "selected_feasible" in df else df["admitted"]
+    raw = raw.where(raw.notna(), df["admitted"])
+    return raw.map(to_bool)
+
+
+def style_axes(ax, grid_axis: str = "y") -> None:
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.grid(True, axis=grid_axis, color="#D8D8D8", linewidth=0.6)
+    ax.set_axisbelow(True)
+
+
+def plot_method_by_contract(ms: pd.DataFrame, output: Path) -> None:
+    sub = nominal_medium(ms)
+    if sub.empty:
+        return
+
+    methods = ordered(sub["method"].unique(), METHOD_ORDER)
+    contracts = ordered(sub["contract"].unique(), CONTRACT_ORDER)
+    pivot = sub.pivot_table(
+        index="contract",
+        columns="method",
+        values="mean_coverage_fraction",
+        aggfunc="mean",
+    ).reindex(index=contracts, columns=methods)
+
+    fig, ax = plt.subplots(figsize=(7.2, 3.2))
+    y = np.arange(len(pivot.index))
+    height = min(0.12, 0.78 / max(len(methods), 1))
+    offsets = (np.arange(len(methods)) - (len(methods) - 1) / 2) * height
+
+    for i, method in enumerate(methods):
+        values = pivot[method] * 100
+        is_edge = method == EDGE_METHOD
+        is_comparator = method == GLOBAL_METHOD
+        ax.barh(
+            y + offsets[i],
+            values,
+            height=height * 0.85,
+            label=method_label(method),
+            color=method_color(method),
+            edgecolor="#222222" if is_edge else "white",
+            linewidth=0.8 if is_edge else 0.35,
+            alpha=1.0 if is_edge or is_comparator else 0.72,
+        )
+
+    if EDGE_METHOD in pivot:
+        edge_offset = offsets[methods.index(EDGE_METHOD)]
+        for j, value in enumerate(pivot[EDGE_METHOD] * 100):
+            if pd.notna(value):
+                ax.text(
+                    min(value + 1.2, 103.5),
+                    y[j] + edge_offset,
+                    f"{value:.0f}%",
+                    va="center",
+                    ha="left",
+                    color=method_color(EDGE_METHOD),
+                    fontsize=7.5,
+                    fontweight="bold",
+                )
+
+    ax.set_yticks(y)
+    ax.set_yticklabels([contract_label(c) for c in pivot.index])
+    ax.invert_yaxis()
+    ax.set_xlim(0, 105)
+    ax.xaxis.set_major_formatter(PercentFormatter(xmax=100, decimals=0))
+    ax.set_xlabel("Mean admitted optional coverage")
+    style_axes(ax, "x")
+    ax.legend(
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=3,
+        frameon=False,
+        handlelength=1.3,
+        columnspacing=1.2,
+    )
+    savefig(fig, output / "fig_method_by_contract.png")
+
+
+def plot_method_by_workflow(cs: pd.DataFrame, output: Path) -> None:
+    sub = nominal_medium(cs)
+    if sub.empty or "workflow" not in sub.columns:
+        return
+
+    methods = ordered(sub["method"].unique(), METHOD_ORDER)
+    workflows = ordered(sub["workflow"].unique(), WORKFLOW_ORDER)
+    pivot = sub.pivot_table(
+        index="workflow",
+        columns="method",
+        values="coverage_fraction",
+        aggfunc="mean",
+    ).reindex(index=workflows, columns=methods)
+
+    fig, ax = plt.subplots(figsize=(7.2, 3.2))
+    y = np.arange(len(pivot.index))
+    height = min(0.12, 0.78 / max(len(methods), 1))
+    offsets = (np.arange(len(methods)) - (len(methods) - 1) / 2) * height
+
+    for i, method in enumerate(methods):
+        values = pivot[method] * 100
+        is_edge = method == EDGE_METHOD
+        is_comparator = method == GLOBAL_METHOD
+        ax.barh(
+            y + offsets[i],
+            values,
+            height=height * 0.85,
+            label=method_label(method),
+            color=method_color(method),
+            edgecolor="#222222" if is_edge else "white",
+            linewidth=0.8 if is_edge else 0.35,
+            alpha=1.0 if is_edge or is_comparator else 0.72,
+        )
+
+    if EDGE_METHOD in pivot:
+        edge_offset = offsets[methods.index(EDGE_METHOD)]
+        for j, value in enumerate(pivot[EDGE_METHOD] * 100):
+            if pd.notna(value):
+                ax.text(
+                    min(value + 1.2, 103.5),
+                    y[j] + edge_offset,
+                    f"{value:.0f}%",
+                    va="center",
+                    ha="left",
+                    color=method_color(EDGE_METHOD),
+                    fontsize=7.5,
+                    fontweight="bold",
+                )
+
+    ax.set_yticks(y)
+    ax.set_yticklabels([workflow_label(w) for w in pivot.index])
+    ax.invert_yaxis()
+    ax.set_xlim(0, 105)
+    ax.xaxis.set_major_formatter(PercentFormatter(xmax=100, decimals=0))
+    ax.set_xlabel("Mean admitted optional coverage")
+    style_axes(ax, "x")
+    ax.legend(
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=3,
+        frameon=False,
+        handlelength=1.3,
+        columnspacing=1.2,
+    )
+    savefig(fig, output / "fig_method_by_workflow.png")
+
+
+def plot_coverage_envelope(cs: pd.DataFrame, output: Path) -> None:
+    sub = nominal_medium(cs)
+    sub = sub[sub["method"] == EDGE_METHOD]
+    if sub.empty:
+        return
+
+    grouped = (
+        sub.groupby(["id", "workflow", "plan", "contract"], dropna=False)["coverage_fraction"]
+        .agg(["std", "mean", "min", "max"])
+        .reset_index()
+    )
+    grouped["std"] = grouped["std"].fillna(0.0)
+    chosen = grouped.sort_values(["std", "mean"], ascending=[False, False]).iloc[0]
+    rep = sub[sub["id"] == chosen["id"]]
+    pivot = rep.pivot_table(
+        index="energy_multiplier",
+        columns="deadline_multiplier",
+        values="coverage_fraction",
+        aggfunc="max",
+    ).sort_index().sort_index(axis=1)
+
+    if pivot.empty:
+        return
+
+    fig, ax = plt.subplots(figsize=(4.8, 3.55))
+    values = pivot.values * 100
+    im = ax.imshow(values, origin="lower", aspect="auto", vmin=0, vmax=100, cmap="YlGnBu")
+    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    cbar.ax.yaxis.set_major_formatter(PercentFormatter(xmax=100, decimals=0))
+    cbar.set_label("Coverage")
+
+    for row in range(values.shape[0]):
+        for col in range(values.shape[1]):
+            value = values[row, col]
+            color = "white" if value >= 72 else "#1F1F1F"
+            ax.text(col, row, f"{value:.0f}", ha="center", va="center", fontsize=7, color=color)
+
+    ax.set_xticks(np.arange(len(pivot.columns)))
+    ax.set_yticks(np.arange(len(pivot.index)))
+    ax.set_xticklabels([f"{x:g}" for x in pivot.columns])
+    ax.set_yticklabels([f"{x:g}" for x in pivot.index])
+    ax.set_xlabel("Deadline budget (x mandatory baseline)")
+    ax.set_ylabel("Energy budget (x mandatory baseline)")
+    scenario = (
+        f"{chosen['workflow']} / {chosen['plan']} / "
+        f"{contract_label(str(chosen['contract']))}"
+    )
+    ax.set_title(f"Edge-contract coverage envelope\n{scenario}")
+    savefig(fig, output / "fig_coverage_envelope.png")
+
+
+def plot_feasibility_and_reachable(cs: pd.DataFrame, analysis: Path, output: Path) -> None:
+    sweep = nominal_medium(cs)
+    sweep = sweep[sweep["energy_multiplier"] == sweep["deadline_multiplier"]].copy()
+    if sweep.empty:
+        return
+
+    sweep["feasible"] = feasible_series(sweep)
+    rates = sweep.groupby(["method", "energy_multiplier"])["feasible"].mean().unstack(0)
+    methods = ordered(rates.columns, METHOD_ORDER)
+
+    fig, ax = plt.subplots(figsize=(5.4, 3.15))
+    draw_order = [m for m in methods if m not in {EDGE_METHOD, GLOBAL_METHOD}]
+    draw_order += [GLOBAL_METHOD, EDGE_METHOD]
+    for method in draw_order:
+        if method not in rates:
+            continue
+        is_edge = method == EDGE_METHOD
+        is_comparator = method == GLOBAL_METHOD
+        ax.plot(
+            rates.index,
+            rates[method] * 100,
+            label=method_label(method),
+            color=method_color(method),
+            linestyle=METHOD_LINESTYLES.get(method, "-"),
+            marker=METHOD_MARKERS.get(method, "o"),
+            linewidth=2.1 if is_edge else 1.5,
+            alpha=1.0 if is_edge or is_comparator else 0.62,
+            zorder=5 if is_edge else 4 if is_comparator else 2,
+        )
+    ax.set_xlabel(BUDGET_XLABEL)
+    ax.set_ylabel("Feasible selection rate")
+    ax.set_ylim(0, 105)
+    ax.set_xticks(rates.index)
+    ax.yaxis.set_major_formatter(PercentFormatter(xmax=100, decimals=0))
+    style_axes(ax, "y")
+    handles, labels = ax.get_legend_handles_labels()
+    label_to_handle = dict(zip(labels, handles))
+    legend_labels = [method_label(m) for m in methods if method_label(m) in label_to_handle]
+    ax.legend(
+        [label_to_handle[l] for l in legend_labels],
+        legend_labels,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=3,
+        frameon=False,
+        handlelength=1.5,
+        columnspacing=1.1,
+    )
+    savefig(fig, output / "fig_feasibility.png")
+
+    diag = read_csv(analysis / "catalog_diagnostics_robust.csv")
+    if diag.empty:
+        return
+    diag_cols = ["id", "max_reachable_optional_fraction", "mandatory_ref_energy_j"]
+    if not set(diag_cols).issubset(diag.columns):
+        return
+
+    dsweep = sweep.merge(diag[diag_cols], on="id", how="inner")
+    dsweep = dsweep[dsweep["max_reachable_optional_fraction"] > 0].copy()
+    if dsweep.empty:
+        return
+
+    dsweep["frac_of_max"] = (
+        dsweep["coverage_fraction"] / dsweep["max_reachable_optional_fraction"]
+    ).clip(upper=1.0)
+    plot_optimality_gap(dsweep, output)
+    plot_coverage_energy_tradeoff(dsweep, output)
+
+
+def plot_optimality_gap(dsweep: pd.DataFrame, output: Path) -> None:
+    gap = dsweep.groupby(["method", "energy_multiplier"])["frac_of_max"].mean().unstack(0)
+    methods = ordered(gap.columns, METHOD_ORDER)
+
+    fig, ax = plt.subplots(figsize=(5.4, 3.15))
+    draw_order = [m for m in methods if m not in {EDGE_METHOD, GLOBAL_METHOD}]
+    draw_order += [GLOBAL_METHOD, EDGE_METHOD]
+    for method in draw_order:
+        if method not in gap:
+            continue
+        is_edge = method == EDGE_METHOD
+        is_comparator = method == GLOBAL_METHOD
+        ax.plot(
+            gap.index,
+            gap[method] * 100,
+            label=method_label(method),
+            color=method_color(method),
+            linestyle=METHOD_LINESTYLES.get(method, "-"),
+            marker=METHOD_MARKERS.get(method, "o"),
+            linewidth=2.1 if is_edge else 1.5,
+            alpha=1.0 if is_edge or is_comparator else 0.62,
+            zorder=5 if is_edge else 4 if is_comparator else 2,
+        )
+    ax.set_xlabel(BUDGET_XLABEL)
+    ax.set_ylabel("Coverage attained vs. catalog maximum")
+    ax.set_ylim(0, 105)
+    ax.set_xticks(gap.index)
+    ax.yaxis.set_major_formatter(PercentFormatter(xmax=100, decimals=0))
+    style_axes(ax, "y")
+    ax.legend(
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=3,
+        frameon=False,
+        handlelength=1.5,
+        columnspacing=1.1,
+    )
+    savefig(fig, output / "fig_optimality_gap.png")
+
+
+def plot_coverage_energy_tradeoff(dsweep: pd.DataFrame, output: Path) -> None:
+    rep = dsweep[(abs(dsweep["energy_multiplier"] - 1.30) < 1e-9) & dsweep["feasible"]].copy()
+    if rep.empty:
+        return
+    rep["energy_j"] = pd.to_numeric(rep["energy_j"], errors="coerce")
+    rep = rep.dropna(subset=["energy_j"])
+    if rep.empty:
+        return
+
+    rep["energy_ratio"] = rep["energy_j"] / rep["mandatory_ref_energy_j"]
+    summary = (
+        rep.groupby("method")
+        .agg(
+            energy_mean=("energy_ratio", "mean"),
+            energy_q25=("energy_ratio", lambda s: s.quantile(0.25)),
+            energy_q75=("energy_ratio", lambda s: s.quantile(0.75)),
+            coverage_mean=("coverage_fraction", "mean"),
+            coverage_q25=("coverage_fraction", lambda s: s.quantile(0.25)),
+            coverage_q75=("coverage_fraction", lambda s: s.quantile(0.75)),
+            n=("coverage_fraction", "size"),
+        )
+        .reset_index()
+    )
+    methods = ordered(summary["method"].unique(), METHOD_ORDER)
+
+    fig, ax = plt.subplots(figsize=(5.2, 3.35))
+    for method in [m for m in methods if m not in {EDGE_METHOD, GLOBAL_METHOD}] + [
+        GLOBAL_METHOD,
+        EDGE_METHOD,
+    ]:
+        row = summary[summary["method"] == method]
+        if row.empty:
+            continue
+        row = row.iloc[0]
+        is_edge = method == EDGE_METHOD
+        color = method_color(method)
+        x = row["energy_mean"]
+        y = row["coverage_mean"] * 100
+        xerr = np.array(
+            [[max(0.0, x - row["energy_q25"])], [max(0.0, row["energy_q75"] - x)]]
+        )
+        yerr = np.array(
+            [
+                [max(0.0, y - row["coverage_q25"] * 100)],
+                [max(0.0, row["coverage_q75"] * 100 - y)],
+            ]
+        )
+        ax.errorbar(
+            x,
+            y,
+            xerr=xerr,
+            yerr=yerr,
+            fmt=METHOD_MARKERS.get(method, "o"),
+            color=color,
+            ecolor=color,
+            elinewidth=1.1 if is_edge else 0.8,
+            capsize=2.5,
+            markersize=7 if is_edge else 5.5,
+            markerfacecolor=color if is_edge else "white",
+            markeredgecolor=color,
+            markeredgewidth=1.3,
+            alpha=1.0 if is_edge else 0.72,
+            label=method_label(method),
+            zorder=5 if is_edge else 3,
+        )
+
+    ax.set_xlabel("Energy / mandatory-baseline energy")
+    ax.set_ylabel("Coverage")
+    ax.yaxis.set_major_formatter(PercentFormatter(xmax=100, decimals=0))
+    style_axes(ax, "both")
+    ax.legend(
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=3,
+        frameon=False,
+        handlelength=1.3,
+        columnspacing=1.0,
+    )
+    savefig(fig, output / "fig_coverage_energy_tradeoff.png")
+
+
+def plot_residual_risk(rr: pd.DataFrame, output: Path) -> None:
+    sub = nominal_medium(rr)
+    if sub.empty:
+        return
+    pivot = sub.pivot_table(
+        index="contract",
+        columns="risk_category",
+        values="residual_weight",
+        aggfunc="sum",
+        fill_value=0,
+    )
+    contracts = ordered(pivot.index, CONTRACT_ORDER)
+    risks = ordered(pivot.columns, list(RISK_LABELS))
+    pivot = pivot.reindex(index=contracts, columns=risks, fill_value=0)
+
+    fig, ax = plt.subplots(figsize=(6.1, 2.9))
+    y = np.arange(len(pivot.index))
+    left = np.zeros(len(pivot.index))
+    for risk in risks:
+        values = pivot[risk].values
+        ax.barh(
+            y,
+            values,
+            left=left,
+            label=risk_label(risk),
+            color=RISK_COLORS.get(risk, "#8E8E8E"),
+            edgecolor="white",
+            linewidth=0.5,
+        )
+        left += values
+
+    for j, total in enumerate(left):
+        ax.text(total + max(left.max() * 0.015, 0.4), y[j], f"{total:.0f}", va="center", fontsize=7.5)
+
+    ax.set_yticks(y)
+    ax.set_yticklabels([contract_label(c) for c in pivot.index])
+    ax.invert_yaxis()
+    ax.set_xlabel("Residual optional-risk weight")
+    style_axes(ax, "x")
+    ax.legend(
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=5,
+        frameon=False,
+        handlelength=1.2,
+        columnspacing=0.9,
+    )
+    savefig(fig, output / "fig_residual_risk.png")
+
+
+def plot_power_stability(ps: pd.DataFrame, output: Path) -> None:
+    if ps.empty:
+        return
+    agg = (
+        ps.groupby("contract")
+        .agg(
+            mean_coverage_loss=("coverage_loss", "mean"),
+            same_pipeline_rate=("same_pipeline", "mean"),
+        )
+        .reset_index()
+    )
+    contracts = ordered(agg["contract"], CONTRACT_ORDER)
+    agg = agg.set_index("contract").reindex(contracts).reset_index()
+    agg["coverage_change_pp"] = agg["mean_coverage_loss"] * 100
+
+    fig, ax = plt.subplots(figsize=(5.7, 2.75))
+    y = np.arange(len(agg))
+    colors = [
+        method_color(EDGE_METHOD) if v >= 0 else COVERAGE_LOSS_COLOR
+        for v in agg["coverage_change_pp"]
+    ]
+    ax.barh(y, agg["coverage_change_pp"], color=colors, edgecolor="#222222", linewidth=0.5)
+    ax.axvline(0, color="#555555", linewidth=0.8)
+    for j, row in agg.iterrows():
+        x = row["coverage_change_pp"]
+        ha = "left" if x >= 0 else "right"
+        offset = 0.08 if x >= 0 else -0.08
+        ax.text(
+            x + offset,
+            j,
+            f"{x:+.1f} pp",
+            va="center",
+            ha=ha,
+            fontsize=7.5,
+            fontweight="bold",
+        )
+        ax.text(
+            0.99,
+            j,
+            f"{row['same_pipeline_rate'] * 100:.0f}% same pipeline",
+            transform=ax.get_yaxis_transform(),
+            va="center",
+            ha="right",
+            fontsize=7,
+            color="#555555",
+        )
+
+    ax.set_yticks(y)
+    ax.set_yticklabels([contract_label(c) for c in agg["contract"]])
+    ax.invert_yaxis()
+    max_abs = max(1.0, agg["coverage_change_pp"].abs().max() * 1.35)
+    ax.set_xlim(-max_abs, max_abs)
+    ax.set_xlabel("Coverage change: nominal - high-power (percentage points)")
+    ax.set_title("Energy-model sensitivity of edge-contract selection")
+    style_axes(ax, "x")
+    savefig(fig, output / "fig_power_stability.png")
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--analysis", required=True, type=Path)
-    ap.add_argument("--output", required=True, type=Path)
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--analysis", required=True, type=Path)
+    parser.add_argument("--output", required=True, type=Path)
+    args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
+    configure_style()
 
-    ms_path = args.analysis / "method_summary_robust.csv"
-    if ms_path.exists() and ms_path.stat().st_size > 0:
-        ms = pd.read_csv(ms_path)
-        sub = ms[(ms["power_scenario"] == "nominal") & (ms["scale"] == "medium")]
-        if not sub.empty:
-            # Contract-aware vs global-ish baselines by contract. Use the main four methods.
-            keep = ["contract-aware-edge", "greedy-coverage-per-cost", "minimum-energy", "required-only", "strongest"]
-            sub = sub[sub["method"].isin(keep)]
-            pivot = sub.pivot_table(index="contract", columns="method", values="mean_coverage_fraction", aggfunc="mean")
-            ax = pivot.plot(kind="bar", figsize=(8, 4))
-            ax.set_ylabel("Mean admitted weighted coverage")
-            ax.set_xlabel("Contract profile")
-            ax.set_title("Coverage by contract profile")
-            ax.legend(loc="best", fontsize=8)
-            savefig(args.output / "fig_method_by_contract.png")
+    method_summary = drop_greedy(read_csv(args.analysis / "method_summary_robust.csv"))
+    if not method_summary.empty:
+        plot_method_by_contract(method_summary, args.output)
 
-    cs_path = args.analysis / "constraint_sweep_robust.csv"
-    if cs_path.exists() and cs_path.stat().st_size > 0:
-        cs = pd.read_csv(cs_path)
-        sub = cs[(cs["method"] == "contract-aware-edge") &
-                 (cs["power_scenario"] == "nominal") &
-                 (cs["scale"] == "medium")]
-        if not sub.empty:
-            # Use a representative scenario: prefer realistic-14/bandwidth-first, otherwise first.
-            pref = sub[(sub["workflow"] == "realistic-14") & (sub["contract"] == "bandwidth-first")]
-            if pref.empty:
-                first = sub.iloc[0]
-                pref = sub[(sub["workflow"] == first["workflow"]) &
-                           (sub["plan"] == first["plan"]) &
-                           (sub["contract"] == first["contract"])]
-            title = f"{pref.iloc[0]['workflow']} / {pref.iloc[0]['plan']} / {pref.iloc[0]['contract']}"
-            piv = pref.pivot_table(index="energy_multiplier", columns="deadline_multiplier",
-                                   values="coverage_fraction", aggfunc="max")
-            plt.figure(figsize=(5, 4))
-            plt.imshow(piv.values, origin="lower", aspect="auto")
-            plt.colorbar(label="Admitted coverage")
-            plt.xticks(range(len(piv.columns)), [str(x) for x in piv.columns])
-            plt.yticks(range(len(piv.index)), [str(x) for x in piv.index])
-            plt.xlabel("Deadline budget / mandatory baseline")
-            plt.ylabel("Energy budget / mandatory baseline")
-            plt.title(title)
-            savefig(args.output / "fig_coverage_envelope.png")
+    constraint_sweep = drop_greedy(read_csv(args.analysis / "constraint_sweep_robust.csv"))
+    if not constraint_sweep.empty:
+        plot_method_by_workflow(constraint_sweep, args.output)
+        plot_coverage_envelope(constraint_sweep, args.output)
+        plot_feasibility_and_reachable(constraint_sweep, args.analysis, args.output)
 
-    rr_path = args.analysis / "residual_risk_by_category.csv"
-    if rr_path.exists() and rr_path.stat().st_size > 0:
-        rr = pd.read_csv(rr_path)
-        if not rr.empty:
-            sub = rr[(rr["power_scenario"] == "nominal") & (rr["scale"] == "medium")]
-            piv = sub.pivot_table(index="contract", columns="risk_category",
-                                  values="residual_weight", aggfunc="sum", fill_value=0)
-            ax = piv.plot(kind="bar", stacked=True, figsize=(7, 4))
-            ax.set_ylabel("Residual optional-risk weight")
-            ax.set_xlabel("Contract profile")
-            ax.set_title("Residual optional risk at 1.30x budgets")
-            ax.legend(loc="best", fontsize=8)
-            savefig(args.output / "fig_residual_risk.png")
+    residual_risk = read_csv(args.analysis / "residual_risk_by_category.csv")
+    if not residual_risk.empty:
+        plot_residual_risk(residual_risk, args.output)
 
-    ps_path = args.analysis / "power_stability.csv"
-    if ps_path.exists() and ps_path.stat().st_size > 0:
-        ps = pd.read_csv(ps_path)
-        if not ps.empty:
-            agg = ps.groupby("contract").agg(
-                mean_coverage_loss=("coverage_loss", "mean"),
-                same_pipeline_rate=("same_pipeline", "mean")
-            ).reset_index()
-            fig, ax1 = plt.subplots(figsize=(6, 4))
-            ax1.bar(agg["contract"], agg["mean_coverage_loss"])
-            ax1.set_ylabel("Mean coverage loss under high-power scenario")
-            ax1.set_xlabel("Contract profile")
-            ax1.set_title("Energy-model uncertainty sensitivity")
-            savefig(args.output / "fig_power_stability.png")
+    power_stability = read_csv(args.analysis / "power_stability.csv")
+    if not power_stability.empty:
+        plot_power_stability(power_stability, args.output)
 
     print(f"Wrote figures to {args.output}")
     return 0
