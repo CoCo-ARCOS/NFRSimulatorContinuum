@@ -11,10 +11,15 @@ set -euo pipefail
 #   PROFILES       contract profiles       (default: all four)
 #   BUDGETS        budget multipliers      (default: 1.05,1.30,2.00)
 #   PAYLOAD_BYTES  payload per pass        (default: 16 MiB)
+#   PAYLOAD_KIND   synthetic|random|file   (default: synthetic, compressible)
+#   PAYLOAD_RATIO  target compression ratio (default: 3.0)
+#   PAYLOAD_SOURCE file or directory of real files, for PAYLOAD_KIND=file
+#   PAYLOAD_SEED   payload reproducibility seed (default: 0)
 #   REPEATS        passes per run          (default: 3, first discarded)
 #   MIN_SECONDS    keep repeating until a run lasts this long (default: 0)
 #   REPLICATIONS   simulator replications  (default: 3)
 #   SITE, MACHINE  modelled power fallback when no energy counter is readable
+#   REQUEST        profiler request        (default: realistic_request.json)
 #   VENV           virtualenv location     (default: ./.venv)
 #   NEXTFLOW       nextflow executable     (e.g. bin/nextflow-dist, see fetch_nextflow.sh)
 
@@ -43,9 +48,12 @@ EXTRA=()
 [ -n "${MACHINE:-}" ] && EXTRA+=(--machine "$MACHINE")
 # Self-contained Nextflow bundle, for clusters without outbound network access.
 [ -n "${NEXTFLOW:-}" ] && EXTRA+=(--nextflow "$NEXTFLOW")
+# Corpus of real files (a directory avoids the tiling that inflates ratios).
+[ -n "${PAYLOAD_SOURCE:-}" ] && EXTRA+=(--payload-source "$PAYLOAD_SOURCE")
+[ -n "${PAYLOAD_SEED:-}" ] && EXTRA+=(--payload-seed "$PAYLOAD_SEED")
 
 python3 "$ROOT/realengines/run_real_experiments.py" \
-  --request "$ROOT/realengines/demo_request.json" \
+  --request "${REQUEST:-$ROOT/realengines/realistic_request.json}" \
   --simulator "$SIM_DIR/nfr_dag_sim" \
   --simulator-dir "$SIM_DIR" \
   --output "$OUT" \
@@ -53,6 +61,8 @@ python3 "$ROOT/realengines/run_real_experiments.py" \
   --profiles "${PROFILES:-balanced,security-first,resilience-first,bandwidth-first}" \
   --budgets "${BUDGETS:-1.05,1.30,2.00}" \
   --payload-bytes "${PAYLOAD_BYTES:-16777216}" \
+  --payload-kind "${PAYLOAD_KIND:-synthetic}" \
+  --payload-ratio "${PAYLOAD_RATIO:-3.0}" \
   --repeats "${REPEATS:-3}" \
   --min-seconds "${MIN_SECONDS:-0}" \
   --replications "${REPLICATIONS:-3}" \

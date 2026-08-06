@@ -25,11 +25,13 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from measure import measure, site_power_w  # noqa: E402
-from nfr_plan import artifact_classes, load_plan  # noqa: E402
+from workload import compute_after, resolve_classes  # noqa: E402
+from nfr_plan import load_plan  # noqa: E402
 from process_engine import (  # noqa: E402
     APPLY,
     add_common_arguments,
     keep_going,
+    payload_command,
     pass_from_log,
     read_enforcement_log,
     summarize,
@@ -43,6 +45,7 @@ ENGINE = "dagonstar"
 # fail on the crypto dependencies. Every Python invocation is absolute.
 PYTHON = sys.executable
 MIXER = Path(__file__).resolve().parent / "mix_payload.py"
+GENERATOR = Path(__file__).resolve().parent / "payload.py"
 
 
 def _apply_command(plan_path: Path, artifact_class: str, direction: str,
@@ -61,7 +64,7 @@ def _apply_command(plan_path: Path, artifact_class: str, direction: str,
     )
 
 
-def build_workflow(plan_path: Path, plan: dict[str, Any], payload_bytes: int,
+def build_workflow(plan_path: Path, plan: dict[str, Any], args,
                    scratch: Path, log_path: Path):
     """Assemble the DagOnStar task graph for one pass of the workload.
 
@@ -76,9 +79,10 @@ def build_workflow(plan_path: Path, plan: dict[str, Any], payload_bytes: int,
     workflow = Workflow(f"NFR_Realization_{plan.get('selection', {}).get('candidate_id', '0')}",
                         config=config)
 
-    classes = [c for c in ("raw", "derived") if c in artifact_classes(plan)]
+    classes = resolve_classes(plan)
+    compute_stage = compute_after(classes)
     tasks = [DagonTask(TaskType.BATCH, "ingest",
-                       f"head -c {payload_bytes} /dev/urandom > raw.bin")]
+                       payload_command(PYTHON, GENERATOR, args, "raw.bin"))]
     previous, previous_file = "ingest", "raw.bin"
 
     for artifact_class in classes:
@@ -99,16 +103,16 @@ def build_workflow(plan_path: Path, plan: dict[str, Any], payload_bytes: int,
         )))
         previous, previous_file = unprotect, f"{artifact_class}.restored"
 
-        if artifact_class == "raw" and len(classes) > 1:
+        if artifact_class == compute_stage:
             # The compute stage reads the restored artefact straight from the
             # upstream task; the reference is part of the command at creation
-            # time, which is when DagOnStar parses it.
+            # time, which is when DagOnStar parses it into a dependency.
             tasks.append(DagonTask(TaskType.BATCH, "compute", (
                 f"{PYTHON} {MIXER} "
                 f"workflow:///{unprotect}/{artifact_class}.restored "
-                f"derived.bin"
+                f"computed.bin"
             )))
-            previous, previous_file = "compute", "derived.bin"
+            previous, previous_file = "compute", "computed.bin"
 
     for task in tasks:
         workflow.add_task(task)
@@ -146,7 +150,7 @@ def main() -> int:
             log_path = (pass_dir / "enforcement_log.jsonl").resolve()
 
             workflow = build_workflow(
-                Path(args.plan).resolve(), plan, args.payload_bytes,
+                Path(args.plan).resolve(), plan, args,
                 (pass_dir / "scratch").resolve(), log_path,
             )
             with measure(model_power_w=model_power_w) as m:

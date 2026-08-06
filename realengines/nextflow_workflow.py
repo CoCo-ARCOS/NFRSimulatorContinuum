@@ -24,10 +24,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from measure import measure, site_power_w  # noqa: E402
 from nfr_plan import load_plan  # noqa: E402
+from workload import compute_after, resolve_classes  # noqa: E402
+from nextflow_pipeline import write as write_pipeline  # noqa: E402
 from process_engine import (  # noqa: E402
     APPLY,
     add_common_arguments,
     keep_going,
+    payload_command,
     pass_from_log,
     read_enforcement_log,
     summarize,
@@ -36,8 +39,8 @@ from process_engine import (  # noqa: E402
 
 ENGINE = "nextflow"
 HERE = Path(__file__).resolve().parent
-PIPELINE = HERE / "nextflow" / "main.nf"
 MIXER = HERE / "mix_payload.py"
+GENERATOR = HERE / "payload.py"
 
 
 def main() -> int:
@@ -57,6 +60,10 @@ def main() -> int:
     if model_power_w is None and args.site and args.machine:
         model_power_w = site_power_w(args.site, args.machine)
 
+    classes = resolve_classes(plan)
+    compute_stage = compute_after(classes)
+    print(f"[{ENGINE}] artifact classes: {', '.join(classes)}")
+
     passes = []
     with measure(model_power_w=model_power_w, allow_slurm=True) as run_energy:
         index = 0
@@ -65,8 +72,12 @@ def main() -> int:
             work_dir = args.output / f"pass{index}"
             work_dir.mkdir(parents=True, exist_ok=True)
             log_path = work_dir / "enforcement_log.jsonl"
+            pipeline = write_pipeline(
+                work_dir / "pipeline.nf", list(classes), compute_stage,
+                payload_command(sys.executable, GENERATOR, args, "raw.bin"),
+            )
             command = [
-                args.nextflow, "run", str(PIPELINE),
+                args.nextflow, "run", str(pipeline),
                 "--plan", str(Path(args.plan).resolve()),
                 "--apply", str(APPLY.resolve()),
                 "--mixer", str(MIXER.resolve()),

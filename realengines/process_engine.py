@@ -45,6 +45,38 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
                         help="Machine in the site file whose power model to use")
     parser.add_argument("--model-power-w", type=float, default=None,
                         help="Explicit active power for the modelled fallback")
+    # Random payloads are incompressible, which silently disables the
+    # volume-reduction clauses; see payload.py.
+    parser.add_argument("--payload-kind", choices=("synthetic", "random", "file"),
+                        default="synthetic", help="Payload realism")
+    parser.add_argument("--payload-ratio", type=float, default=3.0,
+                        help="Target compression ratio for --payload-kind synthetic")
+    parser.add_argument("--payload-seed", type=int, default=0)
+    parser.add_argument("--payload-source", type=Path, default=None,
+                        help="File to tile for --payload-kind file")
+
+
+def payload_provenance(args: argparse.Namespace) -> dict:
+    """Measured description of the payload these runs process."""
+    from payload import provenance
+    return provenance(args.payload_bytes, kind=args.payload_kind,
+                      ratio=args.payload_ratio, seed=args.payload_seed,
+                      source=args.payload_source)
+
+
+def payload_command(python: str, generator: Path, args: argparse.Namespace,
+                    out_name: str) -> str:
+    """Shell command generating the payload, for engines that run tasks as
+    processes. They must use the same generator as the in-process engines, or
+    the compression results would not be comparable."""
+    command = (
+        f"{python} {generator} --bytes {args.payload_bytes} "
+        f"--kind {args.payload_kind} --ratio {args.payload_ratio} "
+        f"--seed {args.payload_seed} --out {out_name}"
+    )
+    if args.payload_source:
+        command += f" --source {Path(args.payload_source).resolve()}"
+    return command
 
 
 def keep_going(index: int, elapsed: float, args: argparse.Namespace) -> bool:
@@ -145,6 +177,7 @@ def summarize(engine: str, args: argparse.Namespace, plan: dict[str, Any],
             "makespan_s": predicted.get("makespan_s"),
         },
         "budgets": plan.get("budgets", {}),
+        "payload": payload_provenance(args),
         "measured": {
             "seconds_mean": sum(seconds) / len(seconds),
             "seconds_min": min(seconds),

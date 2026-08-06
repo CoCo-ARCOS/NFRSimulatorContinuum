@@ -358,6 +358,38 @@ def build_group_combos(
     return combinations
 
 
+def sampling_seed(
+    request: dict[str, Any],
+    groups: list[str],
+    combinations_by_group: list[list[dict[str, Any]]],
+    max_policies: int | None,
+) -> int:
+    """Deterministic seed for policy sampling.
+
+    Derived from the policy space -- the groups and the mechanism combinations
+    available to each -- rather than from the whole request. Two requests that
+    differ only in a machine's power model therefore sample the *same*
+    policies, which is what lets the power-sensitivity analysis compare a
+    realization against itself instead of against whatever its sibling catalog
+    happened to draw. Any change to the mechanisms on offer does change the
+    seed, so a different policy space is still explored differently.
+
+    ``runner.sampling_seed`` in the request overrides this when a specific
+    draw needs to be reproduced or deliberately varied.
+    """
+    explicit = (request.get("runner") or {}).get("sampling_seed")
+    if explicit is not None:
+        return int(explicit)
+
+    digest = hashlib.sha256()
+    digest.update(f"max_policies={max_policies}".encode())
+    for group, combos in zip(groups, combinations_by_group):
+        digest.update(f"|group={group}|n={len(combos)}".encode())
+        for combo in combos:
+            digest.update(json.dumps(combo, sort_keys=True, default=str).encode())
+    return int.from_bytes(digest.digest()[:8], "big")
+
+
 def build_nfr_policies(
     request: dict[str, Any], max_policies: int = None
 ) -> list[dict[str, dict[str, dict[str, Any] | None]]]:
@@ -365,17 +397,22 @@ def build_nfr_policies(
     if not groups:
         return [{}]
     combinations_by_group = [build_group_combos(request, group) for group in groups]
-    
+
     total = 1
     for c in combinations_by_group:
         total *= len(c)
-        
+
     policies = []
     if max_policies is not None and total > max_policies:
-        print(f"Sampling {max_policies} policies from {total} possible combinations.")
+        seed = sampling_seed(request, groups, combinations_by_group, max_policies)
+        print(f"Sampling {max_policies} policies from {total} possible combinations "
+              f"(seed {seed}).")
+        # A private generator: seeding the module-level one would make the draw
+        # depend on whatever else has consumed randomness in this process.
+        rng = random.Random(seed)
         seen_indices = set()
         while len(policies) < max_policies:
-            idx_tuple = tuple(random.randrange(len(c)) for c in combinations_by_group)
+            idx_tuple = tuple(rng.randrange(len(c)) for c in combinations_by_group)
             if idx_tuple not in seen_indices:
                 seen_indices.add(idx_tuple)
                 values = tuple(c[idx] for c, idx in zip(combinations_by_group, idx_tuple))

@@ -20,7 +20,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from measure import measure, probe, site_power_w  # noqa: E402
 from nfr_plan import load_plan  # noqa: E402
-from process_engine import add_common_arguments, keep_going  # noqa: E402
+from process_engine import (  # noqa: E402
+    add_common_arguments,
+    keep_going,
+    payload_provenance,
+)
 from workload import run_workload  # noqa: E402
 
 
@@ -52,6 +56,8 @@ def execute(engine: str, args: argparse.Namespace,
             result = run_workload(
                 plan, args.payload_bytes, hmac_key=hmac_key,
                 model_power_w=model_power_w, submit=submit,
+                payload_kind=args.payload_kind, payload_ratio=args.payload_ratio,
+                payload_seed=args.payload_seed, payload_source=args.payload_source,
             )
             result["pass"] = index
             result["warmup"] = index == 0 and args.repeats > 1
@@ -97,6 +103,7 @@ def execute(engine: str, args: argparse.Namespace,
             "makespan_s": predicted.get("makespan_s"),
         },
         "budgets": plan.get("budgets", {}),
+        "payload": payload_provenance(args),
         "measured": {
             "seconds_mean": sum(seconds) / len(seconds),
             "seconds_min": min(seconds),

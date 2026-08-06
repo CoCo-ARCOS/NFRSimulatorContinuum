@@ -47,6 +47,7 @@ def flatten(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         measured = record.get("measured") or {}
         predicted = record.get("predicted") or {}
         selection = record.get("selection") or {}
+        payload = record.get("payload") or {}
         rows.append({
             "profile": record.get("profile", ""),
             "budget_multiplier": record.get("budget_multiplier", ""),
@@ -70,6 +71,12 @@ def flatten(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "trace_stable": record.get("mechanism_trace_stable", ""),
             "integrity_verified": record.get("integrity_verified", ""),
             "payload_bytes": record.get("payload_bytes", ""),
+            "payload_kind": payload.get("kind", ""),
+            "payload_target_ratio": payload.get("target_ratio", ""),
+            "payload_ratio_zstd": payload.get("ratio_zstd", ""),
+            "payload_ratio_lz4": payload.get("ratio_lz4", ""),
+            "payload_source": payload.get("source", ""),
+            "payload_sha256": payload.get("sha256", ""),
         })
     return rows
 

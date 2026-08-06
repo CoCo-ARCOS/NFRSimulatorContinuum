@@ -26,25 +26,39 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from measure import measure  # noqa: E402
 from mix_payload import mix as _mix  # noqa: E402  (shared with the shell engines)
 from nfr_plan import apply_input, apply_output, artifact_classes  # noqa: E402
+from payload import make_payload  # noqa: E402
 
-# Edge id -> artifact class, matching the policy groups of the request.
-DEFAULT_EDGES = (("raw-data", "raw"), ("derived-data", "derived"))
+# Canonical pipeline order. Classes present in the plan are exercised in this
+# order; any the plan defines but this list does not know about follow, sorted,
+# so a differently-shaped request still runs end to end.
+CLASS_ORDER = ("raw", "decoded", "filtered", "features", "derived", "result")
+
+# Classes after which the application stage runs. Compute happens once the
+# input has been decoded and restored, not on every edge.
+COMPUTE_AFTER = ("decoded", "raw")
 
 
-def resolve_edges(plan: dict[str, Any]) -> tuple[tuple[str, str], ...]:
-    """Edges to exercise, restricted to classes the plan actually carries."""
+def resolve_classes(plan: dict[str, Any]) -> tuple[str, ...]:
+    """Artifact classes the plan carries, in pipeline order."""
     available = set(artifact_classes(plan))
-    edges = tuple((edge, cls) for edge, cls in DEFAULT_EDGES if cls in available)
-    if edges:
-        return edges
-    # Fall back to whatever the plan does define, so a differently-shaped
-    # request still runs instead of silently exercising nothing.
-    return tuple((f"{cls}-edge", cls) for cls in sorted(available))
+    known = tuple(c for c in CLASS_ORDER if c in available)
+    return known + tuple(sorted(available - set(known)))
+
+
+def compute_after(classes: tuple[str, ...]) -> str | None:
+    """Which class the application stage follows, if any."""
+    for candidate in COMPUTE_AFTER:
+        if candidate in classes:
+            return candidate
+    return classes[0] if classes else None
 
 
 def run_workload(plan: dict[str, Any], payload_bytes: int, *,
                  hmac_key: bytes = b"", model_power_w: float | None = None,
-                 submit: Callable[[Callable[..., Any]], Any] | None = None) -> dict[str, Any]:
+                 submit: Callable[[Callable[..., Any]], Any] | None = None,
+                 payload_kind: str = "synthetic", payload_ratio: float = 3.0,
+                 payload_seed: int = 0,
+                 payload_source: Any = None) -> dict[str, Any]:
     """Execute one pass of the workload and return its measured trace.
 
     ``submit`` lets an engine interpose its own execution primitive around each
@@ -68,12 +82,18 @@ def run_workload(plan: dict[str, Any], payload_bytes: int, *,
         stages.append(record)
         return value, record
 
-    data, _ = stage("ingest", "compute", lambda: os.urandom(payload_bytes))
+    data, _ = stage(
+        "ingest", "compute",
+        lambda: make_payload(payload_bytes, kind=payload_kind, ratio=payload_ratio,
+                             seed=payload_seed, source=payload_source),
+    )
     original = data
 
-    for edge_id, artifact_class in resolve_edges(plan):
+    classes = resolve_classes(plan)
+    compute_stage = compute_after(classes)
+    for artifact_class in classes:
         protected, record = stage(
-            f"protect:{edge_id}", "nfr",
+            f"protect:{artifact_class}", "nfr",
             lambda d=data, c=artifact_class: apply_output(plan, c, d, hmac_key=hmac_key),
         )
         payload, steps = protected
@@ -85,17 +105,16 @@ def run_workload(plan: dict[str, Any], payload_bytes: int, *,
         ]
 
         restored, in_record = stage(
-            f"unprotect:{edge_id}", "nfr",
+            f"unprotect:{artifact_class}", "nfr",
             lambda d=payload, c=artifact_class, s=steps: apply_input(plan, c, d, s, hmac_key=hmac_key),
         )
         in_record["artifact_class"] = artifact_class
         in_record["bytes_in"] = len(payload)
         in_record["bytes_out"] = len(restored)
 
-        if edge_id == DEFAULT_EDGES[0][0]:
-            data, _ = stage("process", "compute", lambda d=restored: _mix(d))
-        else:
-            data = restored
+        data = restored
+        if artifact_class == compute_stage:
+            data, _ = stage("process", "compute", lambda d=data: _mix(d))
 
     verified = hashlib.sha256(original).digest() != b"" and len(data) > 0
     total_seconds = sum(s["seconds"] for s in stages)

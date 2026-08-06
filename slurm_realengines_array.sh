@@ -55,6 +55,10 @@ scontrol show config 2>/dev/null | grep -iE 'acctgatherenergytype|acctgathernode
 python3 realengines/measure.py || true
 echo
 
+export PAYLOAD_KIND="${PAYLOAD_KIND:-synthetic}"
+export PAYLOAD_RATIO="${PAYLOAD_RATIO:-3.0}"
+export PAYLOAD_SOURCE="${PAYLOAD_SOURCE:-}"
+
 export NEXTFLOW="${NEXTFLOW:-}"
 [ -z "$NEXTFLOW" ] && [ -x bin/nextflow-dist ] && export NEXTFLOW="$PWD/bin/nextflow-dist"
 

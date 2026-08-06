@@ -85,6 +85,11 @@ def run_engine(engine: str, script: Path, plan_path: Path, run_dir: Path,
     ]
     if args.min_seconds:
         command += ["--min-seconds", str(args.min_seconds)]
+    command += ["--payload-kind", args.payload_kind,
+                "--payload-ratio", str(args.payload_ratio),
+                "--payload-seed", str(args.payload_seed)]
+    if args.payload_source:
+        command += ["--payload-source", str(Path(args.payload_source).resolve())]
     if args.site:
         command += ["--site", str(args.site)]
     if args.machine:
@@ -129,6 +134,14 @@ def main() -> int:
     parser.add_argument("--budgets", default=",".join(str(b) for b in DEFAULT_BUDGETS),
                         help="Budget multipliers applied to energy and deadline")
     parser.add_argument("--payload-bytes", type=int, default=16 * 1024 * 1024)
+    parser.add_argument("--payload-kind", choices=("synthetic", "random", "file"),
+                        default="synthetic",
+                        help="Payload realism; 'random' is incompressible and "
+                             "makes volume-reduction clauses unachievable")
+    parser.add_argument("--payload-ratio", type=float, default=3.0,
+                        help="Target compression ratio for --payload-kind synthetic")
+    parser.add_argument("--payload-seed", type=int, default=0)
+    parser.add_argument("--payload-source", type=Path, default=None)
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--min-seconds", type=float, default=0.0,
                         help="Extend each engine run to at least this duration, so "
