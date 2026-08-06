@@ -118,11 +118,22 @@ def run_engine(engine: str, script: Path, plan_path: Path, run_dir: Path,
 
     run_dir.mkdir(parents=True, exist_ok=True)
     log_path = run_dir / "engine.log"
-    with log_path.open("w", encoding="utf-8") as log:
-        completed = subprocess.run(
-            command, cwd=str(REPO_ROOT), stdout=log,
-            stderr=subprocess.STDOUT, text=True, timeout=args.timeout,
-        )
+    try:
+        with log_path.open("w", encoding="utf-8") as log:
+            completed = subprocess.run(
+                command, cwd=str(REPO_ROOT), stdout=log,
+                stderr=subprocess.STDOUT, text=True, timeout=args.timeout,
+            )
+    except subprocess.TimeoutExpired:
+        # One slow engine must not abort the sweep: record it and carry on, so
+        # the configurations that did finish still reach the analysis.
+        return {
+            "engine": engine, "status": "timeout",
+            "reason": (f"exceeded --timeout {args.timeout:.0f}s; lower --objects "
+                       f"or raise --timeout. See {log_path}"),
+        }
+    except OSError as exc:
+        return {"engine": engine, "status": "failed", "reason": f"{exc}; see {log_path}"}
     result_path = run_dir / "run_result.json"
     if completed.returncode == 3:
         return {"engine": engine, "status": "skipped", "reason": "engine not installed"}
@@ -201,6 +212,26 @@ def main() -> int:
 
     records: list[dict[str, Any]] = []
     started = time.time()
+    summary_path = output / "real_engine_runs.json"
+
+    def flush() -> None:
+        """Persist progress after every configuration.
+
+        A sweep that runs for hours can be ended by the scheduler's wall clock
+        at any point; writing only at the end would discard everything that had
+        already succeeded.
+        """
+        with summary_path.open("w", encoding="utf-8") as handle:
+            json.dump({
+                "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+                "elapsed_s": time.time() - started,
+                "request": str(args.request),
+                "engines": engines, "profiles": profiles, "budgets": budgets,
+                "payload_bytes": args.payload_bytes, "objects": args.objects,
+                "repeats": args.repeats, "complete": False,
+                "records": records,
+            }, handle, indent=2)
+            handle.write("\n")
     for profile in profiles:
         request = request_for_profile(base_request, profile,
                                       objects=args.objects,
@@ -229,6 +260,7 @@ def main() -> int:
                     "profile": profile, "budget_multiplier": budget,
                     "engine": "", "status": "rejected", "reason": str(exc),
                 })
+                flush()
                 continue
 
             plan_path = output / "plans" / f"{tag}.json"
@@ -242,6 +274,7 @@ def main() -> int:
                 records.append(result)
                 if result["status"] != "ok":
                     print(f"  {engine}: {result['status']} ({result.get('reason', '')})")
+                flush()
 
     summary = {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -251,10 +284,11 @@ def main() -> int:
         "profiles": profiles,
         "budgets": budgets,
         "payload_bytes": args.payload_bytes,
+        "objects": args.objects,
         "repeats": args.repeats,
+        "complete": True,
         "records": records,
     }
-    summary_path = output / "real_engine_runs.json"
     with summary_path.open("w", encoding="utf-8") as handle:
         json.dump(summary, handle, indent=2)
         handle.write("\n")
