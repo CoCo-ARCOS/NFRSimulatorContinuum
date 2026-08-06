@@ -27,6 +27,7 @@ from nfr_plan import load_plan  # noqa: E402
 from process_engine import (  # noqa: E402
     APPLY,
     add_common_arguments,
+    keep_going,
     pass_from_log,
     read_enforcement_log,
     summarize,
@@ -58,7 +59,9 @@ def main() -> int:
 
     passes = []
     with measure(model_power_w=model_power_w, allow_slurm=True) as run_energy:
-        for index in range(max(1, args.repeats)):
+        index = 0
+        elapsed = 0.0
+        while keep_going(index, elapsed, args):
             work_dir = args.output / f"pass{index}"
             work_dir.mkdir(parents=True, exist_ok=True)
             log_path = work_dir / "enforcement_log.jsonl"
@@ -92,6 +95,8 @@ def main() -> int:
                       f"see {work_dir / 'nextflow.log'}", file=sys.stderr)
                 return 1
             passes.append(pass_from_log(index, args.repeats, m, records))
+            elapsed += m["seconds"]
+            index += 1
 
     run = summarize(ENGINE, args, plan, passes,
                     model_power_w=model_power_w, run_energy=dict(run_energy))

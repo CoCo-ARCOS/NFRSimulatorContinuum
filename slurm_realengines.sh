@@ -47,6 +47,11 @@ export REPLICATIONS="${REPLICATIONS:-3}"
 
 # Modelled power fallback, used only when no counter and no accounting exist.
 export SITE="${SITE:-configs/site.calibrated.measured.json}"
+
+# Self-contained Nextflow bundle for offline nodes (see fetch_nextflow.sh).
+# Falls back to whatever "nextflow" is on PATH, e.g. from "module load nextflow".
+export NEXTFLOW="${NEXTFLOW:-}"
+[ -z "$NEXTFLOW" ] && [ -x bin/nextflow-dist ] && export NEXTFLOW="$PWD/bin/nextflow-dist"
 export MACHINE="${MACHINE:-}"
 
 OUT="${OUT:-realengines-output-${SLURM_JOB_ID}}"

@@ -215,7 +215,9 @@ def plot_method_by_contract(ms: pd.DataFrame, output: Path) -> None:
     sub = nominal_medium(ms)
     if sub.empty:
         return
-
+    
+    print(f"Plotting method by contract for {len(sub)} records")
+    print(sub)
     methods = ordered(sub["method"].unique(), METHOD_ORDER)
     contracts = ordered(sub["contract"].unique(), CONTRACT_ORDER)
     pivot = sub.pivot_table(

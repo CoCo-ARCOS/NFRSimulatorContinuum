@@ -22,13 +22,36 @@ APPLY = HERE / "nfr_apply.py"
 
 
 def add_common_arguments(parser: argparse.ArgumentParser) -> None:
+    """The argument surface every engine adapter shares.
+
+    Defined once so the adapters cannot drift apart: the driver invokes them
+    all with the same flags, and an option missing from one engine is an
+    immediate argparse failure rather than a silent behavioural difference.
+    """
     parser.add_argument("--plan", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--payload-bytes", type=int, default=16 * 1024 * 1024)
-    parser.add_argument("--repeats", type=int, default=3)
-    parser.add_argument("--site", type=Path, default=None)
-    parser.add_argument("--machine", default="")
-    parser.add_argument("--model-power-w", type=float, default=None)
+    parser.add_argument("--repeats", type=int, default=3,
+                        help="Measured passes; the first is discarded as warm-up")
+    parser.add_argument("--min-seconds", type=float, default=0.0,
+                        help="Keep repeating passes until the run has lasted this "
+                             "long, so coarse energy accounting has several "
+                             "samples to attribute")
+    parser.add_argument("--max-repeats", type=int, default=200,
+                        help="Ceiling on passes added by --min-seconds")
+    parser.add_argument("--site", type=Path, default=None,
+                        help="Site file supplying the modelled power fallback")
+    parser.add_argument("--machine", default="",
+                        help="Machine in the site file whose power model to use")
+    parser.add_argument("--model-power-w", type=float, default=None,
+                        help="Explicit active power for the modelled fallback")
+
+
+def keep_going(index: int, elapsed: float, args: argparse.Namespace) -> bool:
+    """Whether another pass is due, honouring --repeats then --min-seconds."""
+    if index < max(1, args.repeats):
+        return True
+    return elapsed < args.min_seconds and index < args.max_repeats
 
 
 def read_enforcement_log(path: Path) -> list[dict[str, Any]]:

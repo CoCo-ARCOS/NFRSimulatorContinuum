@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import os
 import subprocess
 import sys
 import time
@@ -82,7 +83,7 @@ def run_engine(engine: str, script: Path, plan_path: Path, run_dir: Path,
         "--payload-bytes", str(args.payload_bytes),
         "--repeats", str(args.repeats),
     ]
-    if args.min_seconds and engine != "nextflow":
+    if args.min_seconds:
         command += ["--min-seconds", str(args.min_seconds)]
     if args.site:
         command += ["--site", str(args.site)]
@@ -90,6 +91,11 @@ def run_engine(engine: str, script: Path, plan_path: Path, run_dir: Path,
         command += ["--machine", args.machine]
     if args.model_power_w is not None:
         command += ["--model-power-w", str(args.model_power_w)]
+    if engine == "nextflow" and args.nextflow:
+        nextflow = Path(args.nextflow)
+        if nextflow.exists():
+            nextflow = nextflow.resolve()
+        command += ["--nextflow", str(nextflow)]
 
     run_dir.mkdir(parents=True, exist_ok=True)
     log_path = run_dir / "engine.log"
@@ -127,8 +133,7 @@ def main() -> int:
     parser.add_argument("--min-seconds", type=float, default=0.0,
                         help="Extend each engine run to at least this duration, so "
                              "coarse energy accounting has several samples to "
-                             "attribute (ignored for Nextflow, whose passes are "
-                             "whole pipeline invocations)")
+                             "attribute")
     parser.add_argument("--replications", type=int, default=3,
                         help="Simulator replications when profiling a catalog")
     parser.add_argument("--max-candidates", type=int, default=500)
@@ -136,6 +141,9 @@ def main() -> int:
     parser.add_argument("--site", type=Path, default=None)
     parser.add_argument("--machine", default="")
     parser.add_argument("--model-power-w", type=float, default=None)
+    parser.add_argument("--nextflow", default=os.environ.get("NEXTFLOW", ""),
+                        help="Nextflow executable; point this at a self-contained "
+                             "bundle from fetch_nextflow.sh on an offline cluster")
     parser.add_argument("--force", action="store_true", help="Re-profile cached catalogs")
     args = parser.parse_args()
 

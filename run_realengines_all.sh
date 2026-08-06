@@ -16,6 +16,7 @@ set -euo pipefail
 #   REPLICATIONS   simulator replications  (default: 3)
 #   SITE, MACHINE  modelled power fallback when no energy counter is readable
 #   VENV           virtualenv location     (default: ./.venv)
+#   NEXTFLOW       nextflow executable     (e.g. bin/nextflow-dist, see fetch_nextflow.sh)
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
   echo "Usage: $0 <nfr_dag_v2_source_dir> [output_dir]" >&2
@@ -40,6 +41,8 @@ echo
 EXTRA=()
 [ -n "${SITE:-}" ] && EXTRA+=(--site "$SITE")
 [ -n "${MACHINE:-}" ] && EXTRA+=(--machine "$MACHINE")
+# Self-contained Nextflow bundle, for clusters without outbound network access.
+[ -n "${NEXTFLOW:-}" ] && EXTRA+=(--nextflow "$NEXTFLOW")
 
 python3 "$ROOT/realengines/run_real_experiments.py" \
   --request "$ROOT/realengines/demo_request.json" \

@@ -55,9 +55,13 @@ scontrol show config 2>/dev/null | grep -iE 'acctgatherenergytype|acctgathernode
 python3 realengines/measure.py || true
 echo
 
+export NEXTFLOW="${NEXTFLOW:-}"
+[ -z "$NEXTFLOW" ] && [ -x bin/nextflow-dist ] && export NEXTFLOW="$PWD/bin/nextflow-dist"
+
 EXTRA=()
 [ -n "${SITE:-}" ] && EXTRA+=(--site "$SITE")
 [ -n "${MACHINE:-}" ] && EXTRA+=(--machine "$MACHINE")
+[ -n "${NEXTFLOW:-}" ] && EXTRA+=(--nextflow "$NEXTFLOW")
 
 python3 realengines/run_real_experiments.py \
   --request realengines/demo_request.json \

@@ -64,3 +64,6 @@ c3results/*
 # Project virtualenv (setup_venv.sh)
 .venv/
 realengines-output*/
+
+# Self-contained Nextflow bundle (fetch_nextflow.sh)
+bin/nextflow-dist

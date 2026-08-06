@@ -20,29 +20,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from measure import measure, probe, site_power_w  # noqa: E402
 from nfr_plan import load_plan  # noqa: E402
+from process_engine import add_common_arguments, keep_going  # noqa: E402
 from workload import run_workload  # noqa: E402
 
 
 def parse_args(engine: str) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=f"Run the NFR workload under {engine}")
-    parser.add_argument("--plan", required=True, type=Path, help="Realization plan JSON")
-    parser.add_argument("--output", required=True, type=Path, help="Run directory")
-    parser.add_argument("--payload-bytes", type=int, default=16 * 1024 * 1024)
-    parser.add_argument("--repeats", type=int, default=3,
-                        help="Measured passes; the first is discarded as warm-up")
-    parser.add_argument("--min-seconds", type=float, default=0.0,
-                        help="Keep repeating passes until the run has lasted this "
-                             "long, so coarse energy accounting has several "
-                             "samples to attribute")
-    parser.add_argument("--max-repeats", type=int, default=200,
-                        help="Ceiling on passes added by --min-seconds")
+    add_common_arguments(parser)
+    # In-process engines apply mechanisms directly, so they alone need the key.
     parser.add_argument("--hmac-key-hex", default="")
-    parser.add_argument("--site", type=Path, default=None,
-                        help="Site file supplying the modelled power fallback")
-    parser.add_argument("--machine", default="",
-                        help="Machine in the site file whose power model to use")
-    parser.add_argument("--model-power-w", type=float, default=None,
-                        help="Explicit active power for the modelled fallback")
     return parser.parse_args()
 
 
@@ -62,9 +48,7 @@ def execute(engine: str, args: argparse.Namespace,
     with measure(model_power_w=model_power_w, allow_slurm=True) as run_energy:
         index = 0
         elapsed = 0.0
-        while index < max(1, args.repeats) or (
-            elapsed < args.min_seconds and index < args.max_repeats
-        ):
+        while keep_going(index, elapsed, args):
             result = run_workload(
                 plan, args.payload_bytes, hmac_key=hmac_key,
                 model_power_w=model_power_w, submit=submit,
