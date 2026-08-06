@@ -760,6 +760,45 @@ def plot_residual_vs_budget(rr: pd.DataFrame, output: Path) -> None:
     savefig(fig, output / "fig_residual_vs_budget.png")
 
 
+def plot_power_sensitivity(ps: pd.DataFrame, output: Path) -> None:
+    """Budget violations when a nominal-power plan meets high-power reality."""
+    sub = ps[ps["admitted_nominal"].map(to_bool)].copy()
+    sub = sub[sub["actual_energy_j"].notna()]
+    if sub.empty:
+        return
+
+    agg = sub.groupby("energy_multiplier").agg(
+        violation_rate=("energy_violation", "mean"),
+        replanned_feasible=("replanned_feasible", lambda s: s.map(to_bool).mean()),
+    ).sort_index()
+    agg *= 100
+    shift = float(sub["energy_ratio"].mean())
+
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 2.7))
+    x = agg.index.to_numpy()
+
+    # The cost shift itself: budgets with less slack than this cannot absorb it.
+    ax.axvline(shift, color="#555555", linestyle=":", linewidth=1.0)
+    ax.annotate(f"cost shift\n{(shift - 1) * 100:.0f}%", xy=(shift, 50),
+                xytext=(3, 0), textcoords="offset points",
+                fontsize=6.5, color="#555555", va="center")
+
+    ax.plot(x, agg["violation_rate"], marker="o", color=method_color(EDGE_METHOD),
+            linewidth=2.0, label="Budget violated")
+    ax.plot(x, agg["replanned_feasible"], marker="s", color=COVERAGE_LOSS_COLOR,
+            linestyle="--", linewidth=1.5, label="Re-planning feasible")
+
+    ax.set_xlabel(BUDGET_XLABEL)
+    ax.set_ylabel("Share of configurations")
+    ax.set_ylim(0, 105)
+    ax.set_xticks(x)
+    ax.yaxis.set_major_formatter(PercentFormatter(xmax=100, decimals=0))
+    style_axes(ax, "y")
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=2,
+              frameon=False, handlelength=1.4, columnspacing=1.0)
+    savefig(fig, output / "fig_power_sensitivity.png")
+
+
 def plot_power_stability(ps: pd.DataFrame, output: Path) -> None:
     if ps.empty:
         return
@@ -830,6 +869,11 @@ def main() -> int:
         plot_residual_risk(residual_risk, args.output)
         plot_residual_vs_budget(residual_risk, args.output)
 
+    power_sensitivity = read_csv(args.analysis / "power_sensitivity.csv")
+    if not power_sensitivity.empty:
+        plot_power_sensitivity(power_sensitivity, args.output)
+
+    # Older analysis directories still carry the superseded stability table.
     power_stability = read_csv(args.analysis / "power_stability.csv")
     if not power_stability.empty:
         plot_power_stability(power_stability, args.output)

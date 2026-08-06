@@ -264,27 +264,153 @@ def residual_risk_rows(rows, manifest, catalogs_dir):
     return out
 
 
-def power_stability(rows):
-    # Compare nominal and high at the same workflow/plan/contract/scale/budget.
-    selected = [r for r in rows if r["method"] == "contract-aware-edge" and r.get("admitted")]
-    groups = defaultdict(dict)
-    for r in selected:
-        k = (r["workflow"], r["plan"], r["contract"], r["scale"], r["energy_multiplier"], r["deadline_multiplier"])
-        groups[k][r["power_scenario"]] = r
-    out = []
-    for k, d in groups.items():
-        if "nominal" not in d or "high" not in d:
+def realization_key(candidate):
+    """Identify a realization independently of its index in the catalog, which
+    is assigned during sampling and is not stable between profiler runs."""
+    return (str(candidate.get("plan_id", "")), pipeline_label(candidate))
+
+
+def power_multipliers(nominal_request, high_request):
+    """Per-machine power scaling between two power scenarios.
+
+    Taken from the two requests rather than recomputed, so the analysis always
+    reflects the scaling that was actually generated.
+    """
+    def by_name(request):
+        machines = (request.get("infrastructure") or {}).get("machines") or []
+        return {
+            str(m.get("name")): float(m.get("max_power_w", m.get("max_power", 0.0)) or 0.0)
+            for m in machines
+        }
+
+    nominal, high = by_name(nominal_request), by_name(high_request)
+    return {
+        name: (high[name] / nominal[name])
+        for name in nominal
+        if name in high and nominal[name] > 0
+    }
+
+
+def energy_under(candidate, multipliers):
+    """Recost a candidate under a different power model.
+
+    Scaling machine power changes no timing -- the schedule and therefore the
+    busy intervals are identical -- so the energy integral scales per machine
+    and the network term is untouched. This reproduces the simulator's own
+    figure exactly, which is what lets the test recost a realization instead of
+    hunting for its twin in a separately sampled catalog.
+    """
+    per_machine = candidate.get("energy_by_machine") or {}
+    if not per_machine:
+        return None
+    total = sum(value * multipliers.get(machine, 1.0) for machine, value in per_machine.items())
+    return total + float(candidate.get("network_energy", 0.0) or 0.0)
+
+
+def power_sensitivity(manifest, catalogs_dir, budget_multipliers):
+    """Do selections planned under nominal power survive a high-power reality?
+
+    Deriving each scenario's budgets from its own baseline compares two
+    self-consistent worlds: under the high-power model both the costs and the
+    baseline they are normalised against rise together, so almost nothing
+    changes and the test reports a sensitivity that is not there.
+
+    The test here instead fixes the budgets. Absolute budgets come from the
+    nominal baseline, the selection is made under nominal costs, and only then
+    are the costs recomputed with the high-power model and admission repeated
+    against those same unchanged budgets. That answers the question a
+    practitioner actually has: if the energy model underestimates the machines,
+    does the plan still fit the budget it was admitted under?
+    """
+    by_key = defaultdict(dict)
+    for scenario in manifest["scenarios"]:
+        if scenario.get("policy_scope", "edge") == "global":
             continue
-        n = d["nominal"]; h = d["high"]
-        out.append({
-            "workflow": k[0], "plan": k[1], "contract": k[2], "scale": k[3],
-            "energy_multiplier": k[4], "deadline_multiplier": k[5],
-            "nominal_coverage": n["coverage_fraction"],
-            "high_coverage": h["coverage_fraction"],
-            "coverage_loss": float(n["coverage_fraction"]) - float(h["coverage_fraction"]),
-            "same_pipeline": n.get("pipeline", "") == h.get("pipeline", ""),
-        })
-    return out
+        key = (scenario["workflow"], scenario["plan"], scenario["contract"], scenario["scale"])
+        by_key[key][scenario["power_scenario"]] = scenario
+
+    rows = []
+    for key, scenarios in sorted(by_key.items()):
+        if "nominal" not in scenarios or "high" not in scenarios:
+            continue
+        nominal_path = catalogs_dir / scenarios["nominal"]["id"] / "profiler_report.json"
+        if not nominal_path.exists():
+            continue
+
+        nominal = [c for c in load_json(nominal_path).get("candidates", []) if mandatory_ok(c)]
+        if not nominal:
+            continue
+        multipliers = power_multipliers(
+            load_json(Path(scenarios["nominal"]["request"])),
+            load_json(Path(scenarios["high"]["request"])),
+        )
+        if not multipliers:
+            continue
+
+        # Budgets come from the nominal baseline and are never rescaled: the
+        # whole point is to hold them fixed while the costs move.
+        e_ref = min(cand_energy(c) for c in nominal)
+        t_ref = min(cand_time(c) for c in nominal)
+        recosted = {realization_key(c): energy_under(c, multipliers) for c in nominal}
+        opt_total = max((coverage_weight(c) for c in nominal), default=0.0)
+
+        for em in budget_multipliers:
+            for dm in budget_multipliers:
+                budget = e_ref * em
+                deadline = t_ref * dm
+                planned = select_contract_aware([
+                    c for c in nominal
+                    if cand_energy(c) <= budget and cand_time(c) <= deadline
+                ])
+                row = {
+                    "workflow": key[0], "plan": key[1], "contract": key[2], "scale": key[3],
+                    "energy_multiplier": em, "deadline_multiplier": dm,
+                    "energy_budget_j": budget, "deadline_s": deadline,
+                    "baseline_energy_j": e_ref, "baseline_makespan_s": t_ref,
+                    "admitted_nominal": planned is not None,
+                }
+                if planned is None:
+                    rows.append(row)
+                    continue
+
+                planned_energy = cand_energy(planned)
+                actual_energy = recosted.get(realization_key(planned))
+                # Re-admit every candidate at its high-power cost, against the
+                # same budgets the nominal plan was admitted under. Makespan is
+                # unaffected by the power model, so only energy moves.
+                replanned = select_contract_aware([
+                    c for c in nominal
+                    if (recosted.get(realization_key(c)) or cand_energy(c)) <= budget
+                    and cand_time(c) <= deadline
+                ])
+                replanned_coverage = coverage_weight(replanned) if replanned else 0.0
+
+                row.update({
+                    "pipeline": pipeline_label(planned),
+                    "planned_energy_j": planned_energy,
+                    "planned_makespan_s": cand_time(planned),
+                    "planned_coverage": coverage_weight(planned),
+                    "planned_coverage_fraction": (coverage_weight(planned) / opt_total
+                                                  if opt_total > 0 else 0.0),
+                    "replanned_feasible": replanned is not None,
+                    "replanned_coverage": replanned_coverage,
+                    "replanned_coverage_fraction": (replanned_coverage / opt_total
+                                                    if opt_total > 0 else 0.0),
+                    "coverage_loss": coverage_weight(planned) - replanned_coverage,
+                    "same_pipeline": (replanned is not None and
+                                      realization_key(replanned) == realization_key(planned)),
+                })
+                if actual_energy is not None:
+                    row.update({
+                        "actual_energy_j": actual_energy,
+                        "energy_ratio": actual_energy / planned_energy if planned_energy else "",
+                        "energy_violation": int(actual_energy > budget),
+                        "energy_overrun": ((actual_energy - budget) / budget
+                                           if budget and actual_energy > budget else 0.0),
+                        "energy_headroom": (budget - actual_energy) / budget if budget else "",
+                    })
+                rows.append(row)
+    return rows
 
 
 def main() -> int:
@@ -320,7 +446,8 @@ def main() -> int:
     write_csv(args.output / "catalog_diagnostics_robust.csv", diag)
     write_csv(args.output / "method_summary_robust.csv", aggregate(sweep))
     write_csv(args.output / "residual_risk_by_category.csv", residual_risk_rows(sweep, manifest, args.catalogs))
-    write_csv(args.output / "power_stability.csv", power_stability(sweep))
+    write_csv(args.output / "power_sensitivity.csv",
+              power_sensitivity(manifest, args.catalogs, multipliers))
     if missing:
         (args.output / "missing_catalogs.txt").write_text("\n".join(missing) + "\n", encoding="utf-8")
         print(f"Warning: {len(missing)} missing catalogs. See missing_catalogs.txt.")
