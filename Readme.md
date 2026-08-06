@@ -95,3 +95,15 @@ For large parameter sweeps, you can dispatch the benchmark runner to a Slurm clu
 sbatch run_sweep_slurm.sh --sweep --all-requirements --objects-list 10 --size-mb-list 1.0,10.0,100.0 --hardware-profile dantelap
 ```
 Logs will be automatically aggregated into the `slurm_logs/` directory.
+
+### Real Workflow-Engine Experiments
+
+The approach can be executed on real workflow engines (DagOnStar, Parsl, Nextflow)
+to demonstrate that realization plans are engine-agnostic and to measure their
+behaviour outside the simulator. See [`realengines/README.md`](realengines/README.md)
+for the full execution steps, SLURM job scripts, and expected results.
+
+```bash
+./setup_venv.sh
+./run_realengines_all.sh proxy_dd realengines-output
+```

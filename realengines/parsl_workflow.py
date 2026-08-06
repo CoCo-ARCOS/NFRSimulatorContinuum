@@ -1,109 +1,46 @@
-import os
+#!/usr/bin/env python3
+"""Parsl adapter: executes the shared workload through Parsl apps.
+
+Parsl is Python-native, so it consumes the realization plan in process through
+:mod:`nfr_plan`. Each workload stage is submitted as a ``python_app`` and
+resolved before the next one starts, because the stages form a data dependency
+chain -- the point being measured is that the mechanisms Parsl executes are the
+ones the profiler selected, not that Parsl can run them concurrently.
+"""
+
+from __future__ import annotations
+
 import sys
 from pathlib import Path
-import time
-import parsl
-from parsl.app.app import python_app
-from parsl.config import Config
-from parsl.executors.threads import ThreadPoolExecutor
 
-# Make sure we can import from nfr_tuner and real_pipeline_reference
-sys.path.append(str(Path(__file__).parent))
-sys.path.append(str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from nfr_tuner import get_tuned_nfrs
-import real_pipeline_reference.pipeline_runner as runner
+from engine_cli import execute, parse_args  # noqa: E402
 
-# Configure Parsl for local execution as requested
-config = Config(
-    executors=[
-        ThreadPoolExecutor(
-            max_threads=4,
-            label='local_threads'
-        )
-    ]
-)
-parsl.load(config)
+ENGINE = "parsl"
 
-@python_app
-def generate_data(size_bytes: int) -> bytes:
-    """Generate some random data."""
-    import os
-    return os.urandom(size_bytes)
 
-@python_app
-def nfr_compress_task(data: bytes, tuned_nfr: dict) -> tuple:
-    """Apply tuned compression NFR."""
-    import real_pipeline_reference.pipeline_runner as r
-    import time
-    start = time.perf_counter()
-    compressed = r.compress_payload(data, tuned_nfr["algorithm"])
-    return compressed, time.perf_counter() - start
+def main() -> int:
+    args = parse_args(ENGINE)
 
-@python_app
-def nfr_cipher_task(data: bytes, tuned_nfr: dict) -> tuple:
-    """Apply tuned cipher NFR."""
-    import real_pipeline_reference.pipeline_runner as r
-    import time
-    start = time.perf_counter()
-    encrypted, meta = r.encrypt_payload(data, tuned_nfr["algorithm"], tuned_nfr.get("config", {}))
-    return encrypted, meta, time.perf_counter() - start
+    import parsl
+    from parsl.config import Config
+    from parsl.executors.threads import ThreadPoolExecutor
 
-@python_app
-def nfr_hash_task(data: bytes, tuned_nfr: dict) -> tuple:
-    """Apply tuned hash NFR."""
-    import real_pipeline_reference.pipeline_runner as r
-    import time
-    start = time.perf_counter()
-    digest = r.hash_digest(data, tuned_nfr["algorithm"], tuned_nfr.get("config", {}).get("hmac_key", b''))
-    return digest, time.perf_counter() - start
+    parsl.load(Config(executors=[ThreadPoolExecutor(max_threads=4, label="local_threads")]))
+    try:
+        from parsl.app.app import python_app
 
-@python_app
-def application_task(data: bytes) -> tuple:
-    """Mock application logic that transforms data."""
-    import hashlib
-    import time
-    start = time.perf_counter()
-    digest = hashlib.sha256(data).digest()
-    mixed = bytes(byte ^ digest[index % len(digest)] for index, byte in enumerate(data))
-    return mixed, time.perf_counter() - start
+        @python_app
+        def _stage_app(fn):
+            return fn()
 
-def main():
-    print("Obtaining tuned NFRs using the proposed approach...")
-    tuned_nfrs = get_tuned_nfrs()
-    print(f"Tuned NFR Configuration: {tuned_nfrs}")
-    
-    print("\nStarting Parsl Workflow Evaluation...")
-    # 1. Generate Input Data
-    data_future = generate_data(1024 * 1024) # 1 MB
-    
-    # 2. Stage 1: Add Integrity (Hash) NFR as a workflow task
-    hash_future = nfr_hash_task(data_future, tuned_nfrs["hash"])
-    
-    # 3. Stage 2: Add Confidentiality (Cipher) NFR as a workflow task
-    cipher_future = nfr_cipher_task(data_future, tuned_nfrs["cipher"])
-    
-    # Wait for cipher to finish before passing to app (simulating network or disk boundary)
-    encrypted_data, meta, cipher_time = cipher_future.result()
-    
-    # 4. Stage 3: Application Compute
-    app_future = application_task(encrypted_data)
-    app_data, app_time = app_future.result()
-    
-    # 5. Stage 4: Add Compression NFR as a workflow task
-    compress_future = nfr_compress_task(app_data, tuned_nfrs["compress"])
-    compressed_data, compress_time = compress_future.result()
-    
-    # 6. Gather results
-    digest, hash_time = hash_future.result()
-    
-    print("\nWorkflow Execution Summary:")
-    print(f"- Data generated: 1 MB")
-    print(f"- Hash ({tuned_nfrs['hash']['algorithm']}) time: {hash_time:.6f}s")
-    print(f"- Cipher ({tuned_nfrs['cipher']['algorithm']}) time: {cipher_time:.6f}s")
-    print(f"- App Compute time: {app_time:.6f}s")
-    print(f"- Compress ({tuned_nfrs['compress']['algorithm']}) time: {compress_time:.6f}s")
-    print(f"- Final payload size: {len(compressed_data)} bytes")
-    
+        # Each stage is dispatched through Parsl and joined before the next.
+        execute(ENGINE, args, submit=lambda fn: _stage_app(fn).result())
+    finally:
+        parsl.dfk().cleanup()
+    return 0
+
+
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

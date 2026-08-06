@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Real-engine experiments: resolve a realization plan per (contract, budget)
+# and execute it under every available workflow engine.
+#
+# Usage: run_realengines_all.sh <nfr_dag_v2_source_dir> [output_dir]
+#
+# Environment:
+#   ENGINES        engines to run          (default: parsl,dagonstar,nextflow)
+#   PROFILES       contract profiles       (default: all four)
+#   BUDGETS        budget multipliers      (default: 1.05,1.30,2.00)
+#   PAYLOAD_BYTES  payload per pass        (default: 16 MiB)
+#   REPEATS        passes per run          (default: 3, first discarded)
+#   MIN_SECONDS    keep repeating until a run lasts this long (default: 0)
+#   REPLICATIONS   simulator replications  (default: 3)
+#   SITE, MACHINE  modelled power fallback when no energy counter is readable
+#   VENV           virtualenv location     (default: ./.venv)
+
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+  echo "Usage: $0 <nfr_dag_v2_source_dir> [output_dir]" >&2
+  exit 2
+fi
+
+ROOT=$(cd "$(dirname "$0")" && pwd)
+SIM_DIR=$(cd "$1" && pwd)
+OUT=${2:-"$ROOT/realengines-output"}
+mkdir -p "$OUT"
+
+# shellcheck disable=SC1091
+source "$ROOT/venv_activate.sh"
+echo "python: $(command -v python3)"
+
+make -C "$SIM_DIR"
+
+echo "== energy measurement capability =="
+python3 "$ROOT/realengines/measure.py" || true
+echo
+
+EXTRA=()
+[ -n "${SITE:-}" ] && EXTRA+=(--site "$SITE")
+[ -n "${MACHINE:-}" ] && EXTRA+=(--machine "$MACHINE")
+
+python3 "$ROOT/realengines/run_real_experiments.py" \
+  --request "$ROOT/realengines/demo_request.json" \
+  --simulator "$SIM_DIR/nfr_dag_sim" \
+  --simulator-dir "$SIM_DIR" \
+  --output "$OUT" \
+  --engines "${ENGINES:-parsl,dagonstar,nextflow}" \
+  --profiles "${PROFILES:-balanced,security-first,resilience-first,bandwidth-first}" \
+  --budgets "${BUDGETS:-1.05,1.30,2.00}" \
+  --payload-bytes "${PAYLOAD_BYTES:-16777216}" \
+  --repeats "${REPEATS:-3}" \
+  --min-seconds "${MIN_SECONDS:-0}" \
+  --replications "${REPLICATIONS:-3}" \
+  "${EXTRA[@]}"
+
+python3 "$ROOT/scripts/analyze_real_engines.py" \
+  --runs "$OUT/real_engine_runs.json" \
+  --output "$OUT/analysis"
+
+echo "Real-engine evaluation complete: $OUT"

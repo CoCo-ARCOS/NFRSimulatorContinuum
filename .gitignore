@@ -60,3 +60,7 @@ robust-output2/*
 realengines/tuner-output/*
 robust-output-test/*
 c3results/*
+
+# Project virtualenv (setup_venv.sh)
+.venv/
+realengines-output*/
