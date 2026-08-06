@@ -221,17 +221,22 @@ def aggregate(rows):
 
 
 def residual_risk_rows(rows, manifest, catalogs_dir):
-    # One representative point: 1.30 x mandatory energy/deadline, contract-aware only.
+    # Contract-aware selections along the diagonal of the budget grid
+    # (equal energy and deadline multipliers).
     reps = [r for r in rows if r["method"] == "contract-aware-edge"
-            and abs(float(r["energy_multiplier"]) - 1.30) < 1e-9
-            and abs(float(r["deadline_multiplier"]) - 1.30) < 1e-9
+            and abs(float(r["energy_multiplier"]) - float(r["deadline_multiplier"])) < 1e-9
             and r.get("admitted")]
     by_id = {s["id"]: s for s in manifest["scenarios"]}
+    cache = {}
     out = []
     for r in reps:
         sc = by_id[r["id"]]
-        request = load_json(Path(sc["request"]))
-        report = load_json(catalogs_dir / sc["id"] / "profiler_report.json")
+        if r["id"] not in cache:
+            cache[r["id"]] = (
+                load_json(Path(sc["request"])),
+                load_json(catalogs_dir / sc["id"] / "profiler_report.json"),
+            )
+        request, report = cache[r["id"]]
         # Find matching candidate by energy/time/pipeline.
         chosen = None
         for c in report.get("candidates", []):
@@ -249,6 +254,8 @@ def residual_risk_rows(rows, manifest, catalogs_dir):
                 "contract": r["contract"],
                 "scale": r["scale"],
                 "power_scenario": r["power_scenario"],
+                "energy_multiplier": float(r["energy_multiplier"]),
+                "deadline_multiplier": float(r["deadline_multiplier"]),
                 "risk_category": risk_category(cl),
                 "clause_weight": float(cl.get("weight", 1.0)),
                 "fulfilled": cl.get("id") in fulfilled,

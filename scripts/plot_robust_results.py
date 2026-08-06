@@ -108,6 +108,10 @@ RISK_COLORS = {
 
 BUDGET_XLABEL = "Energy and deadline budget (x mandatory baseline)"
 
+# Figures are rendered at the true IEEE single-column width so fonts print at
+# their nominal point size under \includegraphics[width=\linewidth].
+COLUMN_WIDTH_IN = 3.5
+
 
 def configure_style() -> None:
     plt.rcParams.update(
@@ -115,15 +119,15 @@ def configure_style() -> None:
             "figure.dpi": 160,
             "savefig.dpi": 400,
             "font.family": "DejaVu Sans",
-            "font.size": 8.5,
-            "axes.titlesize": 10,
-            "axes.labelsize": 8.5,
-            "xtick.labelsize": 8,
-            "ytick.labelsize": 8,
-            "legend.fontsize": 8,
-            "axes.linewidth": 0.8,
-            "lines.linewidth": 1.7,
-            "lines.markersize": 4.5,
+            "font.size": 8.0,
+            "axes.titlesize": 9,
+            "axes.labelsize": 8.0,
+            "xtick.labelsize": 7.5,
+            "ytick.labelsize": 7.5,
+            "legend.fontsize": 7.0,
+            "axes.linewidth": 0.6,
+            "lines.linewidth": 1.4,
+            "lines.markersize": 3.8,
             "pdf.fonttype": 42,
             "ps.fonttype": 42,
         }
@@ -221,7 +225,7 @@ def plot_method_by_contract(ms: pd.DataFrame, output: Path) -> None:
         aggfunc="mean",
     ).reindex(index=contracts, columns=methods)
 
-    fig, ax = plt.subplots(figsize=(7.2, 3.2))
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 3.1))
     y = np.arange(len(pivot.index))
     height = min(0.12, 0.78 / max(len(methods), 1))
     offsets = (np.arange(len(methods)) - (len(methods) - 1) / 2) * height
@@ -268,8 +272,8 @@ def plot_method_by_contract(ms: pd.DataFrame, output: Path) -> None:
         bbox_to_anchor=(0.5, 1.02),
         ncol=3,
         frameon=False,
-        handlelength=1.3,
-        columnspacing=1.2,
+        handlelength=1.1,
+        columnspacing=0.8,
     )
     savefig(fig, output / "fig_method_by_contract.png")
 
@@ -288,7 +292,7 @@ def plot_method_by_workflow(cs: pd.DataFrame, output: Path) -> None:
         aggfunc="mean",
     ).reindex(index=workflows, columns=methods)
 
-    fig, ax = plt.subplots(figsize=(7.2, 3.2))
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 3.1))
     y = np.arange(len(pivot.index))
     height = min(0.12, 0.78 / max(len(methods), 1))
     offsets = (np.arange(len(methods)) - (len(methods) - 1) / 2) * height
@@ -335,8 +339,8 @@ def plot_method_by_workflow(cs: pd.DataFrame, output: Path) -> None:
         bbox_to_anchor=(0.5, 1.02),
         ncol=3,
         frameon=False,
-        handlelength=1.3,
-        columnspacing=1.2,
+        handlelength=1.1,
+        columnspacing=0.8,
     )
     savefig(fig, output / "fig_method_by_workflow.png")
 
@@ -365,7 +369,7 @@ def plot_coverage_envelope(cs: pd.DataFrame, output: Path) -> None:
     if pivot.empty:
         return
 
-    fig, ax = plt.subplots(figsize=(4.8, 3.55))
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 2.75))
     values = pivot.values * 100
     im = ax.imshow(values, origin="lower", aspect="auto", vmin=0, vmax=100, cmap="YlGnBu")
     cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
@@ -392,6 +396,71 @@ def plot_coverage_envelope(cs: pd.DataFrame, output: Path) -> None:
     savefig(fig, output / "fig_coverage_envelope.png")
 
 
+def plot_coverage_envelope_panels(cs: pd.DataFrame, output: Path) -> None:
+    sub = nominal_medium(cs)
+    sub = sub[sub["method"] == EDGE_METHOD]
+    if sub.empty:
+        return
+
+    mean_pivot = sub.pivot_table(
+        index="energy_multiplier",
+        columns="deadline_multiplier",
+        values="coverage_fraction",
+        aggfunc="mean",
+    ).sort_index().sort_index(axis=1)
+
+    grouped = (
+        sub.groupby(["id", "workflow", "plan", "contract"], dropna=False)["coverage_fraction"]
+        .agg(["std", "mean"])
+        .reset_index()
+    )
+    grouped["std"] = grouped["std"].fillna(0.0)
+    chosen = grouped.sort_values(["std", "mean"], ascending=[False, False]).iloc[0]
+    rep = sub[sub["id"] == chosen["id"]]
+    rep_pivot = rep.pivot_table(
+        index="energy_multiplier",
+        columns="deadline_multiplier",
+        values="coverage_fraction",
+        aggfunc="max",
+    ).sort_index().sort_index(axis=1)
+
+    if mean_pivot.empty or rep_pivot.empty:
+        return
+
+    n_scenarios = sub["id"].nunique()
+    scenario = f"{chosen['workflow']} / {chosen['plan']} / {contract_label(str(chosen['contract']))}"
+    print(f"Envelope panels: most budget-sensitive scenario is {scenario}")
+
+    fig, axes = plt.subplots(
+        1, 2, figsize=(COLUMN_WIDTH_IN, 2.1), sharey=True, gridspec_kw={"wspace": 0.12}
+    )
+    panels = [
+        (axes[0], mean_pivot, f"(a) Mean, {n_scenarios} scenarios"),
+        (axes[1], rep_pivot, "(b) Most-sensitive"),
+    ]
+    im = None
+    for ax, pivot, title in panels:
+        values = pivot.values * 100
+        im = ax.imshow(values, origin="lower", aspect="auto", vmin=0, vmax=100, cmap="YlGnBu")
+        for row in range(values.shape[0]):
+            for col in range(values.shape[1]):
+                value = values[row, col]
+                color = "white" if value >= 72 else "#1F1F1F"
+                ax.text(col, row, f"{value:.0f}", ha="center", va="center", fontsize=6, color=color)
+        ax.set_xticks(np.arange(len(pivot.columns)))
+        ax.set_yticks(np.arange(len(pivot.index)))
+        ax.set_xticklabels([f"{x:g}" for x in pivot.columns], fontsize=6)
+        ax.set_yticklabels([f"{x:g}" for x in pivot.index], fontsize=6.5)
+        ax.set_title(title, fontsize=7)
+        ax.set_xlabel("Deadline (x baseline)", fontsize=7)
+    axes[0].set_ylabel("Energy (x baseline)", fontsize=7)
+    cbar = fig.colorbar(im, ax=axes[1], fraction=0.046, pad=0.06)
+    cbar.ax.yaxis.set_major_formatter(PercentFormatter(xmax=100, decimals=0))
+    cbar.ax.tick_params(labelsize=6.5)
+    cbar.set_label("Coverage", fontsize=7)
+    savefig(fig, output / "fig_coverage_envelope_panels.png")
+
+
 def plot_feasibility_and_reachable(cs: pd.DataFrame, analysis: Path, output: Path) -> None:
     sweep = nominal_medium(cs)
     sweep = sweep[sweep["energy_multiplier"] == sweep["deadline_multiplier"]].copy()
@@ -402,7 +471,7 @@ def plot_feasibility_and_reachable(cs: pd.DataFrame, analysis: Path, output: Pat
     rates = sweep.groupby(["method", "energy_multiplier"])["feasible"].mean().unstack(0)
     methods = ordered(rates.columns, METHOD_ORDER)
 
-    fig, ax = plt.subplots(figsize=(5.4, 3.15))
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 2.7))
     draw_order = [m for m in methods if m not in {EDGE_METHOD, GLOBAL_METHOD}]
     draw_order += [GLOBAL_METHOD, EDGE_METHOD]
     for method in draw_order:
@@ -437,8 +506,8 @@ def plot_feasibility_and_reachable(cs: pd.DataFrame, analysis: Path, output: Pat
         bbox_to_anchor=(0.5, 1.02),
         ncol=3,
         frameon=False,
-        handlelength=1.5,
-        columnspacing=1.1,
+        handlelength=1.2,
+        columnspacing=0.8,
     )
     savefig(fig, output / "fig_feasibility.png")
 
@@ -465,7 +534,7 @@ def plot_optimality_gap(dsweep: pd.DataFrame, output: Path) -> None:
     gap = dsweep.groupby(["method", "energy_multiplier"])["frac_of_max"].mean().unstack(0)
     methods = ordered(gap.columns, METHOD_ORDER)
 
-    fig, ax = plt.subplots(figsize=(5.4, 3.15))
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 2.7))
     draw_order = [m for m in methods if m not in {EDGE_METHOD, GLOBAL_METHOD}]
     draw_order += [GLOBAL_METHOD, EDGE_METHOD]
     for method in draw_order:
@@ -495,8 +564,8 @@ def plot_optimality_gap(dsweep: pd.DataFrame, output: Path) -> None:
         bbox_to_anchor=(0.5, 1.02),
         ncol=3,
         frameon=False,
-        handlelength=1.5,
-        columnspacing=1.1,
+        handlelength=1.2,
+        columnspacing=0.8,
     )
     savefig(fig, output / "fig_optimality_gap.png")
 
@@ -526,7 +595,7 @@ def plot_coverage_energy_tradeoff(dsweep: pd.DataFrame, output: Path) -> None:
     )
     methods = ordered(summary["method"].unique(), METHOD_ORDER)
 
-    fig, ax = plt.subplots(figsize=(5.2, 3.35))
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 2.9))
     for method in [m for m in methods if m not in {EDGE_METHOD, GLOBAL_METHOD}] + [
         GLOBAL_METHOD,
         EDGE_METHOD,
@@ -576,14 +645,16 @@ def plot_coverage_energy_tradeoff(dsweep: pd.DataFrame, output: Path) -> None:
         bbox_to_anchor=(0.5, 1.02),
         ncol=3,
         frameon=False,
-        handlelength=1.3,
-        columnspacing=1.0,
+        handlelength=1.1,
+        columnspacing=0.8,
     )
     savefig(fig, output / "fig_coverage_energy_tradeoff.png")
 
 
 def plot_residual_risk(rr: pd.DataFrame, output: Path) -> None:
     sub = nominal_medium(rr)
+    if "energy_multiplier" in sub.columns:
+        sub = sub[abs(sub["energy_multiplier"] - 1.30) < 1e-9]
     if sub.empty:
         return
     pivot = sub.pivot_table(
@@ -597,7 +668,7 @@ def plot_residual_risk(rr: pd.DataFrame, output: Path) -> None:
     risks = ordered(pivot.columns, list(RISK_LABELS))
     pivot = pivot.reindex(index=contracts, columns=risks, fill_value=0)
 
-    fig, ax = plt.subplots(figsize=(6.1, 2.9))
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 2.4))
     y = np.arange(len(pivot.index))
     left = np.zeros(len(pivot.index))
     for risk in risks:
@@ -624,12 +695,67 @@ def plot_residual_risk(rr: pd.DataFrame, output: Path) -> None:
     ax.legend(
         loc="lower center",
         bbox_to_anchor=(0.5, 1.02),
-        ncol=5,
+        ncol=3,
         frameon=False,
-        handlelength=1.2,
-        columnspacing=0.9,
+        handlelength=1.0,
+        columnspacing=0.7,
     )
     savefig(fig, output / "fig_residual_risk.png")
+
+
+def plot_residual_vs_budget(rr: pd.DataFrame, output: Path) -> None:
+    if "energy_multiplier" not in rr.columns:
+        return
+    sub = nominal_medium(rr)
+    if sub.empty:
+        return
+
+    pivot = sub.pivot_table(
+        index="energy_multiplier",
+        columns="risk_category",
+        values="residual_weight",
+        aggfunc="sum",
+        fill_value=0,
+    ).sort_index()
+    risks = [r for r in ordered(pivot.columns, list(RISK_LABELS)) if pivot[r].sum() > 0]
+    if not risks:
+        return
+
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 2.4))
+    x = np.arange(len(pivot.index))
+    bottom = np.zeros(len(pivot.index))
+    for risk in risks:
+        values = pivot[risk].values
+        ax.bar(
+            x,
+            values,
+            bottom=bottom,
+            label=risk_label(risk),
+            color=RISK_COLORS.get(risk, "#8E8E8E"),
+            edgecolor="white",
+            linewidth=0.5,
+            width=0.62,
+        )
+        bottom += values
+
+    for j, total in enumerate(bottom):
+        ax.text(x[j], total + bottom.max() * 0.02, f"{total:.0f}", ha="center", va="bottom", fontsize=7)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"{v:g}" for v in pivot.index])
+    ax.set_xlabel(BUDGET_XLABEL)
+    ax.set_ylabel("Residual optional-risk weight")
+    ax.set_ylim(0, bottom.max() * 1.12 if bottom.max() > 0 else 1)
+    style_axes(ax, "y")
+    ax.legend(
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=3,
+        frameon=False,
+        handlelength=1.0,
+        columnspacing=0.7,
+    )
+    savefig(fig, output / "fig_residual_vs_budget.png")
 
 
 def plot_power_stability(ps: pd.DataFrame, output: Path) -> None:
@@ -647,7 +773,7 @@ def plot_power_stability(ps: pd.DataFrame, output: Path) -> None:
     agg = agg.set_index("contract").reindex(contracts).reset_index()
     agg["coverage_change_pp"] = agg["mean_coverage_loss"] * 100
 
-    fig, ax = plt.subplots(figsize=(5.7, 2.75))
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 2.4))
     y = np.arange(len(agg))
     colors = [
         method_color(EDGE_METHOD) if v >= 0 else COVERAGE_LOSS_COLOR
@@ -655,34 +781,22 @@ def plot_power_stability(ps: pd.DataFrame, output: Path) -> None:
     ]
     ax.barh(y, agg["coverage_change_pp"], color=colors, edgecolor="#222222", linewidth=0.5)
     ax.axvline(0, color="#555555", linewidth=0.8)
+    max_abs = max(0.5, agg["coverage_change_pp"].abs().max() * 1.35)
     for j, row in agg.iterrows():
         x = row["coverage_change_pp"]
-        ha = "left" if x >= 0 else "right"
-        offset = 0.08 if x >= 0 else -0.08
+        # Bars extend left for losses, so the right half of the axes is free.
         ax.text(
-            x + offset,
+            max(x, 0) + max_abs * 0.05,
             j,
-            f"{x:+.1f} pp",
+            f"{x:+.1f} pp ({row['same_pipeline_rate'] * 100:.0f}% same pipeline)",
             va="center",
-            ha=ha,
-            fontsize=7.5,
-            fontweight="bold",
-        )
-        ax.text(
-            0.99,
-            j,
-            f"{row['same_pipeline_rate'] * 100:.0f}% same pipeline",
-            transform=ax.get_yaxis_transform(),
-            va="center",
-            ha="right",
+            ha="left",
             fontsize=7,
-            color="#555555",
         )
 
     ax.set_yticks(y)
     ax.set_yticklabels([contract_label(c) for c in agg["contract"]])
     ax.invert_yaxis()
-    max_abs = max(1.0, agg["coverage_change_pp"].abs().max() * 1.35)
     ax.set_xlim(-max_abs, max_abs)
     ax.set_xlabel("Coverage change: nominal - high-power (percentage points)")
     ax.set_title("Energy-model sensitivity of edge-contract selection")
@@ -706,11 +820,13 @@ def main() -> int:
     if not constraint_sweep.empty:
         plot_method_by_workflow(constraint_sweep, args.output)
         plot_coverage_envelope(constraint_sweep, args.output)
+        plot_coverage_envelope_panels(constraint_sweep, args.output)
         plot_feasibility_and_reachable(constraint_sweep, args.analysis, args.output)
 
     residual_risk = read_csv(args.analysis / "residual_risk_by_category.csv")
     if not residual_risk.empty:
         plot_residual_risk(residual_risk, args.output)
+        plot_residual_vs_budget(residual_risk, args.output)
 
     power_stability = read_csv(args.analysis / "power_stability.csv")
     if not power_stability.empty:
