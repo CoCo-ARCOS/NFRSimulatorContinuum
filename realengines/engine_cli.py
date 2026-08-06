@@ -58,6 +58,7 @@ def execute(engine: str, args: argparse.Namespace,
                 model_power_w=model_power_w, submit=submit,
                 payload_kind=args.payload_kind, payload_ratio=args.payload_ratio,
                 payload_seed=args.payload_seed, payload_source=args.payload_source,
+                objects=args.objects,
             )
             result["pass"] = index
             result["warmup"] = index == 0 and args.repeats > 1
@@ -104,6 +105,7 @@ def execute(engine: str, args: argparse.Namespace,
         },
         "budgets": plan.get("budgets", {}),
         "payload": payload_provenance(args),
+        "objects": args.objects,
         "measured": {
             "seconds_mean": sum(seconds) / len(seconds),
             "seconds_min": min(seconds),

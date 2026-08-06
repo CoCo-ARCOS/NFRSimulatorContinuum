@@ -15,6 +15,7 @@ mechanism time taken from the enforcement log.
 from __future__ import annotations
 
 import argparse
+import re
 import shutil
 import subprocess
 import sys
@@ -74,7 +75,11 @@ def main() -> int:
             log_path = work_dir / "enforcement_log.jsonl"
             pipeline = write_pipeline(
                 work_dir / "pipeline.nf", list(classes), compute_stage,
-                payload_command(sys.executable, GENERATOR, args, "raw.bin"),
+                # Nextflow interpolates the per-object seed itself, so one
+                # generated pipeline serves every object in the channel.
+                re.sub(r"--seed \d+",
+                       lambda _: "--seed ${params.payload_seed + idx}",
+                       payload_command(sys.executable, GENERATOR, args, "raw.bin")),
             )
             command = [
                 args.nextflow, "run", str(pipeline),
@@ -85,6 +90,8 @@ def main() -> int:
                 # interpreter is passed through explicitly.
                 "--python", sys.executable,
                 "--payload_bytes", str(args.payload_bytes),
+                "--objects", str(args.objects),
+                "--payload_seed", str(args.payload_seed),
                 "--outdir", str((work_dir / "results").resolve()),
                 "--log", str(log_path.resolve()),
                 "-work-dir", str((work_dir / "work").resolve()),

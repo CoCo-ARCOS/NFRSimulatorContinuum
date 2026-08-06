@@ -81,38 +81,45 @@ def build_workflow(plan_path: Path, plan: dict[str, Any], args,
 
     classes = resolve_classes(plan)
     compute_stage = compute_after(classes)
-    tasks = [DagonTask(TaskType.BATCH, "ingest",
-                       payload_command(PYTHON, GENERATOR, args, "raw.bin"))]
-    previous, previous_file = "ingest", "raw.bin"
+    tasks = []
 
-    for artifact_class in classes:
-        protect = f"protect_{artifact_class}"
-        unprotect = f"unprotect_{artifact_class}"
-        tasks.append(DagonTask(TaskType.BATCH, protect, _apply_command(
-            plan_path, artifact_class, "output",
-            f"workflow:///{previous}/{previous_file}",
-            f"{artifact_class}.nfr", f"{artifact_class}.steps.json",
-            log_path, f"protect:{artifact_class}",
-        )))
-        tasks.append(DagonTask(TaskType.BATCH, unprotect, _apply_command(
-            plan_path, artifact_class, "input",
-            f"workflow:///{protect}/{artifact_class}.nfr",
-            f"{artifact_class}.restored",
-            f"workflow:///{protect}/{artifact_class}.steps.json",
-            log_path, f"unprotect:{artifact_class}",
-        )))
-        previous, previous_file = unprotect, f"{artifact_class}.restored"
+    # One chain per object, all inside a single workflow: DagOnStar schedules
+    # them itself (up to its thread pool), and the per-run setup cost is paid
+    # once rather than once per object.
+    for index in range(max(1, getattr(args, "objects", 1))):
+        suffix = f"_o{index}"
+        ingest = f"ingest{suffix}"
+        tasks.append(DagonTask(TaskType.BATCH, ingest,
+                               payload_command(PYTHON, GENERATOR, args, "raw.bin",
+                                               seed_offset=index)))
+        previous, previous_file = ingest, "raw.bin"
 
-        if artifact_class == compute_stage:
-            # The compute stage reads the restored artefact straight from the
-            # upstream task; the reference is part of the command at creation
-            # time, which is when DagOnStar parses it into a dependency.
-            tasks.append(DagonTask(TaskType.BATCH, "compute", (
-                f"{PYTHON} {MIXER} "
-                f"workflow:///{unprotect}/{artifact_class}.restored "
-                f"computed.bin"
+        for artifact_class in classes:
+            protect = f"protect_{artifact_class}{suffix}"
+            unprotect = f"unprotect_{artifact_class}{suffix}"
+            tasks.append(DagonTask(TaskType.BATCH, protect, _apply_command(
+                plan_path, artifact_class, "output",
+                f"workflow:///{previous}/{previous_file}",
+                f"{artifact_class}.nfr", f"{artifact_class}.steps.json",
+                log_path, f"protect:{artifact_class}",
             )))
-            previous, previous_file = "compute", "computed.bin"
+            tasks.append(DagonTask(TaskType.BATCH, unprotect, _apply_command(
+                plan_path, artifact_class, "input",
+                f"workflow:///{protect}/{artifact_class}.nfr",
+                f"{artifact_class}.restored",
+                f"workflow:///{protect}/{artifact_class}.steps.json",
+                log_path, f"unprotect:{artifact_class}",
+            )))
+            previous, previous_file = unprotect, f"{artifact_class}.restored"
+
+            if artifact_class == compute_stage:
+                compute = f"compute{suffix}"
+                tasks.append(DagonTask(TaskType.BATCH, compute, (
+                    f"{PYTHON} {MIXER} "
+                    f"workflow:///{unprotect}/{artifact_class}.restored "
+                    f"computed.bin"
+                )))
+                previous, previous_file = compute, "computed.bin"
 
     for task in tasks:
         workflow.add_task(task)

@@ -33,12 +33,17 @@ params.mixer = null
 params.python = 'python3'
 params.outdir = 'results'
 params.log = null
+params.objects = 1
+params.payload_seed = 0
 """
 
 INGEST = """
 process INGEST {{
+    input:
+    val idx
+
     output:
-    path 'raw.bin'
+    tuple val(idx), path("raw.bin")
 
     script:
     \"\"\"
@@ -50,10 +55,10 @@ process INGEST {{
 PROTECT = """
 process PROTECT_{upper} {{
     input:
-    path payload
+    tuple val(idx), path(payload)
 
     output:
-    tuple path('{name}.nfr'), path('{name}.steps.json')
+    tuple val(idx), path('{name}.nfr'), path('{name}.steps.json')
 
     script:
     \"\"\"
@@ -73,10 +78,10 @@ process PROTECT_{upper} {{
 UNPROTECT = """
 process UNPROTECT_{upper} {{
     input:
-    tuple path(payload), path(steps)
+    tuple val(idx), path(payload), path(steps)
 
     output:
-    path '{name}.restored'
+    tuple val(idx), path('{name}.restored')
 
     script:
     \"\"\"
@@ -96,10 +101,10 @@ process UNPROTECT_{upper} {{
 COMPUTE = """
 process COMPUTE {
     input:
-    path payload
+    tuple val(idx), path(payload)
 
     output:
-    path 'computed.bin'
+    tuple val(idx), path('computed.bin')
 
     script:
     \"\"\"
@@ -113,14 +118,14 @@ process PUBLISH {
     publishDir params.outdir, mode: 'copy'
 
     input:
-    path payload
+    tuple val(idx), path(payload)
 
     output:
-    path 'final.bin'
+    path "final_${idx}.bin"
 
     script:
     \"\"\"
-    cp ${payload} final.bin
+    cp ${payload} final_${idx}.bin
     \"\"\"
 }
 """
@@ -141,7 +146,7 @@ def render(classes: list[str], compute_stage: str | None, payload_command: str) 
 
     # Nextflow's pipe operator expresses the chain directly, so the generated
     # workflow body reads like the stage list it came from.
-    chain = ["INGEST()"]
+    chain = ["Channel.of(0..(params.objects.toInteger() - 1))", "INGEST"]
     for name in classes:
         chain.append(f"PROTECT_{name.upper()}")
         chain.append(f"UNPROTECT_{name.upper()}")

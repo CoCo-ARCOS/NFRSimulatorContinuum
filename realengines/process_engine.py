@@ -52,6 +52,10 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--payload-ratio", type=float, default=3.0,
                         help="Target compression ratio for --payload-kind synthetic")
     parser.add_argument("--payload-seed", type=int, default=0)
+    parser.add_argument("--objects", type=int, default=1,
+                        help="Payloads pushed through the stage graph per pass; "
+                             "should match workflow.workload.instances in the "
+                             "request so predictions and measurements agree")
     parser.add_argument("--payload-source", type=Path, default=None,
                         help="File to tile for --payload-kind file")
 
@@ -65,14 +69,14 @@ def payload_provenance(args: argparse.Namespace) -> dict:
 
 
 def payload_command(python: str, generator: Path, args: argparse.Namespace,
-                    out_name: str) -> str:
+                    out_name: str, seed_offset: int = 0) -> str:
     """Shell command generating the payload, for engines that run tasks as
     processes. They must use the same generator as the in-process engines, or
     the compression results would not be comparable."""
     command = (
         f"{python} {generator} --bytes {args.payload_bytes} "
         f"--kind {args.payload_kind} --ratio {args.payload_ratio} "
-        f"--seed {args.payload_seed} --out {out_name}"
+        f"--seed {args.payload_seed + seed_offset} --out {out_name}"
     )
     if args.payload_source:
         command += f" --source {Path(args.payload_source).resolve()}"
@@ -105,12 +109,20 @@ def trace_from_log(records: list[dict[str, Any]]) -> str:
     engines, which record mechanisms when applied rather than when inverted.
     """
     parts = []
+    seen = set()
     for record in records:
         if record.get("direction") != "output":
             continue
+        artifact_class = record["artifact_class"]
+        # Every object repeats the same classes, and engines that run objects
+        # concurrently interleave their records. Taking each class once yields
+        # one object's worth of plan, which is what the other engines report.
+        if artifact_class in seen:
+            continue
+        seen.add(artifact_class)
         for mechanism in record.get("mechanisms", []):
             parts.append(
-                f"{record['artifact_class']}:{mechanism['slot']}={mechanism['algorithm']}"
+                f"{artifact_class}:{mechanism['slot']}={mechanism['algorithm']}"
             )
     return "|".join(parts)
 
@@ -178,6 +190,7 @@ def summarize(engine: str, args: argparse.Namespace, plan: dict[str, Any],
         },
         "budgets": plan.get("budgets", {}),
         "payload": payload_provenance(args),
+        "objects": getattr(args, "objects", 1),
         "measured": {
             "seconds_mean": sum(seconds) / len(seconds),
             "seconds_min": min(seconds),

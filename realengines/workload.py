@@ -57,14 +57,18 @@ def run_workload(plan: dict[str, Any], payload_bytes: int, *,
                  hmac_key: bytes = b"", model_power_w: float | None = None,
                  submit: Callable[[Callable[..., Any]], Any] | None = None,
                  payload_kind: str = "synthetic", payload_ratio: float = 3.0,
-                 payload_seed: int = 0,
-                 payload_source: Any = None) -> dict[str, Any]:
+                 payload_seed: int = 0, payload_source: Any = None,
+                 objects: int = 1) -> dict[str, Any]:
     """Execute one pass of the workload and return its measured trace.
 
+    A pass processes ``objects`` payloads through the whole stage graph, which
+    is what the profiler request's trace declares. Each object gets its own
+    seed, so the payloads differ as they would in a real trace rather than
+    being the same bytes repeated -- identical inputs would let caches and
+    compressors flatter the measurement.
+
     ``submit`` lets an engine interpose its own execution primitive around each
-    stage; the default runs them inline. Stages are inherently sequential --
-    each consumes the previous artefact -- so an engine's parallelism shows up
-    across repeats, not within a pass.
+    stage; the default runs them inline.
     """
     runner = submit or (lambda fn: fn())
     stages: list[dict[str, Any]] = []
@@ -82,46 +86,56 @@ def run_workload(plan: dict[str, Any], payload_bytes: int, *,
         stages.append(record)
         return value, record
 
-    data, _ = stage(
-        "ingest", "compute",
-        lambda: make_payload(payload_bytes, kind=payload_kind, ratio=payload_ratio,
-                             seed=payload_seed, source=payload_source),
-    )
-    original = data
-
     classes = resolve_classes(plan)
     compute_stage = compute_after(classes)
-    for artifact_class in classes:
-        protected, record = stage(
-            f"protect:{artifact_class}", "nfr",
-            lambda d=data, c=artifact_class: apply_output(plan, c, d, hmac_key=hmac_key),
+    total_in = 0
+
+    for index in range(max(1, objects)):
+        data, _ = stage(
+            f"ingest[{index}]", "compute",
+            lambda i=index: make_payload(payload_bytes, kind=payload_kind,
+                                         ratio=payload_ratio, seed=payload_seed + i,
+                                         source=payload_source),
         )
-        payload, steps = protected
-        record["artifact_class"] = artifact_class
-        record["bytes_in"] = len(data)
-        record["bytes_out"] = len(payload)
-        record["mechanisms"] = [
-            {"slot": s["slot"], "algorithm": s["algorithm"]} for s in steps
-        ]
+        total_in += len(data)
 
-        restored, in_record = stage(
-            f"unprotect:{artifact_class}", "nfr",
-            lambda d=payload, c=artifact_class, s=steps: apply_input(plan, c, d, s, hmac_key=hmac_key),
-        )
-        in_record["artifact_class"] = artifact_class
-        in_record["bytes_in"] = len(payload)
-        in_record["bytes_out"] = len(restored)
+        for artifact_class in classes:
+            protected, record = stage(
+                f"protect:{artifact_class}[{index}]", "nfr",
+                lambda d=data, c=artifact_class: apply_output(plan, c, d, hmac_key=hmac_key),
+            )
+            payload, steps = protected
+            record["artifact_class"] = artifact_class
+            record["object"] = index
+            record["bytes_in"] = len(data)
+            record["bytes_out"] = len(payload)
+            record["mechanisms"] = [
+                {"slot": s["slot"], "algorithm": s["algorithm"]} for s in steps
+            ]
 
-        data = restored
-        if artifact_class == compute_stage:
-            data, _ = stage("process", "compute", lambda d=data: _mix(d))
+            restored, in_record = stage(
+                f"unprotect:{artifact_class}[{index}]", "nfr",
+                lambda d=payload, c=artifact_class, s=steps: apply_input(
+                    plan, c, d, s, hmac_key=hmac_key),
+            )
+            in_record["artifact_class"] = artifact_class
+            in_record["object"] = index
+            in_record["bytes_in"] = len(payload)
+            in_record["bytes_out"] = len(restored)
 
+            data = restored
+            if artifact_class == compute_stage:
+                data, _ = stage(f"process[{index}]", "compute", lambda d=data: _mix(d))
+
+    original = data
     verified = hashlib.sha256(original).digest() != b"" and len(data) > 0
     total_seconds = sum(s["seconds"] for s in stages)
     energies = [s["energy_j"] for s in stages if s["energy_j"] is not None]
     return {
         "stages": stages,
         "payload_bytes": payload_bytes,
+        "objects": max(1, objects),
+        "bytes_processed": total_in,
         "total_seconds": total_seconds,
         "total_energy_j": sum(energies) if energies else None,
         "energy_source": stages[0]["energy_source"] if stages else "unavailable",
@@ -139,6 +153,11 @@ def mechanism_trace(stages: list[dict[str, Any]]) -> str:
     """
     parts = []
     for record in stages:
+        # Only the first object's stages describe the plan; later objects
+        # repeat it, and a trace that grew with the object count could not be
+        # compared against another engine's.
+        if record.get("object", 0) != 0:
+            continue
         for mechanism in record.get("mechanisms", []) or []:
             parts.append(f"{record['artifact_class']}:{mechanism['slot']}={mechanism['algorithm']}")
     return "|".join(parts)

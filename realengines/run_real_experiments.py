@@ -65,12 +65,25 @@ def load_json(path: Path) -> Any:
         return json.load(handle)
 
 
-def request_for_profile(base: dict[str, Any], profile: str) -> dict[str, Any]:
-    """Apply a contract profile's overrides to the base request."""
+def request_for_profile(base: dict[str, Any], profile: str, *,
+                        objects: int = 1, payload_bytes: int | None = None) -> dict[str, Any]:
+    """Apply a contract profile's overrides to the base request.
+
+    The workload block is also aligned with what the engines will actually
+    execute. Without this the simulator predicts one trace (its own declared
+    object count and size) while the engines process another, and the
+    predicted-against-measured comparison comes out scaled by whatever the two
+    happened to differ by rather than by any modelling error.
+    """
     request = copy.deepcopy(base)
     requirements = request.setdefault("requirements", {})
     for family, overrides in CONTRACT_PROFILES[profile].items():
         requirements.setdefault(family, {}).update(overrides)
+
+    workload = request.setdefault("workflow", {}).setdefault("workload", {})
+    workload["instances"] = int(objects)
+    if payload_bytes is not None:
+        workload["input_size_bytes"] = int(payload_bytes)
     return request
 
 
@@ -85,7 +98,8 @@ def run_engine(engine: str, script: Path, plan_path: Path, run_dir: Path,
     ]
     if args.min_seconds:
         command += ["--min-seconds", str(args.min_seconds)]
-    command += ["--payload-kind", args.payload_kind,
+    command += ["--objects", str(args.objects),
+                "--payload-kind", args.payload_kind,
                 "--payload-ratio", str(args.payload_ratio),
                 "--payload-seed", str(args.payload_seed)]
     if args.payload_source:
@@ -141,6 +155,9 @@ def main() -> int:
     parser.add_argument("--payload-ratio", type=float, default=3.0,
                         help="Target compression ratio for --payload-kind synthetic")
     parser.add_argument("--payload-seed", type=int, default=0)
+    parser.add_argument("--objects", type=int, default=1,
+                        help="Payloads per pass; also written into the request's "
+                             "workload so the simulator predicts the same trace")
     parser.add_argument("--payload-source", type=Path, default=None)
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--min-seconds", type=float, default=0.0,
@@ -185,7 +202,9 @@ def main() -> int:
     records: list[dict[str, Any]] = []
     started = time.time()
     for profile in profiles:
-        request = request_for_profile(base_request, profile)
+        request = request_for_profile(base_request, profile,
+                                      objects=args.objects,
+                                      payload_bytes=args.payload_bytes)
         request_path = output / "requests" / f"{profile}.json"
         with request_path.open("w", encoding="utf-8") as handle:
             json.dump(request, handle, indent=2)

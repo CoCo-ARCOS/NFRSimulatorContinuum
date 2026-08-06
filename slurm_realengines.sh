@@ -50,6 +50,7 @@ export SITE="${SITE:-configs/site.calibrated.measured.json}"
 
 # Self-contained Nextflow bundle for offline nodes (see fetch_nextflow.sh).
 # Falls back to whatever "nextflow" is on PATH, e.g. from "module load nextflow".
+export OBJECTS="${OBJECTS:-1}"
 export PAYLOAD_KIND="${PAYLOAD_KIND:-synthetic}"
 export PAYLOAD_RATIO="${PAYLOAD_RATIO:-3.0}"
 export PAYLOAD_SOURCE="${PAYLOAD_SOURCE:-}"

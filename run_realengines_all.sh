@@ -15,6 +15,7 @@ set -euo pipefail
 #   PAYLOAD_RATIO  target compression ratio (default: 3.0)
 #   PAYLOAD_SOURCE file or directory of real files, for PAYLOAD_KIND=file
 #   PAYLOAD_SEED   payload reproducibility seed (default: 0)
+#   OBJECTS        payloads processed per pass (default: 1)
 #   REPEATS        passes per run          (default: 3, first discarded)
 #   MIN_SECONDS    keep repeating until a run lasts this long (default: 0)
 #   REPLICATIONS   simulator replications  (default: 3)
@@ -51,6 +52,7 @@ EXTRA=()
 # Corpus of real files (a directory avoids the tiling that inflates ratios).
 [ -n "${PAYLOAD_SOURCE:-}" ] && EXTRA+=(--payload-source "$PAYLOAD_SOURCE")
 [ -n "${PAYLOAD_SEED:-}" ] && EXTRA+=(--payload-seed "$PAYLOAD_SEED")
+[ -n "${OBJECTS:-}" ] && EXTRA+=(--objects "$OBJECTS")
 
 python3 "$ROOT/realengines/run_real_experiments.py" \
   --request "${REQUEST:-$ROOT/realengines/realistic_request.json}" \
