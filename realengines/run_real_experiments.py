@@ -31,7 +31,7 @@ REPO_ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 
 from nfr_plan import write_plan  # noqa: E402
-from nfr_tuner import resolve_realization  # noqa: E402
+from nfr_tuner import resolve_calibration_paths, resolve_realization  # noqa: E402
 
 # Contract profiles as family-level requirement overrides on the base request.
 # These mirror the profiles of the offline evaluation so the two are comparable.
@@ -149,6 +149,17 @@ def main() -> int:
     base_request = load_json(args.request)
     output = Path(args.output)
     (output / "requests").mkdir(parents=True, exist_ok=True)
+
+    # Fail before the sweep rather than once per configuration: a missing
+    # simulator or missing calibration data would otherwise surface as twelve
+    # identical "no feasible realization" lines.
+    if not Path(args.simulator).exists():
+        parser.error(f"simulator not found at {args.simulator}; build it with "
+                     f"'make -C {args.simulator_dir}'")
+    try:
+        resolve_calibration_paths(Path(args.request), output)
+    except FileNotFoundError as exc:
+        parser.error(str(exc))
 
     records: list[dict[str, Any]] = []
     started = time.time()

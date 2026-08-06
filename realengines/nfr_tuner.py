@@ -53,6 +53,56 @@ def _fingerprint(request_path: Path, replications: int, max_candidates: int) -> 
     return digest.hexdigest()[:16]
 
 
+def resolve_calibration_paths(request_path: Path, output_dir: Path) -> Path:
+    """Make ``real_values_dir`` entries absolute, relative to the repository.
+
+    Requests store these paths relative so they survive being checked out
+    anywhere -- a cluster home directory is not the author's laptop. Without
+    the calibration data the simulator has no profile for any mechanism, every
+    candidate using one fails, and the catalog degenerates to the "no NFRs"
+    reference, which cannot satisfy a mandatory clause. Resolving here, and
+    checking existence, turns that into an immediate error instead of an
+    inscrutable one twelve profiler runs later.
+    """
+    request = _load_json(request_path)
+    machines = (request.get("infrastructure") or {}).get("machines") or []
+    missing: list[str] = []
+    changed = False
+
+    for machine in machines:
+        raw = machine.get("real_values_dir")
+        if not raw:
+            continue
+        path = Path(raw)
+        if not path.is_absolute():
+            path = (REPO_ROOT / path).resolve()
+            machine["real_values_dir"] = str(path) + ("/" if raw.endswith("/") else "")
+            changed = True
+        if not path.is_dir():
+            missing.append(f"{machine.get('name', '?')}: {path}")
+
+    if missing:
+        raise FileNotFoundError(
+            "calibration data is missing for:\n  " + "\n  ".join(missing)
+            + "\nThe simulator needs these per-machine measurements to profile "
+              "mechanisms; without them no candidate can satisfy a mandatory "
+              "clause. Check that the repository was checked out completely "
+              "(the directories are tracked in git)."
+        )
+
+    if not changed:
+        return request_path
+    # Write the resolved request beside the catalogs so the profiler and the
+    # recorded provenance refer to the same file.
+    resolved_dir = Path(output_dir) / "resolved-requests"
+    resolved_dir.mkdir(parents=True, exist_ok=True)
+    resolved = resolved_dir / request_path.name
+    with resolved.open("w", encoding="utf-8") as handle:
+        json.dump(request, handle, indent=2)
+        handle.write("\n")
+    return resolved
+
+
 def profile_catalog(request_path: Path, *, simulator: Path, simulator_dir: Path,
                     output_dir: Path, replications: int, max_candidates: int,
                     timeout: float, force: bool) -> dict[str, Any]:
@@ -92,7 +142,28 @@ def select_from_catalog(report: dict[str, Any], *, energy_multiplier: float,
     candidates = report.get("candidates", [])
     admissible = [c for c in candidates if mandatory_ok(c)]
     if not admissible:
-        raise RuntimeError("no candidate satisfies every mandatory clause")
+        # Distinguish a genuinely over-constrained contract from a catalog that
+        # never got off the ground: if the only survivors carry no mechanisms,
+        # the profiler was unable to evaluate any, which is an environment
+        # problem rather than a selection outcome.
+        with_mechanisms = [c for c in candidates if c.get("nfr_policy")
+                           and any(c["nfr_policy"].values())]
+        if not candidates:
+            raise RuntimeError(
+                "the profiler produced no candidates at all; see profiler.log "
+                "in the catalog directory"
+            )
+        if not with_mechanisms:
+            raise RuntimeError(
+                f"the catalog holds {len(candidates)} candidate(s), none carrying any "
+                "mechanism: the simulator could not evaluate a single realization. "
+                "This is usually missing calibration data (real_values_dir) -- check "
+                "profiler.log for 'no calibration profile is available'"
+            )
+        raise RuntimeError(
+            f"none of the {len(candidates)} candidates satisfies every mandatory "
+            "clause; the contract may be stricter than the available mechanisms"
+        )
 
     # Baseline references are per-metric minima over the mandatory-compliant
     # candidates; they need not come from the same candidate.
@@ -125,7 +196,7 @@ def resolve_realization(request_path: Path, *, simulator: Path, simulator_dir: P
                         replications: int = 3, max_candidates: int = 500,
                         timeout: float = 600.0, force: bool = False) -> dict[str, Any]:
     """Profile, admit, select, and return the realization plan."""
-    request_path = Path(request_path)
+    request_path = resolve_calibration_paths(Path(request_path), Path(output_dir))
     report = profile_catalog(
         request_path, simulator=simulator, simulator_dir=simulator_dir,
         output_dir=Path(output_dir), replications=replications,

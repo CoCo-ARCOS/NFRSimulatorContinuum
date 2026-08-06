@@ -75,7 +75,7 @@
         "power_model": "linear",
         "max_power_w": 11.4,
         "static_power_fraction": 0.2631578947368421,
-        "real_values_dir": "/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/results_different_machines/organized/toge/real_values/",
+        "real_values_dir": "proxy_dd/results_different_machines/organized/toge/real_values/",
         "power_metadata": {
           "parameter_type": "literature-derived-reference",
           "idle_power_w": 2.5,
@@ -100,7 +100,7 @@
         "power_model": "linear",
         "max_power_w": 45.5,
         "static_power_fraction": 0.2285714285714286,
-        "real_values_dir": "/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/results_different_machines/organized/dantelap/real_values/",
+        "real_values_dir": "proxy_dd/results_different_machines/organized/dantelap/real_values/",
         "power_metadata": {
           "parameter_type": "literature-derived-reference",
           "idle_power_w": 8.0,
@@ -125,7 +125,7 @@
         "power_model": "linear",
         "max_power_w": 1098.75,
         "static_power_fraction": 0.22525597269624573,
-        "real_values_dir": "/home/domizzi/Documents/GitHub/energynfrscontinuum/NFRSimulatorContinuum/proxy_dd/results_different_machines/organized/c3/real_values/",
+        "real_values_dir": "proxy_dd/results_different_machines/organized/c3/real_values/",
         "power_metadata": {
           "parameter_type": "literature-derived-reference",
           "idle_power_w": 198.0,
