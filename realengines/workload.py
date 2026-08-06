@@ -24,19 +24,11 @@ from typing import Any, Callable
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from measure import measure  # noqa: E402
+from mix_payload import mix as _mix  # noqa: E402  (shared with the shell engines)
 from nfr_plan import apply_input, apply_output, artifact_classes  # noqa: E402
 
 # Edge id -> artifact class, matching the policy groups of the request.
 DEFAULT_EDGES = (("raw-data", "raw"), ("derived-data", "derived"))
-
-
-def _mix(data: bytes) -> bytes:
-    """Stand-in application compute: deterministic, and touches every byte."""
-    digest = hashlib.sha256(data).digest()
-    view = bytearray(data)
-    for index in range(len(view)):
-        view[index] ^= digest[index % len(digest)]
-    return bytes(view)
 
 
 def resolve_edges(plan: dict[str, Any]) -> tuple[tuple[str, str], ...]:

@@ -14,6 +14,10 @@ nextflow.enable.dsl = 2
 
 params.plan = null
 params.apply = null
+params.mixer = null
+// Nextflow tasks run in a fresh shell that has not activated our virtualenv,
+// so the interpreter is passed in explicitly rather than resolved from PATH.
+params.python = 'python3'
 params.payload_bytes = 16777216
 params.outdir = 'results'
 params.log = null
@@ -37,7 +41,7 @@ process PROTECT_RAW {
 
     script:
     """
-    python3 ${params.apply} \
+    ${params.python} ${params.apply} \
         --plan ${params.plan} \
         --artifact-class raw \
         --direction output \
@@ -58,7 +62,7 @@ process UNPROTECT_RAW {
 
     script:
     """
-    python3 ${params.apply} \
+    ${params.python} ${params.apply} \
         --plan ${params.plan} \
         --artifact-class raw \
         --direction input \
@@ -79,15 +83,7 @@ process COMPUTE {
 
     script:
     """
-    python3 -c "
-import hashlib, sys
-data = open('${payload}', 'rb').read()
-digest = hashlib.sha256(data).digest()
-view = bytearray(data)
-for i in range(len(view)):
-    view[i] ^= digest[i % len(digest)]
-open('derived.bin', 'wb').write(bytes(view))
-"
+    ${params.python} ${params.mixer} ${payload} derived.bin
     """
 }
 
@@ -100,7 +96,7 @@ process PROTECT_DERIVED {
 
     script:
     """
-    python3 ${params.apply} \
+    ${params.python} ${params.apply} \
         --plan ${params.plan} \
         --artifact-class derived \
         --direction output \
@@ -123,7 +119,7 @@ process UNPROTECT_DERIVED {
 
     script:
     """
-    python3 ${params.apply} \
+    ${params.python} ${params.apply} \
         --plan ${params.plan} \
         --artifact-class derived \
         --direction input \
@@ -136,8 +132,8 @@ process UNPROTECT_DERIVED {
 }
 
 workflow {
-    if (!params.plan || !params.apply) {
-        error 'both --plan and --apply are required'
+    if (!params.plan || !params.apply || !params.mixer) {
+        error '--plan, --apply and --mixer are all required'
     }
     INGEST()
         | PROTECT_RAW
