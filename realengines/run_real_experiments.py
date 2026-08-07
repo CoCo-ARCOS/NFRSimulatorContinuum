@@ -99,6 +99,7 @@ def run_engine(engine: str, script: Path, plan_path: Path, run_dir: Path,
     if args.min_seconds:
         command += ["--min-seconds", str(args.min_seconds)]
     command += ["--objects", str(args.objects),
+                "--compute-seconds", str(args.compute_seconds),
                 "--payload-kind", args.payload_kind,
                 "--payload-ratio", str(args.payload_ratio),
                 "--payload-seed", str(args.payload_seed)]
@@ -170,6 +171,10 @@ def main() -> int:
     parser.add_argument("--payload-ratio", type=float, default=3.0,
                         help="Target compression ratio for --payload-kind synthetic")
     parser.add_argument("--payload-seed", type=int, default=0)
+    parser.add_argument("--compute-seconds", type=float, default=0.0,
+                        help="Hold the application stage to this duration; set it to "
+                             "the request's declared service time so predicted and "
+                             "measured cost refer to the same application")
     parser.add_argument("--objects", type=int, default=1,
                         help="Payloads per pass; also written into the request's "
                              "workload so the simulator predicts the same trace")

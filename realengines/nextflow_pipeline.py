@@ -35,6 +35,7 @@ params.outdir = 'results'
 params.log = null
 params.objects = 1
 params.payload_seed = 0
+params.compute_seconds = 0
 """
 
 INGEST = """
@@ -108,7 +109,7 @@ process COMPUTE {
 
     script:
     \"\"\"
-    ${params.python} ${params.mixer} ${payload} computed.bin
+    ${params.python} ${params.mixer} ${payload} computed.bin --seconds ${params.compute_seconds}
     \"\"\"
 }
 """

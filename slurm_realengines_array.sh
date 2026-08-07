@@ -73,6 +73,9 @@ echo
 # path.
 export PROFILES="$PROFILE"
 export OBJECTS="${OBJECTS:-4}"
+# Sum of the request's task service times, so the application stage costs what
+# the profiler was told it would.
+export COMPUTE_SECONDS="${COMPUTE_SECONDS:-3.8}"
 export PAYLOAD_BYTES="${PAYLOAD_BYTES:-67108864}"
 export PAYLOAD_KIND="${PAYLOAD_KIND:-synthetic}"
 export PAYLOAD_RATIO="${PAYLOAD_RATIO:-3.0}"

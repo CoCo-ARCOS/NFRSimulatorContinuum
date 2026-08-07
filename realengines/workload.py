@@ -58,7 +58,8 @@ def run_workload(plan: dict[str, Any], payload_bytes: int, *,
                  submit: Callable[[Callable[..., Any]], Any] | None = None,
                  payload_kind: str = "synthetic", payload_ratio: float = 3.0,
                  payload_seed: int = 0, payload_source: Any = None,
-                 objects: int = 1) -> dict[str, Any]:
+                 objects: int = 1,
+                 compute_seconds: float = 0.0) -> dict[str, Any]:
     """Execute one pass of the workload and return its measured trace.
 
     A pass processes ``objects`` payloads through the whole stage graph, which
@@ -125,7 +126,8 @@ def run_workload(plan: dict[str, Any], payload_bytes: int, *,
 
             data = restored
             if artifact_class == compute_stage:
-                data, _ = stage(f"process[{index}]", "compute", lambda d=data: _mix(d))
+                data, _ = stage(f"process[{index}]", "compute",
+                                lambda d=data: _mix(d, compute_seconds or None))
 
     original = data
     verified = hashlib.sha256(original).digest() != b"" and len(data) > 0

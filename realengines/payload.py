@@ -44,13 +44,34 @@ _WORDS = (
 KINDS = ("synthetic", "random", "file")
 
 
-def _structured_block(rng: random.Random) -> bytes:
-    """One block of text-like, compressible content."""
-    out = bytearray()
-    while len(out) < BLOCK:
-        line = " ".join(rng.choice(_WORDS) for _ in range(12))
-        out += f"{rng.randrange(1_000_000)},{line}\n".encode()
-    return bytes(out[:BLOCK])
+# Text is assembled once and then sliced, rather than rebuilt per block.
+# Building it word by word costs about 50 MiB/s, which at the payload sizes
+# used here made generation a fifth of the measured runtime -- harness cost
+# masquerading as workload cost.
+_TEMPLATE_BYTES = 4 * 1024 * 1024
+
+
+def _text_template(rng: random.Random) -> bytes:
+    parts = []
+    size = 0
+    while size < _TEMPLATE_BYTES + BLOCK:
+        line = f"{rng.randrange(1_000_000)}," + " ".join(
+            rng.choice(_WORDS) for _ in range(12)
+        ) + "\n"
+        encoded = line.encode()
+        parts.append(encoded)
+        size += len(encoded)
+    return b"".join(parts)
+
+
+def _structured_block(template: bytes, rng: random.Random) -> bytes:
+    """One block of text-like, compressible content, sliced from the template.
+
+    Varying the offset keeps blocks non-identical, so the payload compresses
+    like text rather than like a repeated buffer.
+    """
+    start = rng.randrange(0, len(template) - BLOCK)
+    return template[start:start + BLOCK]
 
 
 def synthetic(n_bytes: int, target_ratio: float = 3.0, seed: int = 0) -> bytes:
@@ -72,9 +93,10 @@ def synthetic(n_bytes: int, target_ratio: float = 3.0, seed: int = 0) -> bytes:
     plan = [True] * n_structured + [False] * (blocks - n_structured)
     rng.shuffle(plan)
 
+    template = _text_template(rng) if n_structured else b""
     out = bytearray()
     for is_structured in plan:
-        out += _structured_block(rng) if is_structured else rng.randbytes(BLOCK)
+        out += _structured_block(template, rng) if is_structured else rng.randbytes(BLOCK)
     if len(out) < n_bytes:
         out += rng.randbytes(n_bytes - len(out))
     return bytes(out[:n_bytes])

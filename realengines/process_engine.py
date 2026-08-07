@@ -52,6 +52,10 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--payload-ratio", type=float, default=3.0,
                         help="Target compression ratio for --payload-kind synthetic")
     parser.add_argument("--payload-seed", type=int, default=0)
+    parser.add_argument("--compute-seconds", type=float, default=0.0,
+                        help="Hold the application stage to this duration, so it "
+                             "costs what the request declares rather than "
+                             "whatever the placeholder happens to take")
     parser.add_argument("--objects", type=int, default=1,
                         help="Payloads pushed through the stage graph per pass; "
                              "should match workflow.workload.instances in the "
@@ -66,6 +70,15 @@ def payload_provenance(args: argparse.Namespace) -> dict:
     return provenance(args.payload_bytes, kind=args.payload_kind,
                       ratio=args.payload_ratio, seed=args.payload_seed,
                       source=args.payload_source)
+
+
+def compute_command(python: str, mixer: Path, args: argparse.Namespace,
+                    source: str, out_name: str) -> str:
+    """Shell command for the application stage, matching the in-process one."""
+    command = f"{python} {mixer} {source} {out_name}"
+    if getattr(args, "compute_seconds", 0.0):
+        command += f" --seconds {args.compute_seconds}"
+    return command
 
 
 def payload_command(python: str, generator: Path, args: argparse.Namespace,
@@ -191,6 +204,7 @@ def summarize(engine: str, args: argparse.Namespace, plan: dict[str, Any],
         "budgets": plan.get("budgets", {}),
         "payload": payload_provenance(args),
         "objects": getattr(args, "objects", 1),
+        "compute_seconds": getattr(args, "compute_seconds", 0.0),
         "measured": {
             "seconds_mean": sum(seconds) / len(seconds),
             "seconds_min": min(seconds),

@@ -30,6 +30,7 @@ from nfr_plan import load_plan  # noqa: E402
 from process_engine import (  # noqa: E402
     APPLY,
     add_common_arguments,
+    compute_command,
     keep_going,
     payload_command,
     pass_from_log,
@@ -114,10 +115,10 @@ def build_workflow(plan_path: Path, plan: dict[str, Any], args,
 
             if artifact_class == compute_stage:
                 compute = f"compute{suffix}"
-                tasks.append(DagonTask(TaskType.BATCH, compute, (
-                    f"{PYTHON} {MIXER} "
-                    f"workflow:///{unprotect}/{artifact_class}.restored "
-                    f"computed.bin"
+                tasks.append(DagonTask(TaskType.BATCH, compute, compute_command(
+                    PYTHON, MIXER, args,
+                    f"workflow:///{unprotect}/{artifact_class}.restored",
+                    "computed.bin",
                 )))
                 previous, previous_file = compute, "computed.bin"
 

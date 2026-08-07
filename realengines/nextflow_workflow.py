@@ -95,6 +95,7 @@ def main() -> int:
                 "--payload_bytes", str(args.payload_bytes),
                 "--objects", str(args.objects),
                 "--payload_seed", str(args.payload_seed),
+                "--compute_seconds", str(args.compute_seconds),
                 "--outdir", str((work_dir / "results").resolve()),
                 "--log", str(log_path.resolve()),
                 "-work-dir", str((work_dir / "work").resolve()),

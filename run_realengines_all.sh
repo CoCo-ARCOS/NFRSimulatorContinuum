@@ -16,6 +16,7 @@ set -euo pipefail
 #   PAYLOAD_SOURCE file or directory of real files, for PAYLOAD_KIND=file
 #   PAYLOAD_SEED   payload reproducibility seed (default: 0)
 #   OBJECTS        payloads processed per pass (default: 1)
+#   COMPUTE_SECONDS hold the application stage to this duration (default: 0)
 #   TUNER_CACHE    shared catalog cache across array tasks
 #   DEDUPE_PLANS   0 to execute budgets that resolve to the same plan
 #   REPEATS        passes per run          (default: 3, first discarded)
@@ -55,6 +56,7 @@ EXTRA=()
 [ -n "${PAYLOAD_SOURCE:-}" ] && EXTRA+=(--payload-source "$PAYLOAD_SOURCE")
 [ -n "${PAYLOAD_SEED:-}" ] && EXTRA+=(--payload-seed "$PAYLOAD_SEED")
 [ -n "${OBJECTS:-}" ] && EXTRA+=(--objects "$OBJECTS")
+[ -n "${COMPUTE_SECONDS:-}" ] && EXTRA+=(--compute-seconds "$COMPUTE_SECONDS")
 # Shared catalog cache: profile each scenario once across an array job.
 [ -n "${TUNER_CACHE:-}" ] && EXTRA+=(--tuner-cache "$TUNER_CACHE")
 [ "${DEDUPE_PLANS:-1}" = "0" ] && EXTRA+=(--no-dedupe-plans)
