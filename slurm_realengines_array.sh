@@ -4,11 +4,12 @@
 #SBATCH --error=logs/realengines_%A_%a.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=16
 #SBATCH --mem=16G
 #SBATCH --time=04:00:00
 #SBATCH --exclusive
 #SBATCH --array=0-3
+#SBATCH --partition=large
 
 # Real-engine experiments as a SLURM array: one contract profile per task, each
 # on its own exclusive node.
@@ -29,7 +30,9 @@
 cd "$SLURM_SUBMIT_DIR"
 mkdir -p logs
 
-PROFILE_LIST=(balanced security-first resilience-first bandwidth-first)
+export PATH=/home/dantsanc/jdk-21.0.6+7/bin:$PATH
+
+PROFILE_LIST=(balanced)
 PROFILE=${PROFILE_LIST[$SLURM_ARRAY_TASK_ID]}
 
 if [ -z "$PROFILE" ]; then
@@ -40,6 +43,11 @@ fi
 export PYTHONUNBUFFERED=1
 OUT="${OUT_BASE:-realengines-output-${SLURM_ARRAY_JOB_ID}}/${PROFILE}"
 mkdir -p "$OUT"
+
+# One catalog cache for the whole array: without it every task re-profiles the
+# same scenarios, which for four tasks is four times the simulation cost.
+export TUNER_CACHE="${TUNER_CACHE:-${OUT_BASE:-realengines-output-${SLURM_ARRAY_JOB_ID}}/tuner-cache}"
+mkdir -p "$TUNER_CACHE"
 
 # shellcheck disable=SC1091
 source ./venv_activate.sh
@@ -55,7 +63,7 @@ scontrol show config 2>/dev/null | grep -iE 'acctgatherenergytype|acctgathernode
 python3 realengines/measure.py || true
 echo
 
-export OBJECTS="${OBJECTS:-1}"
+export OBJECTS="${OBJECTS:-50}"
 export PAYLOAD_KIND="${PAYLOAD_KIND:-synthetic}"
 export PAYLOAD_RATIO="${PAYLOAD_RATIO:-3.0}"
 export PAYLOAD_SOURCE="${PAYLOAD_SOURCE:-}"

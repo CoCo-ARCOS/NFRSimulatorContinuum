@@ -147,6 +147,7 @@ def main() -> int:
         model_power_w = site_power_w(args.site, args.machine)
 
     args.output.mkdir(parents=True, exist_ok=True)
+    objects = max(1, args.objects)
     passes = []
     with measure(model_power_w=model_power_w, allow_slurm=True) as run_energy:
         index = 0
@@ -160,8 +161,16 @@ def main() -> int:
                 Path(args.plan).resolve(), plan, args,
                 (pass_dir / "scratch").resolve(), log_path,
             )
+            # DagOnStar reports nothing per task and this adapter summarises
+            # only at the end, so a run killed by a timeout would otherwise
+            # leave a log indistinguishable from a hang. Announce each pass and
+            # the work it represents before starting it.
+            n_tasks = len(getattr(workflow, "tasks", []) or [])
+            print(f"[{ENGINE}] pass {index}: {objects} object(s), "
+                  f"{n_tasks} tasks, elapsed {elapsed:.0f}s", flush=True)
             with measure(model_power_w=model_power_w) as m:
                 workflow.run()
+            print(f"[{ENGINE}] pass {index} done in {m['seconds']:.1f}s", flush=True)
             records = read_enforcement_log(log_path)
             if not records:
                 print(f"[{ENGINE}] pass {index} produced no enforcement records; "

@@ -153,6 +153,10 @@ def main() -> int:
     parser.add_argument("--simulator", type=Path, default=REPO_ROOT / "proxy_dd" / "nfr_dag_sim")
     parser.add_argument("--simulator-dir", type=Path, default=REPO_ROOT / "proxy_dd")
     parser.add_argument("--output", type=Path, default=REPO_ROOT / "realengines-output")
+    parser.add_argument("--tuner-cache", type=Path, default=None,
+                        help="Shared catalog cache. Point every task of an array "
+                             "job here so a scenario is profiled once for the "
+                             "whole job instead of once per task")
     parser.add_argument("--engines", default="parsl,dagonstar,nextflow",
                         help="Comma-separated subset of: " + ", ".join(ENGINES))
     parser.add_argument("--profiles", default=",".join(CONTRACT_PROFILES))
@@ -185,6 +189,12 @@ def main() -> int:
     parser.add_argument("--nextflow", default=os.environ.get("NEXTFLOW", ""),
                         help="Nextflow executable; point this at a self-contained "
                              "bundle from fetch_nextflow.sh on an offline cluster")
+    parser.add_argument("--no-dedupe-plans", dest="dedupe_plans", action="store_false",
+                        help="Execute every (profile, budget) even when several "
+                             "resolve to the same realization. Off by default: "
+                             "re-running an identical plan measures nothing new, "
+                             "it only adds repeats under a different label")
+    parser.set_defaults(dedupe_plans=True)
     parser.add_argument("--force", action="store_true", help="Re-profile cached catalogs")
     args = parser.parse_args()
 
@@ -213,6 +223,10 @@ def main() -> int:
     records: list[dict[str, Any]] = []
     started = time.time()
     summary_path = output / "real_engine_runs.json"
+    # Realization -> the configuration that first executed it. Budgets that do
+    # not change the selection would otherwise pay full execution cost for a
+    # measurement already taken.
+    executed: dict[str, str] = {}
 
     def flush() -> None:
         """Persist progress after every configuration.
@@ -247,7 +261,7 @@ def main() -> int:
                 plan = resolve_realization(
                     request_path, simulator=args.simulator,
                     simulator_dir=args.simulator_dir,
-                    output_dir=output / "tuner",
+                    output_dir=(args.tuner_cache or (output / "tuner")),
                     energy_multiplier=budget, deadline_multiplier=budget,
                     replications=args.replications, max_candidates=args.max_candidates,
                     force=args.force,
@@ -265,7 +279,22 @@ def main() -> int:
 
             plan_path = output / "plans" / f"{tag}.json"
             write_plan(plan_path, plan)
-            print(f"{tag}: {plan['selection']['label']}")
+            label = plan["selection"]["label"]
+            print(f"{tag}: {label}")
+
+            signature = json.dumps(plan.get("policy", {}), sort_keys=True)
+            if args.dedupe_plans and signature in executed:
+                first = executed[signature]
+                print(f"  identical realization to {first}; skipping execution")
+                records.append({
+                    "profile": profile, "budget_multiplier": budget,
+                    "engine": "", "status": "duplicate",
+                    "reason": f"same realization as {first}",
+                    "duplicate_of": first, "label": label,
+                })
+                flush()
+                continue
+            executed[signature] = tag
 
             for engine in engines:
                 run_dir = output / "runs" / tag / engine
