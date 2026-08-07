@@ -227,7 +227,7 @@ def plot_method_by_contract(ms: pd.DataFrame, output: Path) -> None:
         aggfunc="mean",
     ).reindex(index=contracts, columns=methods)
 
-    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 3.1))
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 2))
     y = np.arange(len(pivot.index))
     height = min(0.12, 0.78 / max(len(methods), 1))
     offsets = (np.arange(len(methods)) - (len(methods) - 1) / 2) * height
@@ -294,7 +294,7 @@ def plot_method_by_workflow(cs: pd.DataFrame, output: Path) -> None:
         aggfunc="mean",
     ).reindex(index=workflows, columns=methods)
 
-    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 3.1))
+    fig, ax = plt.subplots(figsize=(COLUMN_WIDTH_IN, 1.5))
     y = np.arange(len(pivot.index))
     height = min(0.12, 0.78 / max(len(methods), 1))
     offsets = (np.arange(len(methods)) - (len(methods) - 1) / 2) * height
@@ -336,14 +336,14 @@ def plot_method_by_workflow(cs: pd.DataFrame, output: Path) -> None:
     ax.xaxis.set_major_formatter(PercentFormatter(xmax=100, decimals=0))
     ax.set_xlabel("Mean admitted optional coverage")
     style_axes(ax, "x")
-    ax.legend(
-        loc="lower center",
-        bbox_to_anchor=(0.5, 1.02),
-        ncol=3,
-        frameon=False,
-        handlelength=1.1,
-        columnspacing=0.8,
-    )
+    #ax.legend(
+    ##    loc="lower center",
+    #    bbox_to_anchor=(0.5, 1.02),
+    #    ncol=3,
+    #    frameon=False,
+    #    handlelength=1.1,
+    #    columnspacing=0.8,
+    #)
     savefig(fig, output / "fig_method_by_workflow.png")
 
 
@@ -434,7 +434,7 @@ def plot_coverage_envelope_panels(cs: pd.DataFrame, output: Path) -> None:
     print(f"Envelope panels: most budget-sensitive scenario is {scenario}")
 
     fig, axes = plt.subplots(
-        1, 2, figsize=(COLUMN_WIDTH_IN, 2.1), sharey=True, gridspec_kw={"wspace": 0.12}
+        1, 2, figsize=(COLUMN_WIDTH_IN, 1.5), sharey=True, gridspec_kw={"wspace": 0.12}
     )
     panels = [
         (axes[0], mean_pivot, f"(a) Mean, {n_scenarios} scenarios"),

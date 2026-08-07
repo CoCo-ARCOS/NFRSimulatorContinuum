@@ -58,17 +58,17 @@ if [ "${ENGINE_EXTRAS:-0}" = "1" ]; then
   # virtualenv's bin so that activating the venv puts it on PATH, keeping all
   # three engines in one place. On a cluster that provides it, 'module load
   # nextflow' works just as well and this step is skipped.
-  if command -v nextflow >/dev/null 2>&1 && [ ! -x "$VENV/bin/nextflow" ]; then
-    echo "nextflow already on PATH: $(command -v nextflow)"
-  elif [ -x "$VENV/bin/nextflow" ]; then
-    echo "nextflow already installed: $VENV/bin/nextflow"
-  elif ! command -v java >/dev/null 2>&1; then
-    echo "warning: nextflow needs Java and none was found; that engine will report itself skipped" >&2
-  else
-    echo "installing nextflow into $VENV/bin"
-    ( cd "$VENV/bin" && curl -s https://get.nextflow.io | bash ) >/dev/null 2>&1 || \
-      echo "warning: nextflow install failed; that engine will report itself skipped" >&2
-  fi
+  # if command -v nextflow >/dev/null 2>&1 && [ ! -x "$VENV/bin/nextflow" ]; then
+  #   echo "nextflow already on PATH: $(command -v nextflow)"
+  # elif [ -x "$VENV/bin/nextflow" ]; then
+  #   echo "nextflow already installed: $VENV/bin/nextflow"
+  # elif ! command -v java >/dev/null 2>&1; then
+  #   echo "warning: nextflow needs Java and none was found; that engine will report itself skipped" >&2
+  # else
+  #   echo "installing nextflow into $VENV/bin"
+  #   ( cd "$VENV/bin" && curl -s https://get.nextflow.io | bash ) >/dev/null 2>&1 || \
+  #     echo "warning: nextflow install failed; that engine will report itself skipped" >&2
+  # fi
 fi
 
 echo "virtualenv ready: $VENV"

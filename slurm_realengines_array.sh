@@ -44,7 +44,7 @@ if [ -z "$PROFILE" ]; then
 fi
 
 export PYTHONUNBUFFERED=1
-OUT="${OUT_BASE:-realengines-output-${SLURM_ARRAY_JOB_ID}}/${PROFILE}"
+OUT="${OUT_BASE:-/home/dantsanc/lustre/dantedomizzi/worksrealworkflows/realengines-output-${SLURM_ARRAY_JOB_ID}}/${PROFILE}"
 mkdir -p "$OUT"
 
 # One catalog cache for the whole array: without it every task re-profiles the
