@@ -16,6 +16,8 @@ set -euo pipefail
 #   PAYLOAD_SOURCE file or directory of real files, for PAYLOAD_KIND=file
 #   PAYLOAD_SEED   payload reproducibility seed (default: 0)
 #   OBJECTS        payloads processed per pass (default: 1)
+#   TUNER_CACHE    shared catalog cache across array tasks
+#   DEDUPE_PLANS   0 to execute budgets that resolve to the same plan
 #   REPEATS        passes per run          (default: 3, first discarded)
 #   MIN_SECONDS    keep repeating until a run lasts this long (default: 0)
 #   REPLICATIONS   simulator replications  (default: 3)
@@ -53,6 +55,9 @@ EXTRA=()
 [ -n "${PAYLOAD_SOURCE:-}" ] && EXTRA+=(--payload-source "$PAYLOAD_SOURCE")
 [ -n "${PAYLOAD_SEED:-}" ] && EXTRA+=(--payload-seed "$PAYLOAD_SEED")
 [ -n "${OBJECTS:-}" ] && EXTRA+=(--objects "$OBJECTS")
+# Shared catalog cache: profile each scenario once across an array job.
+[ -n "${TUNER_CACHE:-}" ] && EXTRA+=(--tuner-cache "$TUNER_CACHE")
+[ "${DEDUPE_PLANS:-1}" = "0" ] && EXTRA+=(--no-dedupe-plans)
 
 python3 "$ROOT/realengines/run_real_experiments.py" \
   --request "${REQUEST:-$ROOT/realengines/realistic_request.json}" \
