@@ -82,7 +82,10 @@ def main() -> int:
                        payload_command(sys.executable, GENERATOR, args, "raw.bin")),
             )
             command = [
-                args.nextflow, "run", str(pipeline),
+                # Absolute: nextflow runs with cwd set to the pass directory,
+                # and a relative path that does not resolve there is taken as a
+                # remote "owner/repo" project identifier rather than a file.
+                args.nextflow, "run", str(pipeline.resolve()),
                 "--plan", str(Path(args.plan).resolve()),
                 "--apply", str(APPLY.resolve()),
                 "--mixer", str(MIXER.resolve()),

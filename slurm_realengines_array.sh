@@ -24,7 +24,9 @@
 # Aggregate once every task has finished:
 #   sbatch --dependency=afterok:<jobid> slurm_realengines_merge.sh <jobid>
 
-# module load python/3.10
+module load python/3.10
+
+ENGINE_EXTRAS=1 ./setup_venv.sh
 # module load nextflow
 
 cd "$SLURM_SUBMIT_DIR"

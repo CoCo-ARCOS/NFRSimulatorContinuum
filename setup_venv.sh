@@ -29,6 +29,17 @@ if [ "${ENGINE_EXTRAS:-0}" = "1" ]; then
   "$VENV/bin/python" -m pip install --quiet parsl || \
     echo "warning: parsl install failed; that engine will report itself skipped" >&2
 
+  # Installing and removing packages across runs can leave a transitive
+  # dependency missing while the top-level package still looks installed --
+  # parsl importing but typing_extensions absent, for instance. Importing it
+  # for real is the only check that catches that, and repairing here costs
+  # seconds against a job that would otherwise fail hours in.
+  if ! "$VENV/bin/python" -c "import parsl" >/dev/null 2>&1; then
+    echo "parsl is installed but does not import; repairing dependencies"
+    "$VENV/bin/python" -m pip install --quiet --upgrade --force-reinstall parsl || \
+      echo "warning: parsl repair failed" >&2
+  fi
+
   # DagOnStar installs from source as 'dagonstar' and provides the 'dagon'
   # import. Do NOT "pip install dagon": that is an unrelated project which
   # owns the name on PyPI and shadows this import, breaking it with
@@ -61,6 +72,8 @@ if [ "${ENGINE_EXTRAS:-0}" = "1" ]; then
 fi
 
 echo "virtualenv ready: $VENV"
+# Verify by importing, not by presence: a package whose dependencies are
+# missing is still "installed" as far as the filesystem is concerned.
 "$VENV/bin/python" - <<'PY'
 import importlib
 for name, label in [
@@ -71,8 +84,10 @@ for name, label in [
     try:
         importlib.import_module(name)
         print(f"  ok       {label}")
-    except ImportError:
-        print(f"  missing  {label}")
+    except ImportError as exc:
+        missing = str(exc).split("'")[1] if "'" in str(exc) else exc
+        detail = "" if missing == name else f" (needs {missing})"
+        print(f"  BROKEN   {label}{detail}" if missing != name else f"  missing  {label}")
 
 # DagOnStar is checked by its API, since an unrelated project shares the
 # 'dagon' module name and would otherwise import successfully.
