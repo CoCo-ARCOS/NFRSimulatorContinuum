@@ -32,7 +32,8 @@ mkdir -p logs
 
 export PATH=/home/dantsanc/jdk-21.0.6+7/bin:$PATH
 
-PROFILE_LIST=(balanced)
+# Must cover the --array range above: index N runs PROFILE_LIST[N].
+PROFILE_LIST=(balanced security-first resilience-first bandwidth-first)
 PROFILE=${PROFILE_LIST[$SLURM_ARRAY_TASK_ID]}
 
 if [ -z "$PROFILE" ]; then
@@ -63,32 +64,28 @@ scontrol show config 2>/dev/null | grep -iE 'acctgatherenergytype|acctgathernode
 python3 realengines/measure.py || true
 echo
 
-export OBJECTS="${OBJECTS:-50}"
+# Everything below is passed through run_realengines_all.sh, which is the one
+# place the driver is invoked. Setting these here and calling the driver
+# directly is how this script previously drifted: OBJECTS and TUNER_CACHE were
+# exported but never forwarded, and the request differed from the single-node
+# path.
+export PROFILES="$PROFILE"
+export OBJECTS="${OBJECTS:-4}"
+export PAYLOAD_BYTES="${PAYLOAD_BYTES:-67108864}"
 export PAYLOAD_KIND="${PAYLOAD_KIND:-synthetic}"
 export PAYLOAD_RATIO="${PAYLOAD_RATIO:-3.0}"
 export PAYLOAD_SOURCE="${PAYLOAD_SOURCE:-}"
+export BUDGETS="${BUDGETS:-1.05,1.30,2.00}"
+export REPEATS="${REPEATS:-3}"
+# RAPL is read per region, so runs need not be stretched for coarse accounting.
+export MIN_SECONDS="${MIN_SECONDS:-0}"
+export REPLICATIONS="${REPLICATIONS:-3}"
+export ENGINES="${ENGINES:-parsl,dagonstar,nextflow}"
 
 export NEXTFLOW="${NEXTFLOW:-}"
 [ -z "$NEXTFLOW" ] && [ -x bin/nextflow-dist ] && export NEXTFLOW="$PWD/bin/nextflow-dist"
 
-EXTRA=()
-[ -n "${SITE:-}" ] && EXTRA+=(--site "$SITE")
-[ -n "${MACHINE:-}" ] && EXTRA+=(--machine "$MACHINE")
-[ -n "${NEXTFLOW:-}" ] && EXTRA+=(--nextflow "$NEXTFLOW")
-
-python3 realengines/run_real_experiments.py \
-  --request realengines/demo_request.json \
-  --simulator proxy_dd/nfr_dag_sim \
-  --simulator-dir proxy_dd \
-  --output "$OUT" \
-  --engines "${ENGINES:-parsl,dagonstar,nextflow}" \
-  --profiles "$PROFILE" \
-  --budgets "${BUDGETS:-1.05,1.15,1.30,1.60,2.00}" \
-  --payload-bytes "${PAYLOAD_BYTES:-16777216}" \
-  --repeats "${REPEATS:-5}" \
-  --min-seconds "${MIN_SECONDS:-120}" \
-  --replications "${REPLICATIONS:-3}" \
-  "${EXTRA[@]}"
+./run_realengines_all.sh proxy_dd "$OUT"
 
 echo
 sacct -j "$SLURM_JOB_ID" --format=JobID,Elapsed,ConsumedEnergy,ConsumedEnergyRaw 2>/dev/null || true
